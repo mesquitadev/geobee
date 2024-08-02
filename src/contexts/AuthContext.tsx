@@ -64,6 +64,11 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
             'Erro na autenticação! Ocorreu um erro ao fazer login, verifique as credenciais inseridas',
           variant: 'error',
         })
+
+        enqueueSnackbar({
+          message: `Erro: ${err.getMessage()}`,
+          variant: 'error',
+        })
         setLoading(false)
       } finally {
         setLoading(false)
