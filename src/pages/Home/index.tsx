@@ -24,7 +24,6 @@ export default function Home() {
   const { loading, setLoading } = useLoading()
   const [meliponaryData, setMeliponaryData] = useState(null)
   const [apiaryData, setApiaryData] = useState(null)
-  const [geojsonData, setGeojsonData] = useState(null)
   useEffect(() => {
     const getMyData = async () => {
       setLoading(true)
@@ -47,7 +46,6 @@ export default function Home() {
           'https://raw.githubusercontent.com/mesquitadev/geobee-fe/main/src/components/Mapa/geobee.geojson',
         )
         const data = await response.json()
-        setGeojsonData(data)
       } catch (err) {
         console.error(err)
       } finally {
