@@ -39,21 +39,21 @@ export default function Home() {
       }
     }
 
-    const getMaps = async () => {
-      setLoading(true)
-      try {
-        const response = await fetch(
-          'https://raw.githubusercontent.com/mesquitadev/geobee-fe/main/src/components/Mapa/geobee.geojson',
-        )
-        const data = await response.json()
-      } catch (err) {
-        console.error(err)
-      } finally {
-        setLoading(false)
-      }
-    }
+    // const getMaps = async () => {
+    //   setLoading(true)
+    //   try {
+    //     const response = await fetch(
+    //       'https://raw.githubusercontent.com/mesquitadev/geobee-fe/main/src/components/Mapa/geobee.geojson',
+    //     )
+    //     // const data = await response.json()
+    //   } catch (err) {
+    //     console.error(err)
+    //   } finally {
+    //     setLoading(false)
+    //   }
+    // }
 
-    Promise.all([getMyData(), getMaps()])
+    Promise.all([getMyData()])
   }, [setLoading])
 
   return (
