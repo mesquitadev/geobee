@@ -350,7 +350,6 @@ export default function NewApiary() {
                 />
               </SelectContainer>
 
-              {/* // @ts-ignore */}
               {tipoInstalacao === 'Intinerante' && (
                 <SelectContainer className="w-full px-3 py-2">
                   <InputLabel
