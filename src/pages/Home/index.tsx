@@ -5,9 +5,17 @@ import BackdropLoading from '../../components/BackdropLoading'
 import { GeoJSON, MapContainer, Marker, Popup, TileLayer } from 'react-leaflet'
 import L from 'leaflet'
 import marker from '../../assets/apiary.png'
+import beebox from '../../assets/bee-box.png'
 const myIcon = new L.Icon({
   iconUrl: marker,
   iconRetinaUrl: marker,
+  popupAnchor: [-0, -0],
+  iconSize: [32, 45],
+})
+
+const meliponaryIcon = new L.Icon({
+  iconUrl: beebox,
+  iconRetinaUrl: beebox,
   popupAnchor: [-0, -0],
   iconSize: [32, 45],
 })
@@ -63,6 +71,7 @@ export default function Home() {
         {meliponaryData?.map((data) => {
           return (
             <Marker
+              icon={meliponaryIcon}
               key={data.id}
               position={[Number(data.latitude), Number(data.longitude)]}
             >
