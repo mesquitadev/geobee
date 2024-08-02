@@ -67,7 +67,7 @@ export default function Home() {
         style={{ height: '100%', width: '100%' }}
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-        <GeoJSON data={seg} />
+        {/* <GeoJSON data={seg} /> */}
 
         {meliponaryData?.map((data) => {
           return (
