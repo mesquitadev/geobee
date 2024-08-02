@@ -351,7 +351,7 @@ export default function NewApiary() {
               </SelectContainer>
 
               {/* // @ts-ignore */}
-              {tipoInstalacao.valueOf() === String('Intinerante') && (
+              {tipoInstalacao === 'Intinerante' && (
                 <SelectContainer className="w-full px-3 py-2">
                   <InputLabel
                     label="Caso você tenha respondido intinerante, por quanto tempo pretende ficar neste local?"
