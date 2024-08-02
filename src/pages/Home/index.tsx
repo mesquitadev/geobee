@@ -4,8 +4,9 @@ import { useLoading } from '../../hooks/useLoading.tsx'
 import BackdropLoading from '../../components/BackdropLoading'
 import { GeoJSON, MapContainer, Marker, Popup, TileLayer } from 'react-leaflet'
 import L from 'leaflet'
+import seg from './vegetacao.json'
 import marker from '../../assets/apiary.png'
-import beebox from '../../assets/bee-box.png'
+import beebox from '../../assets/bee-hive.png'
 const myIcon = new L.Icon({
   iconUrl: marker,
   iconRetinaUrl: marker,
@@ -66,7 +67,7 @@ export default function Home() {
         style={{ height: '100%', width: '100%' }}
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-        <GeoJSON data={geojsonData} />
+        <GeoJSON data={seg} />
 
         {meliponaryData?.map((data) => {
           return (
