@@ -3,17 +3,27 @@ import api from '../../services'
 import { useLoading } from '../../hooks/useLoading.tsx'
 import BackdropLoading from '../../components/BackdropLoading'
 import { GeoJSON, MapContainer, Marker, Popup, TileLayer } from 'react-leaflet'
-
+import L from 'leaflet'
+import marker from '../../assets/apiary.png'
+const myIcon = new L.Icon({
+  iconUrl: marker,
+  iconRetinaUrl: marker,
+  popupAnchor: [-0, -0],
+  iconSize: [32, 45],
+})
 export default function Home() {
   const { loading, setLoading } = useLoading()
-  const [businessData, setBusinessData] = useState(null)
+  const [meliponaryData, setMeliponaryData] = useState(null)
+  const [apiaryData, setApiaryData] = useState(null)
   const [geojsonData, setGeojsonData] = useState(null)
   useEffect(() => {
     const getMyData = async () => {
       setLoading(true)
       try {
         const { data } = await api.get('/meliponary/all')
-        setBusinessData(data)
+        const { data: apiary } = await api.get('/apiary/all')
+        setMeliponaryData(data)
+        setApiaryData(apiary)
       } catch (err) {
         console.error(err)
       } finally {
@@ -50,17 +60,34 @@ export default function Home() {
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         <GeoJSON data={geojsonData} />
 
-        {businessData?.map((data) => (
-          <Marker
-            key={data.id}
-            position={[Number(data.latitude), Number(data.longitude)]}
-          >
-            <Popup>
-              {data.name} : Capacidade de Suporte | {data.tipoInstalacao}
-              {data.capacidadeDeSuporte ? data.capacidadeDeSuporte : '0'}
-            </Popup>
-          </Marker>
-        ))}
+        {meliponaryData?.map((data) => {
+          return (
+            <Marker
+              key={data.id}
+              position={[Number(data.latitude), Number(data.longitude)]}
+            >
+              <Popup>
+                Meliponário {data.name} - Capacidade de Suporte :{' '}
+                {data.capacidadeDeSuporte ? data.capacidadeDeSuporte : '0'}
+              </Popup>
+            </Marker>
+          )
+        })}
+
+        {apiaryData?.map((data) => {
+          return (
+            <Marker
+              icon={myIcon}
+              key={data.id}
+              position={[Number(data.latitude), Number(data.longitude)]}
+            >
+              <Popup>
+                Apiário {data.name} - Capacidade de Suporte :{' '}
+                {data.capacidadeDeSuporte ? data.capacidadeDeSuporte : '0'}
+              </Popup>
+            </Marker>
+          )
+        })}
       </MapContainer>
     </>
   )
