@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react'
 import api from '../../services'
 import { useLoading } from '../../hooks/useLoading.tsx'
 import BackdropLoading from '../../components/BackdropLoading'
-import { GeoJSON, MapContainer, Marker, Popup, TileLayer } from 'react-leaflet'
+import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet'
 import L from 'leaflet'
-import seg from './vegetacao.json'
 import marker from '../../assets/apiary.png'
 import beebox from '../../assets/bee-hive.png'
+
 const myIcon = new L.Icon({
   iconUrl: marker,
   iconRetinaUrl: marker,
