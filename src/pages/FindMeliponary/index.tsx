@@ -2,27 +2,12 @@ import { useEffect, useState } from 'react'
 import api from '../../services'
 import { useLoading } from '../../hooks/useLoading.tsx'
 import BackdropLoading from '../../components/BackdropLoading'
-import {
-  MapContainer,
-  Marker,
-  Popup,
-  TileLayer,
-  GeoJSON,
-  CircleMarker,
-} from 'react-leaflet'
+import { GeoJSON, MapContainer, Marker, Popup, TileLayer } from 'react-leaflet'
 import L from 'leaflet'
-import marker from '../../assets/apiary.png'
 import beebox from '../../assets/bee-hive.png'
 import { getColor } from '../../utils'
 import Legend from '../../components/Legend'
 import { useParams } from 'react-router-dom'
-
-const myIcon = new L.Icon({
-  iconUrl: marker as string,
-  iconRetinaUrl: marker as string,
-  popupAnchor: [-0, -0],
-  iconSize: [32, 32],
-})
 
 const meliponaryIcon = new L.Icon({
   iconUrl: beebox as string,
@@ -32,8 +17,6 @@ const meliponaryIcon = new L.Icon({
 })
 export default function Home() {
   const { loading, setLoading } = useLoading()
-  const [meliponaryData, setMeliponaryData] = useState(null)
-  const [apiaryData, setApiaryData] = useState(null)
   const [geojson, setGeojson] = useState(null)
   const [userLocation, setUserLocation] = useState<[number, number] | null>(
     null,

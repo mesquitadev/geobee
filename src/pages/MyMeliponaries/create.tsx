@@ -12,7 +12,13 @@ import * as yup from 'yup'
 import { SubmitHandler, useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { enqueueSnackbar } from 'notistack'
-import { MapContainer, Marker, TileLayer, useMapEvents } from 'react-leaflet'
+import {
+  MapContainer,
+  Marker,
+  Popup,
+  TileLayer,
+  useMapEvents,
+} from 'react-leaflet'
 import BackdropLoading from '../../components/BackdropLoading'
 import {
   especiesAbelhasOptions,
@@ -24,6 +30,8 @@ import {
 } from '../../utils/options.ts'
 import * as turf from '@turf/turf'
 import { calcularRaioVoo } from '../../utils'
+import L from 'leaflet'
+import marker from '../../assets/apiary.png'
 
 type Inputs = {
   name: string
@@ -120,6 +128,9 @@ export default function NewMeliponary() {
   const [latitude, setLatitude] = useState<number>(0)
   const [longitude, setLongitude] = useState<number>(0)
   const [position, setPosition] = useState<{ lat: number; lng: number } | null>(
+    null,
+  )
+  const [userLocation, setUserLocation] = useState<[number, number] | null>(
     null,
   )
 
@@ -224,67 +235,61 @@ export default function NewMeliponary() {
   // @ts-ignore
   const distanciaMinimaConstrucoes = watch('distanciaMinimaConstrucoes')
   // @ts-ignore
-  const distanciaMinimaLavouras = watch('distanciaMinimaLavouras') as
-    | boolean
-    | undefined
+  const distanciaMinimaLavouras = watch('distanciaMinimaLavouras')
 
   useEffect(() => {
-    if (fontesNectarPolen === false) {
+    if (fontesNectarPolen === 'false') {
       setDisabled(true)
-      // @ts-ignore
-      enqueueSnackbar({
-        message: 'OOPS! Aqui não é um local adequado para colocar o apiário!',
-        variant: 'warning',
-      })
+      enqueueSnackbar(
+        'OOPS! Aqui não é um local adequado para colocar o apiário!',
+        {
+          variant: 'warning',
+        },
+      )
     }
-    if (disponibilidadeAgua === false) {
-      // @ts-ignore
-      enqueueSnackbar({
-        message: 'OOPS! Será necessário adicionar água de qualidade no local!',
-        variant: 'info',
-      })
+    if (disponibilidadeAgua === 'false') {
+      enqueueSnackbar(
+        'OOPS! Será necessário adicionar água de qualidade no local!',
+        {
+          variant: 'info',
+        },
+      )
     }
 
-    if (sombreaentoNatural === false) {
-      // @ts-ignore
-      enqueueSnackbar({
-        message: 'OOPS! Será necessário colocar as caixas à sombra! ',
+    if (sombreaentoNatural === 'false') {
+      enqueueSnackbar('OOPS! Será necessário colocar as caixas à sombra! ', {
         variant: 'info',
       })
     }
-    if (protecaoVentosFortes === false) {
-      // @ts-ignore
-      enqueueSnackbar({
-        message: 'OOPS! Aqui não é um local adequado para colocar o apiário!',
-        variant: 'warning',
-      })
+    if (protecaoVentosFortes === 'false') {
+      enqueueSnackbar(
+        'OOPS! Aqui não é um local adequado para colocar o apiário!',
+        { variant: 'warning' },
+      )
     }
 
     if (distanciaSeguraContaminacao === false) {
-      // @ts-ignore
-      enqueueSnackbar({
-        message: 'OOPS! Aqui não é um local adequado para colocar o apiário!',
-        variant: 'warning',
-      })
+      enqueueSnackbar(
+        'OOPS! Aqui não é um local adequado para colocar o apiário!',
+        { variant: 'warning' },
+      )
     }
 
     if (distanciaMinimaConstrucoes === false) {
-      // @ts-ignore
-      enqueueSnackbar({
-        message: 'OOPS! Aqui não é um local adequado para colocar o apiário!',
-        variant: 'warning',
-      })
+      enqueueSnackbar(
+        'OOPS! Aqui não é um local adequado para colocar o apiário!',
+        { variant: 'warning' },
+      )
       setDisabled(true)
     } else {
       setDisabled(false)
     }
 
     if (distanciaMinimaLavouras === false) {
-      // @ts-ignore
-      enqueueSnackbar({
-        message: 'OOPS! Aqui não é um local adequado para colocar o apiário!',
-        variant: 'warning',
-      })
+      enqueueSnackbar(
+        'OOPS! Aqui não é um local adequado para colocar o apiário!',
+        { variant: 'warning' },
+      )
       setDisabled(true)
     } else {
       setDisabled(false)
@@ -299,6 +304,31 @@ export default function NewMeliponary() {
     protecaoVentosFortes,
     sombreaentoNatural,
   ])
+
+  const getUserLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          handleLocationSelect(
+            position.coords.latitude,
+            position.coords.longitude,
+          )
+          setUserLocation([position.coords.latitude, position.coords.longitude])
+        },
+        (error) => {
+          console.error(error)
+        },
+      )
+    }
+  }
+
+  const myIcon = new L.Icon({
+    iconUrl: marker as string,
+    iconRetinaUrl: marker as string,
+    popupAnchor: [-0, -0],
+    iconSize: [32, 32],
+  })
+
   return (
     <div className="w-full h-full p-10">
       <Breadcumbs pageName="Cadastrar Meliponário" />
@@ -399,7 +429,7 @@ export default function NewMeliponary() {
                 />
               </SelectContainer>
 
-              {outrosMeliponariosRaio1km === true && (
+              {outrosMeliponariosRaio1km === 'true' && (
                 <SelectContainer className="w-full px-3 py-2">
                   <InputLabel
                     label="Caso haja outros meliponários no raio de 1 KM, qual a quantidade de colméias?"
@@ -525,12 +555,23 @@ export default function NewMeliponary() {
           <p className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">
             Selecione as Coordenadas
           </p>
+          <button
+            onClick={getUserLocation}
+            className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 my-3"
+          >
+            Usar Minha Localização
+          </button>
           <MapContainer
             center={[-2.5555334824608353, -44.208297729492195]}
             zoom={13}
             style={{ height: '400px', width: '100%' }}
           >
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+            {userLocation && (
+              <Marker icon={myIcon} position={userLocation}>
+                <Popup>Você está aqui</Popup>
+              </Marker>
+            )}
             <LocationMarker />
           </MapContainer>
         </div>

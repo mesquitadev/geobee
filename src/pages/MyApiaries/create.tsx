@@ -310,10 +310,6 @@ export default function NewApiary() {
     sombreaentoNatural,
   ])
 
-  useEffect(() => {
-    console.log('adas', outrosApiariosRaio3km)
-  }, [outrosApiariosRaio3km])
-
   const myIcon = new L.Icon({
     iconUrl: marker as string,
     iconRetinaUrl: marker as string,

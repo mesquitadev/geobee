@@ -8,6 +8,7 @@ import {
   MyMeliponaries,
   NewMeliponary,
   FindOne,
+  FindMeliponary,
 } from '../pages'
 import Route from './Route'
 
@@ -21,10 +22,16 @@ function Routes() {
       <Route isPrivate path="/meus-apiarios/:id" component={FindOne} />
 
       <Route isPrivate path="/meus-apiarios" component={MyApiaries} />
+
       <Route
         isPrivate
         path="/meus-meliponarios/novo"
         component={NewMeliponary}
+      />
+      <Route
+        isPrivate
+        path="/meus-meliponarios/:id"
+        component={FindMeliponary}
       />
       <Route isPrivate path="/meus-meliponarios" component={MyMeliponaries} />
     </Switch>

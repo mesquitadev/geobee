@@ -156,7 +156,7 @@ export default function MyApiaries() {
 
       <Dialog
         open={open}
-        onClose={handleOpenCloseModal}
+        onClose={() => setOpen(false)}
         className="relative z-10"
         style={{ zIndex: 9999 }}
       >

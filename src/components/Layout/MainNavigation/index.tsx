@@ -20,7 +20,7 @@ const ApicultorMenu = () => (
 const MeliponicultorMenu = () => (
   <nav className="flex flex-col gap-0.5">
     <NavItem icon={Home} title="Início" to="/home" />
-    <NavItem icon={Home} title="Meu Meliponário" to="meus-meliponarios" />
+    <NavItem icon={Home} title="Meu Meliponário" to="/meus-meliponarios" />
   </nav>
 )
 
