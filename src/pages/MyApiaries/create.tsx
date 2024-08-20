@@ -485,7 +485,7 @@ export default function NewApiary() {
               </SelectContainer>
               <SelectContainer className="w-full px-3 py-2">
                 <InputLabel
-                  label="Há uma distancia segura (mínimo de 3km) de possíveis fontes de contaminação (lixões, matadouros, fábrica de doces, engemhos, dentre outros)?"
+                  label="Há uma distancia segura (mínimo de 3km) de possíveis fontes de contaminação (lixões, matadouros, fábrica de doces, engenhos, dentre outros)?"
                   name="distanciaSeguraContaminacao"
                 />
                 <Select
@@ -511,7 +511,7 @@ export default function NewApiary() {
               </SelectContainer>
               <SelectContainer className="w-full px-3 py-2">
                 <InputLabel
-                  label="O local possui uma distância segua (3km) de lavouras (milho, soja, transgênicos, dentre outros)?"
+                  label="O local possui uma distância segura (3km) de lavouras (milho, soja, transgênicos, dentre outros)?"
                   name="distanciaSeguraLavouras"
                 />
                 <Select

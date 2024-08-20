@@ -525,7 +525,7 @@ export default function NewMeliponary() {
 
               <SelectContainer className="w-full px-3 py-2">
                 <InputLabel
-                  label="Há uma distancia segura (mínimo de 3km) de possíveis fontes de contaminação (lixões, matadouros, fábrica de doces, engemhos, dentre outros)?"
+                  label="Há uma distancia segura (mínimo de 3km) de possíveis fontes de contaminação (lixões, matadouros, fábrica de doces, engenhos, dentre outros)?"
                   name="distanciaSeguraContaminacao"
                 />
                 <Select
