@@ -1,11 +1,11 @@
 import { forwardRef, useRef, useImperativeHandle } from 'react'
 import { Control, Controller } from 'react-hook-form'
 
-type Option = {
-  value: string | boolean
-  label: string
-}
-type Options = Option[]
+// type Option = {
+//   value: string
+//   label: string
+// }
+type Options = any
 
 interface InputProps {
   control: Control

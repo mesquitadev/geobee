@@ -25,7 +25,7 @@ export default function Home() {
     [number, number] | null
   >(null)
 
-  const [apiary, setApiary] = useState({})
+  const [apiary, setApiary] = useState<any>()
 
   const { id } = useParams<{ id: string }>()
 

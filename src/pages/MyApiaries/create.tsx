@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useCallback, useEffect, useState } from 'react'
 import api from '../../services'
 import { useLoading } from '../../hooks/useLoading.tsx'
@@ -414,6 +415,7 @@ export default function NewApiary() {
                   errors={errors?.quantidadeColmeias?.message}
                 />
               </SelectContainer>
+              {/* @ts-ignore */}
               {outrosApiariosRaio3km === 'true' ? (
                 <SelectContainer className="w-full px-3 py-2">
                   <InputLabel

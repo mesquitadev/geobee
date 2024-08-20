@@ -1,5 +1,3 @@
-import React from 'react'
-
 const Legend = () => {
   const legendItems = [
     { label: 'ARBOREO', color: '#006400' },
