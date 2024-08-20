@@ -14,7 +14,6 @@ export default function Home() {
         setLoading(true) // Ativa o estado de carregamento antes da chamada da API
         const { data } = await api.get('/apiary/all')
         setBusinessData(data)
-        console.log('dat', data)
       } catch (err) {
         console.error(err) // Melhor tratamento de erro
       } finally {

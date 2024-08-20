@@ -1,12 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import api from '../../services'
 import { useLoading } from '../../hooks/useLoading.tsx'
 import Breadcumbs from '../../components/Breadcumbs'
 import 'leaflet/dist/leaflet.css'
-import { Link } from 'react-router-dom'
+import { Link, useHistory } from 'react-router-dom'
 import BackdropLoading from '../../components/BackdropLoading/index.tsx'
 
 export default function MyApiaries() {
+  const { history } = useHistory()
   const { loading, setLoading } = useLoading()
   const [apiaries, setApiaries] = useState([])
 
@@ -25,6 +26,13 @@ export default function MyApiaries() {
 
     getMyData()
   }, [setLoading])
+
+  const handleDeleteMeliponary = useCallback(
+    (id: number) => {
+      history.push(`meus-meliponarios/${id}`)
+    },
+    [history],
+  )
 
   return (
     <div className="w-full h-full p-10">
@@ -103,7 +111,7 @@ export default function MyApiaries() {
                 </div>
 
                 <div className="hidden items-center justify-center p-2.5 sm:flex xl:p-5">
-                  <p className="text-black">Editar / Apagar</p>
+                  <p className="text-black">Visualizar</p>
                 </div>
               </div>
             )

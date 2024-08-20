@@ -57,11 +57,11 @@ export const qtdColmeiasOptions = [
 export const outrosApiariosRaio3kmOptions = [
   {
     label: 'Sim',
-    value: 'true',
+    value: true,
   },
   {
     label: 'Não',
-    value: 'false',
+    value: false,
   },
 ]
 
@@ -84,94 +84,16 @@ export const qtdColmeiasOutrosApiariosOptions = [
   },
 ]
 
-export const fontesNectarPolenOptions = [
+export const simNaoOptions = [
   {
     label: 'Sim',
-    value: 'true',
+    value: true,
   },
   {
     label: 'Não',
-    value: 'false',
+    value: false,
   },
 ]
-
-export const disponibilidadeAguaOptions = [
-  {
-    label: 'Sim',
-    value: 'true',
-  },
-  {
-    label: 'Não',
-    value: 'false',
-  },
-]
-
-export const sombreamentoNaturalOptions = [
-  {
-    label: 'Sim',
-    value: 'true',
-  },
-  {
-    label: 'Não',
-    value: 'false',
-  },
-]
-
-export const protecaoVentosFortesOptions = [
-  {
-    label: 'Sim',
-    value: 'true',
-  },
-  {
-    label: 'Não',
-    value: 'false',
-  },
-]
-
-export const distanciaSeguraOptions = [
-  {
-    label: 'Sim',
-    value: 'true',
-  },
-  {
-    label: 'Não',
-    value: 'false',
-  },
-]
-
-export const distanciaMinimaConstrucoesOptions = [
-  {
-    label: 'Sim',
-    value: 'true',
-  },
-  {
-    label: 'Não',
-    value: 'false',
-  },
-]
-
-export const distanciaSeguraLavourasOptions = [
-  {
-    label: 'Sim',
-    value: 'true',
-  },
-  {
-    label: 'Não',
-    value: 'false',
-  },
-]
-
-export const acessoVeiculosOptions = [
-  {
-    label: 'Sim',
-    value: 'true',
-  },
-  {
-    label: 'Não',
-    value: 'false',
-  },
-]
-
 export const especiesAbelhasOptions = [
   {
     label: 'Melipona fasciculata (tiúba, jandaíra-preta-da-Amazônia)',

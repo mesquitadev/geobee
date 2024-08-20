@@ -22,7 +22,6 @@ const Profile = () => {
       .buscarDadosUsuarioLogado()
       .then((response) => {
         setUserData(response)
-        console.log(response)
         setLoading(false)
       })
       .catch()

@@ -7,6 +7,7 @@ import {
   NewApiary,
   MyMeliponaries,
   NewMeliponary,
+  FindOne,
 } from '../pages'
 import Route from './Route'
 
@@ -17,6 +18,8 @@ function Routes() {
       <Route exact path="/cadastre-se" component={SignUp} />
       <Route isPrivate path="/home" component={Home} />
       <Route isPrivate path="/meus-apiarios/novo" component={NewApiary} />
+      <Route isPrivate path="/meus-apiarios/:id" component={FindOne} />
+
       <Route isPrivate path="/meus-apiarios" component={MyApiaries} />
       <Route
         isPrivate

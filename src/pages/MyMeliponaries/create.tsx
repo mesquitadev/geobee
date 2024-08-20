@@ -15,17 +15,11 @@ import { enqueueSnackbar } from 'notistack'
 import { MapContainer, Marker, TileLayer, useMapEvents } from 'react-leaflet'
 import BackdropLoading from '../../components/BackdropLoading'
 import {
-  disponibilidadeAguaOptions,
-  distanciaMinimaConstrucoesOptions,
-  distanciaSeguraLavourasOptions,
-  distanciaSeguraOptions,
   especiesAbelhasOptions,
-  fontesNectarPolenOptions,
+  simNaoOptions,
   outrosApiariosRaio3kmOptions,
-  protecaoVentosFortesOptions,
   qtdColmeiasOptions,
   qtdColmeiasOutrosApiariosOptions,
-  sombreamentoNaturalOptions,
   tipoInstalacaoApiarioOptions,
 } from '../../utils/options.ts'
 import * as turf from '@turf/turf'
@@ -188,7 +182,6 @@ export default function NewMeliponary() {
           variant: 'success',
         })
       } catch (err) {
-        console.log('err', err)
         // @ts-ignore
         enqueueSnackbar({
           message: `Erro no cadastro! Ocorreu um erro ao cadastrar, ${err.response.data.message}`,
@@ -306,7 +299,6 @@ export default function NewMeliponary() {
     protecaoVentosFortes,
     sombreaentoNatural,
   ])
-
   return (
     <div className="w-full h-full p-10">
       <Breadcumbs pageName="Cadastrar Meliponário" />
@@ -429,7 +421,7 @@ export default function NewMeliponary() {
                   name="fontesNectarPolen"
                 />
                 <Select
-                  options={fontesNectarPolenOptions}
+                  options={simNaoOptions}
                   control={control}
                   name="fontesNectarPolen"
                   className="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
@@ -442,7 +434,7 @@ export default function NewMeliponary() {
                   name="disponibilidadeAgua"
                 />
                 <Select
-                  options={disponibilidadeAguaOptions}
+                  options={simNaoOptions}
                   control={control}
                   name="disponibilidadeAgua"
                   className="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
@@ -455,7 +447,7 @@ export default function NewMeliponary() {
                   name="sombreamentoNatural"
                 />
                 <Select
-                  options={sombreamentoNaturalOptions}
+                  options={simNaoOptions}
                   control={control}
                   name="sombreamentoNatural"
                   className="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
@@ -469,7 +461,7 @@ export default function NewMeliponary() {
                   name="protecaoVentosFortes"
                 />
                 <Select
-                  options={protecaoVentosFortesOptions}
+                  options={simNaoOptions}
                   control={control}
                   name="protecaoVentosFortes"
                   className="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
@@ -483,7 +475,7 @@ export default function NewMeliponary() {
                   name="distanciaSeguraContaminacao"
                 />
                 <Select
-                  options={distanciaSeguraOptions}
+                  options={simNaoOptions}
                   control={control}
                   name="distanciaSeguraContaminacao"
                   className="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
@@ -496,7 +488,7 @@ export default function NewMeliponary() {
                   name="distanciaMinimaConstrucoes"
                 />
                 <Select
-                  options={distanciaMinimaConstrucoesOptions}
+                  options={simNaoOptions}
                   control={control}
                   name="distanciaMinimaConstrucoes"
                   className="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
@@ -510,7 +502,7 @@ export default function NewMeliponary() {
                   name="distanciaSeguraLavouras"
                 />
                 <Select
-                  options={distanciaSeguraLavourasOptions}
+                  options={simNaoOptions}
                   control={control}
                   name="distanciaSeguraLavouras"
                   className="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
