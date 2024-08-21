@@ -2,7 +2,14 @@ import { useEffect, useState } from 'react'
 import api from '../../services'
 import { useLoading } from '../../hooks/useLoading.tsx'
 import BackdropLoading from '../../components/BackdropLoading'
-import { GeoJSON, MapContainer, Marker, Popup, TileLayer } from 'react-leaflet'
+import {
+  CircleMarker,
+  GeoJSON,
+  MapContainer,
+  Marker,
+  Popup,
+  TileLayer,
+} from 'react-leaflet'
 import L from 'leaflet'
 import beebox from '../../assets/bee-hive.png'
 import { getColor } from '../../utils'
@@ -101,16 +108,25 @@ export default function Home() {
           )}
 
           {apiary && (
-            <Marker
-              icon={meliponaryIcon}
-              key={apiary.id}
-              position={[apiary.latitude, apiary.longitude]}
-            >
-              <Popup>
-                Apiário - {apiary.name} - Capacidade de Suporte :{' '}
-                {apiary.capacidadeDeSuporte ? apiary.capacidadeDeSuporte : '0'}
-              </Popup>
-            </Marker>
+            <>
+              <Marker
+                icon={meliponaryIcon}
+                key={apiary.id}
+                position={[apiary.latitude, apiary.longitude]}
+              >
+                <Popup>
+                  Apiário - {apiary.name} - Capacidade de Suporte :{' '}
+                  {apiary.capacidadeDeSuporte
+                    ? apiary.capacidadeDeSuporte
+                    : '0'}
+                </Popup>
+              </Marker>
+              <CircleMarker
+                center={[apiary.latitude, apiary.longitude]}
+                radius={20} // Ajuste o raio conforme necessário
+                color="blue" // Ajuste a cor conforme necessário
+              />
+            </>
           )}
 
           {userLocation && (

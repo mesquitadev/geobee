@@ -2,7 +2,14 @@ import { useEffect, useState } from 'react'
 import api from '../../services'
 import { useLoading } from '../../hooks/useLoading.tsx'
 import BackdropLoading from '../../components/BackdropLoading'
-import { GeoJSON, MapContainer, Marker, Popup, TileLayer } from 'react-leaflet'
+import {
+  CircleMarker,
+  GeoJSON,
+  MapContainer,
+  Marker,
+  Popup,
+  TileLayer,
+} from 'react-leaflet'
 import L from 'leaflet'
 import marker from '../../assets/apiary.png'
 import beebox from '../../assets/bee-hive.png'
@@ -87,7 +94,7 @@ export default function Home() {
       <MapContainer
         center={[-2.5555334824608353, -44.208297729492195]}
         zoom={13}
-        style={{ height: '100%', width: '100%' }}
+        style={{ height: '100%', width: '100%', zIndex: 0 }}
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         {geojson && (
@@ -102,38 +109,59 @@ export default function Home() {
 
         {meliponaryData?.map((data) => {
           return (
-            <Marker
-              icon={meliponaryIcon}
-              key={data.id}
-              position={[Number(data.latitude), Number(data.longitude)]}
-            >
-              <Popup>
-                Meliponário {data.name} - Capacidade de Suporte :{' '}
-                {data.capacidadeDeSuporte ? data.capacidadeDeSuporte : '0'}
-              </Popup>
-            </Marker>
+            <>
+              <Marker
+                icon={meliponaryIcon}
+                key={data.id}
+                position={[Number(data.latitude), Number(data.longitude)]}
+              >
+                <Popup>
+                  Meliponário {data.name} - Capacidade de Suporte :{' '}
+                  {data.capacidadeDeSuporte ? data.capacidadeDeSuporte : '0'}
+                </Popup>
+              </Marker>
+              <CircleMarker
+                center={[Number(data.latitude), Number(data.longitude)]}
+                radius={20} // Ajuste o raio conforme necessário
+                color="blue" // Ajuste a cor conforme necessário
+              />
+            </>
           )
         })}
 
         {apiaryData?.map((data) => {
           return (
-            <Marker
-              icon={myIcon}
-              key={data.id}
-              position={[Number(data.latitude), Number(data.longitude)]}
-            >
-              <Popup>
-                Apiário {data.name} - Capacidade de Suporte :{' '}
-                {data.capacidadeDeSuporte ? data.capacidadeDeSuporte : '0'}
-              </Popup>
-            </Marker>
+            <>
+              <Marker
+                icon={myIcon}
+                key={data.id}
+                position={[Number(data.latitude), Number(data.longitude)]}
+              >
+                <Popup>
+                  Apiário {data.name} - Capacidade de Suporte :{' '}
+                  {data.capacidadeDeSuporte ? data.capacidadeDeSuporte : '0'}
+                </Popup>
+              </Marker>
+              <CircleMarker
+                center={[Number(data.latitude), Number(data.longitude)]}
+                radius={20} // Ajuste o raio conforme necessário
+                color="blue" // Ajuste a cor conforme necessário
+              />
+            </>
           )
         })}
 
         {userLocation && (
-          <Marker position={userLocation}>
-            <Popup>Você está aqui</Popup>
-          </Marker>
+          <>
+            <Marker position={userLocation}>
+              <Popup>Você está aqui</Popup>
+            </Marker>
+            <CircleMarker
+              center={userLocation}
+              radius={20} // Ajuste o raio conforme necessário
+              color="blue" // Ajuste a cor conforme necessário
+            />
+          </>
         )}
         <Legend />
       </MapContainer>
