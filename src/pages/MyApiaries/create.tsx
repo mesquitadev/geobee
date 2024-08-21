@@ -246,7 +246,7 @@ export default function NewApiary() {
   // @ts-ignore
   const distanciaMinimaConstrucoes = watch('distanciaMinimaConstrucoes')
   // @ts-ignore
-  const distanciaMinimaLavouras = watch('distanciaMinimaLavouras')
+  const distanciaMinimaLavouras = watch('distanciaSeguraLavouras')
 
   useEffect(() => {
     if (fontesNectarPolen === 'false') {
@@ -323,7 +323,31 @@ export default function NewApiary() {
       <Breadcumbs pageName="Cadastrar Apiário" />
       <BackdropLoading isLoading={loading} />
       <div className="grid grid-cols-2">
-        <div>
+        <div className="mb-5">
+          <p className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">
+            Selecione as Coordenadas
+          </p>
+          <button
+            onClick={getUserLocation}
+            className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 my-3"
+          >
+            Usar Minha Localização
+          </button>
+          <MapContainer
+            center={[-2.5555334824608353, -44.208297729492195]}
+            zoom={13}
+            style={{ height: '400px', width: '100%' }}
+          >
+            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+            {userLocation && (
+              <Marker icon={myIcon} position={userLocation}>
+                <Popup>Você está aqui</Popup>
+              </Marker>
+            )}
+            <LocationMarker />
+          </MapContainer>
+        </div>
+        <div className="mb-5">
           <form onSubmit={handleSubmit(handleSignUp)} className="w-full">
             <div className="flex flex-wrap mx-3 mb-6">
               <InputContainer className="w-full  px-3 mb-6 md:mb-0">
@@ -545,31 +569,6 @@ export default function NewApiary() {
               Cadastrar
             </button>
           </form>
-        </div>
-
-        <div>
-          <p className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">
-            Selecione as Coordenadas
-          </p>
-          <button
-            onClick={getUserLocation}
-            className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 my-3"
-          >
-            Usar Minha Localização
-          </button>
-          <MapContainer
-            center={[-2.5555334824608353, -44.208297729492195]}
-            zoom={13}
-            style={{ height: '400px', width: '100%' }}
-          >
-            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-            {userLocation && (
-              <Marker icon={myIcon} position={userLocation}>
-                <Popup>Você está aqui</Popup>
-              </Marker>
-            )}
-            <LocationMarker />
-          </MapContainer>
         </div>
       </div>
     </div>
