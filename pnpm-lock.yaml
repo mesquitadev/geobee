@@ -17,9 +17,6 @@ importers:
       '@hookform/resolvers':
         specifier: ^3.9.0
         version: 3.9.0(react-hook-form@7.52.1(react@18.3.1))
-      '@mapbox/togeojson':
-        specifier: ^0.16.2
-        version: 0.16.2
       '@radix-ui/react-collapsible':
         specifier: ^1.0.3
         version: 1.1.0(@types/react-dom@18.3.0)(@types/react@18.3.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -38,9 +35,6 @@ importers:
       '@radix-ui/themes':
         specifier: ^3.1.1
         version: 3.1.1(@types/react-dom@18.3.0)(@types/react@18.3.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@tmcw/togeojson':
-        specifier: ^5.8.1
-        version: 5.8.1(@types/geojson@7946.0.14)
       '@turf/turf':
         specifier: ^7.0.0
         version: 7.0.0
@@ -65,6 +59,9 @@ importers:
       notistack:
         specifier: ^3.0.1
         version: 3.0.1(csstype@3.1.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      proj4:
+        specifier: ^2.12.0
+        version: 2.12.0
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -92,6 +89,9 @@ importers:
       react-world-flags:
         specifier: 1.5.1
         version: 1.5.1(react@18.3.1)
+      simplify-geojson:
+        specifier: ^1.0.5
+        version: 1.0.5
       styled-components:
         specifier: ^6.1.11
         version: 6.1.12(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -129,6 +129,9 @@ importers:
       '@types/leaflet':
         specifier: ^1.9.12
         version: 1.9.12
+      '@types/proj4':
+        specifier: ^2.5.5
+        version: 2.5.5
       '@types/react':
         specifier: ^18.2.66
         version: 18.3.3
@@ -165,9 +168,6 @@ importers:
       tailwindcss:
         specifier: ^3.4.4
         version: 3.4.7
-      togeojson:
-        specifier: link:@types/@mapbox/togeojson
-        version: link:@types/@mapbox/togeojson
       typescript:
         specifier: ^5.2.2
         version: 5.5.4
@@ -1187,10 +1187,6 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.25':
     resolution: {integrity: sha512-vNk6aEwybGtawWmy/PzwnGDOjCkLWSD2wqvjGGAgOAwCGWySYXfYoxt00IJkTF+8Lb57DwOb3Aa0o9CApepiYQ==}
-
-  '@mapbox/togeojson@0.16.2':
-    resolution: {integrity: sha512-DcApudmw4g/grOrpM5gYPZfts6Kr8litBESN6n/27sDsjR2f+iJhx4BA0J2B+XrLlnHyJkKztYApe6oCUZpzFA==}
-    hasBin: true
 
   '@nodelib/fs.scandir@2.1.5':
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
@@ -2444,11 +2440,6 @@ packages:
   '@tanstack/virtual-core@3.8.4':
     resolution: {integrity: sha512-iO5Ujgw3O1yIxWDe9FgUPNkGjyT657b1WNX52u+Wv1DyBFEpdCdGkuVaky0M3hHFqNWjAmHWTn4wgj9rTr7ZQg==}
 
-  '@tmcw/togeojson@5.8.1':
-    resolution: {integrity: sha512-2YNrbis3l5kS0XrYwiHEZcGwiRp0MJ5CvwGwtMWp2z2tsVlskeec2qgvKHnF0RCwI5GnjrrBOoKsWfndEnd3LA==}
-    peerDependencies:
-      '@types/geojson': '*'
-
   '@trysound/sax@0.2.0':
     resolution: {integrity: sha512-L7z9BgrNEcYyUYtF+HaEfiS5ebkh9jXqbszz7pC0hRBPaatV0XjSD3+eHrpqFemQfgwiFF0QPIarnIihIDn7OA==}
     engines: {node: '>=10.13.0'}
@@ -2849,6 +2840,9 @@ packages:
   '@types/node@22.0.2':
     resolution: {integrity: sha512-yPL6DyFwY5PiMVEwymNeqUTKsDczQBJ/5T7W/46RwLU/VH+AA8aT5TZkvBviLKLbbm0hlfftEkGrNzfRk/fofQ==}
 
+  '@types/proj4@2.5.5':
+    resolution: {integrity: sha512-y4tHUVVoMEOm2nxRLQ2/ET8upj/pBmoutGxFw2LZJTQWPgWXI+cbxVEUFFmIzr/bpFR83hGDOTSXX6HBeObvZA==}
+
   '@types/prop-types@15.7.12':
     resolution: {integrity: sha512-5zvhXYtRNRluoE/jAp4GVsSduVUzNWKkOZrCDBWYtE7biZywwdC2AcEzg+cSMLFRfVgeAFqpfNabiPjxFddV1Q==}
 
@@ -2963,10 +2957,6 @@ packages:
     engines: {node: ^14.18.0 || >=16.0.0}
     peerDependencies:
       vite: ^4.2.0 || ^5.0.0
-
-  '@xmldom/xmldom@0.8.10':
-    resolution: {integrity: sha512-2WALfTl4xo2SkGCYRt6rDTFfk9R1czmBvUQy12gK2KuRKIpWEhcbbzy8EZXtz/jkRqHX8bFEc6FC1HjX4TUWYw==}
-    engines: {node: '>=10.0.0'}
 
   abort-controller@3.0.0:
     resolution: {integrity: sha512-h8lQ8tacZYnR3vNQTgibj+tODHI5/+l06Au2Pcriv/Gmet0eaj4TwWH41sO9wnHDiQsEj19q0drzdWdeAHtweg==}
@@ -3375,10 +3365,6 @@ packages:
   concat-stream@1.6.2:
     resolution: {integrity: sha512-27HBghJxjiZtIk3Ycvn/4kbJk/1uZuJFfuPEns6LaEvpvG1f0hTea8lilrouyo9mVc2GWdcEZ8OLoGmSADlrCw==}
     engines: {'0': node >= 0.8}
-
-  concat-stream@2.0.0:
-    resolution: {integrity: sha512-MWufYdFw53ccGjCA+Ol7XJYpAlW6/prSMzuPOTRnJGcGzuhLn4Scrz7qf6o8bROZ514ltazcIFJZevcfbo0x7A==}
-    engines: {'0': node >= 6.0}
 
   concaveman@1.2.1:
     resolution: {integrity: sha512-PwZYKaM/ckQSa8peP5JpVr7IMJ4Nn/MHIaWUjP4be+KoZ7Botgs8seAZGpmaOM+UZXawcdYRao/px9ycrCihHw==}
@@ -4665,6 +4651,9 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
+  mgrs@1.0.0:
+    resolution: {integrity: sha512-awNbTOqCxK1DBGjalK3xqWIstBZgN6fxsMSiXLs9/spqWkF2pAhb2rrYCFSsr1/tT7PhcDGjZndG8SWYn0byYA==}
+
   micromatch@4.0.7:
     resolution: {integrity: sha512-LPP/3KorzCwBxfeUuZmaR6bG2kdeHSbe0P2tY3FLRU4vYrjYz5hI4QZwV0njUx3jeuKe67YukQ1LSPZBKDqO/Q==}
     engines: {node: '>=8.6'}
@@ -4714,6 +4703,9 @@ packages:
 
   minimist@1.1.3:
     resolution: {integrity: sha512-2RbeLaM/Hbo9vJ1+iRrxzfDnX9108qb2m923U+s+Ot2eMey0IYGdSjzHmvtg2XsxoCuMnzOMw7qc573RvnLgwg==}
+
+  minimist@1.2.6:
+    resolution: {integrity: sha512-Jsjnk4bw3YJqYzbdyBiNsPWHPfO++UGG749Cxs6peCu5Xg4nrena6OVxOYxrQTqww0Jmwt+Ref8rggumkTLz9Q==}
 
   minimist@1.2.8:
     resolution: {integrity: sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==}
@@ -5143,6 +5135,9 @@ packages:
 
   process-nextick-args@2.0.1:
     resolution: {integrity: sha512-3ouUOpQhtgrbOa17J7+uxOTpITYWaGP7/AhoR3+A+/1e9skrzelGi/dXzEYyvbxubEF6Wn2ypscTKiKJFFn1ag==}
+
+  proj4@2.12.0:
+    resolution: {integrity: sha512-cQJxcVX7+fmAhOxoazKgk76GkGYQ5HcLod4rdy2MizhPvLdrZQJThxsHoz/TjjdxUvTm/rbozMgE0q9mdXKWIw==}
 
   promise@8.3.0:
     resolution: {integrity: sha512-rZPNPKTOYVNEEKFaq1HqTgOwZD+4/YHS5ukLzQCypkj+OkYx7iv0mA91lJlpPPZ8vMau3IIGj5Qlwrx+8iiSmg==}
@@ -5600,6 +5595,13 @@ packages:
   signal-exit@4.1.0:
     resolution: {integrity: sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw==}
     engines: {node: '>=14'}
+
+  simplify-geojson@1.0.5:
+    resolution: {integrity: sha512-02l1W4UipP5ivNVq6kX15mAzCRIV1oI3tz0FUEyOsNiv1ltuFDjbNhO+nbv/xhbDEtKqWLYuzpWhUsJrjR/ypA==}
+    hasBin: true
+
+  simplify-geometry@0.0.2:
+    resolution: {integrity: sha512-ZEyrplkqgCqDlL7V8GbbYgTLlcnNF+MWWUdy8s8ZeJru50bnI71rDew/I+HG36QS2mPOYAq1ZjwNXxHJ8XOVBw==}
 
   sisteransi@1.0.5:
     resolution: {integrity: sha512-bLGGlR1QxBcynn2d5YmDX4MGjlZvy2MRBDRNHLJ8VI6l6+9FUiyTFNJ0IveOSP0bcXgVDPRcfGqA0pjaqUpfVg==}
@@ -6131,6 +6133,9 @@ packages:
     resolution: {integrity: sha512-BLI3Tl1TW3Pvl70l3yq3Y64i+awpwXqsGBYWkkqMtnbXgrMD+yj7rhW0kuEDxzJaYXGjEW5ogapKNMEKNMjibA==}
     engines: {node: '>= 8'}
     hasBin: true
+
+  wkt-parser@1.3.3:
+    resolution: {integrity: sha512-ZnV3yH8/k58ZPACOXeiHaMuXIiaTk1t0hSUVisbO0t4RjA5wPpUytcxeyiN2h+LZRrmuHIh/1UlrR9e7DHDvTw==}
 
   word-wrap@1.2.5:
     resolution: {integrity: sha512-BN22B5eaMMI9UMtjrGd5g5eCYPpCPDUy0FJXbYsaT5zYxjFOckS53SQDE3pWkVoWpHXVb3BrYcEN4Twa55B5cA==}
@@ -7438,12 +7443,6 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.0
-
-  '@mapbox/togeojson@0.16.2':
-    dependencies:
-      '@xmldom/xmldom': 0.8.10
-      concat-stream: 2.0.0
-      minimist: 1.2.8
 
   '@nodelib/fs.scandir@2.1.5':
     dependencies:
@@ -8963,10 +8962,6 @@ snapshots:
 
   '@tanstack/virtual-core@3.8.4': {}
 
-  '@tmcw/togeojson@5.8.1(@types/geojson@7946.0.14)':
-    dependencies:
-      '@types/geojson': 7946.0.14
-
   '@trysound/sax@0.2.0': {}
 
   '@turf/along@7.0.0':
@@ -10005,6 +10000,8 @@ snapshots:
     dependencies:
       undici-types: 6.11.1
 
+  '@types/proj4@2.5.5': {}
+
   '@types/prop-types@15.7.12': {}
 
   '@types/react-dom@18.3.0':
@@ -10153,8 +10150,6 @@ snapshots:
       vite: 5.3.5(@types/node@22.0.2)(terser@5.31.3)
     transitivePeerDependencies:
       - supports-color
-
-  '@xmldom/xmldom@0.8.10': {}
 
   abort-controller@3.0.0:
     dependencies:
@@ -10605,13 +10600,6 @@ snapshots:
       buffer-from: 1.1.2
       inherits: 2.0.4
       readable-stream: 2.3.8
-      typedarray: 0.0.6
-
-  concat-stream@2.0.0:
-    dependencies:
-      buffer-from: 1.1.2
-      inherits: 2.0.4
-      readable-stream: 3.6.2
       typedarray: 0.0.6
 
   concaveman@1.2.1:
@@ -12170,6 +12158,8 @@ snapshots:
       - supports-color
       - utf-8-validate
 
+  mgrs@1.0.0: {}
+
   micromatch@4.0.7:
     dependencies:
       braces: 3.0.3
@@ -12204,6 +12194,8 @@ snapshots:
   minimist@0.0.8: {}
 
   minimist@1.1.3: {}
+
+  minimist@1.2.6: {}
 
   minimist@1.2.8: {}
 
@@ -12542,6 +12534,11 @@ snapshots:
   process-nextick-args@1.0.7: {}
 
   process-nextick-args@2.0.1: {}
+
+  proj4@2.12.0:
+    dependencies:
+      mgrs: 1.0.0
+      wkt-parser: 1.3.3
 
   promise@8.3.0:
     dependencies:
@@ -13128,6 +13125,14 @@ snapshots:
 
   signal-exit@4.1.0: {}
 
+  simplify-geojson@1.0.5:
+    dependencies:
+      concat-stream: 1.4.11
+      minimist: 1.2.6
+      simplify-geometry: 0.0.2
+
+  simplify-geometry@0.0.2: {}
+
   sisteransi@1.0.5: {}
 
   skmeans@0.9.7: {}
@@ -13687,6 +13692,8 @@ snapshots:
   which@2.0.2:
     dependencies:
       isexe: 2.0.0
+
+  wkt-parser@1.3.3: {}
 
   word-wrap@1.2.5: {}
 

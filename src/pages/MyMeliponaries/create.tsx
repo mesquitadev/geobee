@@ -242,7 +242,7 @@ export default function NewMeliponary() {
     if (fontesNectarPolen === 'false') {
       setDisabled(true)
       enqueueSnackbar(
-        'OOPS! Aqui não é um local adequado para colocar o apiário!',
+        'OOPS! Aqui não é um local adequado para colocar o meliponário!',
         {
           variant: 'warning',
         },
@@ -265,19 +265,19 @@ export default function NewMeliponary() {
     }
     if (protecaoVentosFortes === 'false') {
       enqueueSnackbar(
-        'OOPS! Aqui não é um local adequado para colocar o apiário!',
+        'OOPS! Aqui não é um local adequado para colocar o meliponário!',
         { variant: 'warning' },
       )
     }
     if (distanciaSeguraContaminacao === 'false') {
       enqueueSnackbar(
-        'OOPS! Aqui não é um local adequado para colocar o apiário!',
+        'OOPS! Aqui não é um local adequado para colocar o meliponário!',
         { variant: 'warning' },
       )
     }
     if (distanciaMinimaConstrucoes === 'false') {
       enqueueSnackbar(
-        'OOPS! Aqui não é um local adequado para colocar o apiário!',
+        'OOPS! Aqui não é um local adequado para colocar o meliponário!',
         { variant: 'warning' },
       )
       setDisabled(true)
@@ -287,7 +287,7 @@ export default function NewMeliponary() {
 
     if (distanciaSeguraLavouras === 'false') {
       enqueueSnackbar(
-        'OOPS! Aqui não é um local adequado para colocar o apiário!',
+        'OOPS! Aqui não é um local adequado para colocar o meliponário!',
         { variant: 'warning' },
       )
       setDisabled(true)
@@ -471,7 +471,7 @@ export default function NewMeliponary() {
 
               <SelectContainer className="w-full px-3 py-2">
                 <InputLabel
-                  label="Há fontes de néctar e pólen (flores) até 2km do local que pretende instalar o apiário?"
+                  label="Há fontes de néctar e pólen (flores) até 2km do local que pretende instalar o meliponário?"
                   name="fontesNectarPolen"
                 />
                 <Select
@@ -538,7 +538,7 @@ export default function NewMeliponary() {
               </SelectContainer>
               <SelectContainer className="w-full px-3 py-2">
                 <InputLabel
-                  label="O local onde pretende instalar seu meliponário atende a uma distancia mínima (400m) de currais, casas, escolas, estradas movimentadas, aviários e outras construções?"
+                  label="O local onde pretende instalar seu meliponário atende a uma distância mínima (400m) de estradas movimentadas, currais, aviários, pocilgas e outras construções?"
                   name="distanciaMinimaConstrucoes"
                 />
                 <Select

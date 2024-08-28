@@ -9,6 +9,7 @@ import {
   Marker,
   Popup,
   TileLayer,
+  useMapEvents,
 } from 'react-leaflet'
 import L from 'leaflet'
 import marker from '../../assets/apiary.png'
@@ -29,14 +30,20 @@ const meliponaryIcon = new L.Icon({
   popupAnchor: [-0, -0],
   iconSize: [32, 32],
 })
+const simplifyGeoJSON = async (url) => {
+  const response = await fetch(url)
+  const data = await response.json()
+  return simplify(data, 0.01) // Adjust the tolerance as needed
+}
 export default function Home() {
   const { loading, setLoading } = useLoading()
   const [meliponaryData, setMeliponaryData] = useState(null)
   const [apiaryData, setApiaryData] = useState(null)
-  const [geojson, setGeojson] = useState(null)
   const [userLocation, setUserLocation] = useState<[number, number] | null>(
     null,
   )
+  const [geojsons, setGeojsons] = useState([])
+  const [geojsonData, setGeojsonData] = useState([])
 
   useEffect(() => {
     const getMyData = async () => {
@@ -56,18 +63,23 @@ export default function Home() {
     const getMaps = async () => {
       setLoading(true)
       try {
-        const response = await fetch(
+        const urls = [
           'https://raw.githubusercontent.com/mesquitadev/geobee-fe/main/src/components/Mapa/geobee.geojson',
+          // 'https://gist.githubusercontent.com/mesquitadev/b3454497da1301c26d8f165c31151e64/raw/10d1b940cdc22fe36e87579feb2605703ae8cc31/VEGETACAO_GEOBEE%2520(1).json',
+        ]
+        const geojsonData = await Promise.all(
+          urls.map(async (url) => {
+            const response = await fetch(url)
+            return response.json()
+          }),
         )
-        const data = await response.json()
-        setGeojson(data)
+        setGeojsons(geojsonData)
       } catch (err) {
         console.error(err)
       } finally {
         setLoading(false)
       }
     }
-
     const getUserLocation = () => {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
@@ -97,16 +109,16 @@ export default function Home() {
         style={{ height: '100%', width: '100%', zIndex: 0 }}
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-        {geojson && (
+        {geojsons.map((geojson, index) => (
           <GeoJSON
+            key={index}
             data={geojson}
             style={(feature) => {
               const type = feature.properties.VEGETACAO
               return { color: getColor(type) }
             }}
           />
-        )}
-
+        ))}
         {meliponaryData?.map((data) => {
           return (
             <>

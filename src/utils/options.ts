@@ -11,12 +11,12 @@ export const options = [
 
 export const tipoInstalacaoApiarioOptions = [
   {
-    label: 'Coletivo',
-    value: 'Coletivo',
+    label: 'Coletivo (Colméias no mesmo espaço)',
+    value: 'Coletivo (Colméias no mesmo espaço)',
   },
   {
-    label: 'Individual',
-    value: 'Individual',
+    label: 'Individual (Colméias em espaços diferentes)',
+    value: 'Individual (Colméias em espaços diferentes)',
   },
 ]
 

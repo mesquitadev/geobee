@@ -68,33 +68,76 @@ function calcularCapacidadeSuporteMeliponicultura(hectares: number) {
   return Math.round(colmeiasPorHectare)
 }
 
-async function processGeoJSON(geojsonUrl, latitude, longitude, tipo) {
+// async function processGeoJSON(geojsonUrl, latitude, longitude, tipo) {
+//   try {
+//     const response = await fetch(geojsonUrl)
+//     const geojsonData = await response.json()
+//
+//     const centro = turf.point([Number(longitude), Number(latitude)])
+//     const { raioVooDEC } = calcularRaioVoo({
+//       tipoCadastro: tipo,
+//     })
+//     const buffer = turf.buffer(centro, raioVooDEC, { units: 'kilometers' })
+//
+//     const layers = geojsonData.features
+//
+//     // Verifica camadas do buffer
+//     const featuresDentroBuffer = layers.filter((layer) => {
+//       return turf.booleanIntersects(layer, buffer)
+//     })
+//
+//     const areas: any = {}
+//     featuresDentroBuffer.forEach((layer) => {
+//       const nomeCamada = layer.properties.VEGETACAO
+//       const area = parseFloat(layer.properties['AREA (Ha)'])
+//       if (!areas[nomeCamada]) {
+//         areas[nomeCamada] = 0
+//       }
+//       areas[nomeCamada] += area
+//     })
+//
+//     const areaTotal =
+//       (areas.URBANO || 0) + (areas.ARBUSTIVO || 0) + (areas.HERBACEO || 0)
+//     const suporteApicultura = calcularCapacidadeSuporteApicultura(areaTotal)
+//     const pasto = calcularCapacidadeSuporteMeliponicultura(
+//       Number(areas.ARBOREO),
+//     )
+//
+//     if (tipo === 'APICULTOR') {
+//       return suporteApicultura
+//     } else if (tipo === 'MELIPONICULTOR') {
+//       return pasto
+//     }
+//   } catch (error) {
+//     console.error('Erro ao processar GeoJSON:', error)
+//   }
+// }
+async function processGeoJSON(geojsonUrls, latitude, longitude, tipo) {
   try {
-    const response = await fetch(geojsonUrl)
-    const geojsonData = await response.json()
-
     const centro = turf.point([Number(longitude), Number(latitude)])
-    const { raioVooDEC } = calcularRaioVoo({
-      tipoCadastro: tipo,
-    })
+    const { raioVooDEC } = calcularRaioVoo({ tipoCadastro: tipo })
     const buffer = turf.buffer(centro, raioVooDEC, { units: 'kilometers' })
 
-    const layers = geojsonData.features
+    const areas = {}
 
-    // Verifica camadas do buffer
-    const featuresDentroBuffer = layers.filter((layer) => {
-      return turf.booleanIntersects(layer, buffer)
-    })
+    for (const url of geojsonUrls) {
+      const response = await fetch(url)
+      const geojsonData = await response.json()
+      const layers = geojsonData.features
 
-    const areas: any = {}
-    featuresDentroBuffer.forEach((layer) => {
-      const nomeCamada = layer.properties.VEGETACAO
-      const area = parseFloat(layer.properties['AREA (Ha)'])
-      if (!areas[nomeCamada]) {
-        areas[nomeCamada] = 0
-      }
-      areas[nomeCamada] += area
-    })
+      const featuresDentroBuffer = layers.filter((layer) => {
+        return turf.booleanIntersects(layer, buffer)
+      })
+
+      featuresDentroBuffer.forEach((layer) => {
+        const nomeCamada = layer.properties.VEGETACAO
+        const area = parseFloat(layer.properties['AREA (Ha)'])
+        if (!areas[nomeCamada]) {
+          areas[nomeCamada] = 0
+        }
+        areas[nomeCamada] += area
+      })
+    }
 
     const areaTotal =
       (areas.URBANO || 0) + (areas.ARBUSTIVO || 0) + (areas.HERBACEO || 0)
@@ -155,13 +198,17 @@ export default function NewApiary() {
   })
   const { errors } = formState
 
+  const geojsonUrls = [
+    'https://raw.githubusercontent.com/mesquitadev/geobee-fe/main/src/components/Mapa/geobee.geojson',
+    'https://gist.githubusercontent.com/mesquitadev/b3454497da1301c26d8f165c31151e64/raw/10d1b940cdc22fe36e87579feb2605703ae8cc31/VEGETACAO_GEOBEE%2520(1).json',
+  ]
   const handleSignUp: SubmitHandler<Inputs> = useCallback(
     async (data: Inputs) => {
       setLoading(true)
       try {
         const [kmls] = await Promise.all([
           processGeoJSON(
-            'https://raw.githubusercontent.com/mesquitadev/geobee-fe/main/src/components/Mapa/geobee.geojson',
+            geojsonUrls,
             Number(latitude),
             Number(longitude),
             'APICULTOR',
@@ -247,6 +294,8 @@ export default function NewApiary() {
   const distanciaMinimaConstrucoes = watch('distanciaMinimaConstrucoes')
   // @ts-ignore
   const distanciaMinimaLavouras = watch('distanciaSeguraLavouras')
+  // @ts-ignore
+  const acessoVeiculos = watch('acessoVeiculos')
 
   useEffect(() => {
     if (fontesNectarPolen === 'false') {
@@ -299,6 +348,15 @@ export default function NewApiary() {
     } else {
       setDisabled(false)
     }
+
+    if (acessoVeiculos === 'false') {
+      enqueueSnackbar(
+        'É necessário que haja acesso para entrada e saída do apiário',
+        {
+          variant: 'warning',
+        },
+      )
+    }
   }, [
     outrosApiariosRaio3km,
     disponibilidadeAgua,
@@ -309,6 +367,7 @@ export default function NewApiary() {
     fontesNectarPolen,
     protecaoVentosFortes,
     sombreaentoNatural,
+    acessoVeiculos,
   ])
 
   const myIcon = new L.Icon({
