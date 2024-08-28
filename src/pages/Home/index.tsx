@@ -59,7 +59,7 @@ export default function Home() {
       try {
         const urls = [
           'https://raw.githubusercontent.com/mesquitadev/geobee-fe/main/src/components/Mapa/geobee.geojson',
-          // 'https://gist.githubusercontent.com/mesquitadev/b3454497da1301c26d8f165c31151e64/raw/10d1b940cdc22fe36e87579feb2605703ae8cc31/VEGETACAO_GEOBEE%2520(1).json',
+          'https://raw.githubusercontent.com/mesquitadev/maps-geobee/main/LIMITE_MUNICIPAL_MARANHAO.geojson',
         ]
         const geojsonData = await Promise.all(
           urls.map(async (url) => {
