@@ -9,7 +9,6 @@ import {
   Marker,
   Popup,
   TileLayer,
-  useMapEvents,
 } from 'react-leaflet'
 import L from 'leaflet'
 import marker from '../../assets/apiary.png'
@@ -43,7 +42,6 @@ export default function Home() {
     null,
   )
   const [geojsons, setGeojsons] = useState([])
-  const [geojsonData, setGeojsonData] = useState([])
 
   useEffect(() => {
     const getMyData = async () => {
