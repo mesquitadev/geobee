@@ -29,11 +29,7 @@ const meliponaryIcon = new L.Icon({
   popupAnchor: [-0, -0],
   iconSize: [32, 32],
 })
-const simplifyGeoJSON = async (url) => {
-  const response = await fetch(url)
-  const data = await response.json()
-  return simplify(data, 0.01) // Adjust the tolerance as needed
-}
+
 export default function Home() {
   const { loading, setLoading } = useLoading()
   const [meliponaryData, setMeliponaryData] = useState(null)
