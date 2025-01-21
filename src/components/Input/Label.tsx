@@ -5,16 +5,21 @@ interface InputContainerProps {
   label: string
 }
 
-const InputContainer = ({ name, label, ...rest }: InputContainerProps) => {
-  return (
-    <label
-      className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
-      htmlFor={name}
-      {...rest}
-    >
-      {label}
-    </label>
-  )
-}
+const InputContainer = forwardRef<HTMLLabelElement, InputContainerProps>(
+  ({ name, label, ...rest }, ref) => {
+    return (
+      <label
+        className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
+        htmlFor={name}
+        ref={ref}
+        {...rest}
+      >
+        {label}
+      </label>
+    )
+  },
+)
 
-export default forwardRef(InputContainer)
+InputContainer.displayName = 'InputContainer'
+
+export default InputContainer

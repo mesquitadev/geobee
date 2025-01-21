@@ -54,14 +54,6 @@ type Inputs = {
   capacidadeDeSuporte?: number
 }
 
-// function calcularCapacidadeSuporteMeliponicultura(hectares: number) {
-//   const arvoresPorHectare = 570
-//   const quantidadeArvores = hectares * arvoresPorHectare
-//   const arvoresPasto = quantidadeArvores * 0.45 // 45% das árvores fazem parte do pasto das abelhas
-//   const colmeiasPorHectare = arvoresPasto / 100 // Cada colmeia precisa de 100 árvores
-//   return Math.round(colmeiasPorHectare)
-// }
-
 function calcularCapacidadeSuporteMeliponicultura(hectares: number) {
   const colmeiasPorHectare = 1.5
   const capacidadeSuporte = hectares * colmeiasPorHectare
@@ -169,25 +161,13 @@ export default function NewMeliponary() {
     async (data: Inputs) => {
       setLoading(true)
       try {
-        const [kmls] = await Promise.all([
-          processGeoJSON(
-            'https://raw.githubusercontent.com/mesquitadev/geobee-fe/main/src/components/Mapa/geobee.geojson',
-            Number(latitude),
-            Number(longitude),
-            'MELIPONICULTOR',
-            data.especieAbelha,
-          ),
-        ])
         const updatedData = {
           ...data,
-          latitude,
-          longitude,
-          capacidadeDeSuporte: data.qtdColmeiasOutrosMeliponarios
-            ? kmls - Number(data.qtdColmeiasOutrosMeliponarios)
-            : kmls,
+          latitude: String(latitude),
+          longitude: String(longitude),
         }
 
-        await Promise.all([api.post('meliponary', updatedData)])
+        await Promise.all([api.post('meliponaries', updatedData)])
         // @ts-ignore
         enqueueSnackbar({
           message: 'Cadastro realizado com sucesso!',

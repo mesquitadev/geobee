@@ -23,6 +23,7 @@
     "@turf/turf": "^7.0.0",
     "axios": "^1.7.2",
     "framer-motion": "10.12.16",
+    "geojson-vt": "^4.0.2",
     "js-cookie": "^3.0.5",
     "leaflet": "^1.9.4",
     "leaflet-omnivore": "^0.3.4",

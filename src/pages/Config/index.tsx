@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from 'react'
-import api from '../../services'
 import { useLoading } from '../../hooks/useLoading.tsx'
 import Breadcumbs from '../../components/Breadcumbs'
 import 'leaflet/dist/leaflet.css'
@@ -12,17 +11,18 @@ import {
   DialogTitle,
 } from '@headlessui/react'
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
+import axios from 'axios'
+import api from '../../services/index.tsx'
 
 export default function MyApiaries() {
-  const history = useHistory()
   const { loading, setLoading } = useLoading()
   const [apiaries, setApiaries] = useState(null)
 
   const fetchApiaries = useCallback(async () => {
     try {
       setLoading(true)
-      const { data } = await api.get('/apiaries')
-      setApiaries(data)
+      const response = await api.get('maps')
+      setApiaries(response.data)
     } catch (err) {
       console.error(err)
     } finally {
@@ -34,23 +34,18 @@ export default function MyApiaries() {
     fetchApiaries()
   }, [fetchApiaries])
 
-  const handleViewApiary = useCallback(
-    (id: number) => {
-      history.push(`meus-apiarios/${id}`)
-    },
-    [history],
-  )
-
   const [open, setOpen] = useState(false)
-  const [selectedId, setSelectedId] = useState<number>()
+  const [selectedId, setSelectedId] = useState<string>()
 
-  const handleOpenCloseModal = useCallback((id: number) => {
+  const handleOpenCloseModal = useCallback((id: string) => {
     setOpen((state) => !state)
     setSelectedId(id)
   }, [])
   const handleDeleteApiary = useCallback(() => {
-    api
-      .delete(`/apiaries/${selectedId}`)
+    axios
+      .delete(
+        `https://api.geomaps.clubsunset.tech/delete-geojson/${selectedId}`,
+      )
       .then(() => {
         setOpen(false)
         fetchApiaries()
@@ -61,44 +56,29 @@ export default function MyApiaries() {
   return (
     <div className="w-full h-full p-10">
       <BackdropLoading isLoading={loading} />
-      <Breadcumbs pageName="Meus Apiários" />
+      <Breadcumbs pageName="Meus Mapas" />
 
       <div className="py-5 justify-end items-end">
         <Link
-          to="/meus-apiarios/novo"
+          to="/meus-mapas/novo"
           data-modal-target="authentication-modal"
           data-modal-toggle="authentication-modal"
           className="flex rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >
-          Adicionar Apiário
+          Adicionar Mapa
         </Link>
       </div>
 
       <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
         <h4 className="mb-6 text-xl font-semibold text-black dark:text-white">
-          Meus Apiários
+          Meus Mapas
         </h4>
 
         <div className="flex flex-col">
           <div className="grid grid-cols-3 rounded-sm bg-gray-2 dark:bg-meta-4 sm:grid-cols-5">
             <div className="p-2.5 xl:p-5">
               <h5 className="text-sm font-medium uppercase xsm:text-base">
-                Nome
-              </h5>
-            </div>
-            <div className="p-2.5 text-center xl:p-5">
-              <h5 className="text-sm font-medium uppercase xsm:text-base">
-                Tipo Instalação
-              </h5>
-            </div>
-            <div className="p-2.5 text-center xl:p-5">
-              <h5 className="text-sm font-medium uppercase xsm:text-base">
-                Tipo
-              </h5>
-            </div>
-            <div className="hidden p-2.5 text-center sm:block xl:p-5">
-              <h5 className="text-sm font-medium uppercase xsm:text-base">
-                Capacidade Suporte
+                Mapa
               </h5>
             </div>
             <div className="hidden p-2.5 text-center sm:block xl:p-5">
@@ -109,6 +89,7 @@ export default function MyApiaries() {
           </div>
 
           {apiaries?.map((brand, key) => {
+            console.log('map', brand)
             return (
               <div
                 className={`grid grid-cols-3 sm:grid-cols-5 ${
@@ -116,33 +97,15 @@ export default function MyApiaries() {
                     ? ''
                     : 'border-b border-stroke dark:border-strokedark'
                 }`}
-                key={key}
+                key={brand.id}
               >
                 <div className="flex items-center gap-3 p-2.5 xl:p-5">
                   <p className="hidden text-black sm:block">{brand.name}</p>
                 </div>
 
-                <div className="flex items-center justify-center p-2.5 xl:p-5">
-                  <p className="text-black">{brand.tipoInstalacao}</p>
-                </div>
-
-                <div className="flex items-center justify-center p-2.5 xl:p-5">
-                  <p className="text-meta-3">APIÁRIO</p>
-                </div>
-
-                <div className="flex items-center justify-center p-2.5 xl:p-5">
-                  <p className="text-meta-3">{brand.capacidadeDeSuporte}</p>
-                </div>
-
                 <div className="hidden items-center justify-center p-2.5 sm:flex xl:p-5">
                   <button
-                    onClick={() => handleViewApiary(brand.id)}
-                    className=" mr-2 flex rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                  >
-                    Visualizar
-                  </button>
-                  <button
-                    onClick={() => handleOpenCloseModal(brand.id)}
+                    onClick={() => handleOpenCloseModal(brand)}
                     className=" mr-2 flex rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                   >
                     Apagar

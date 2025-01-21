@@ -9,6 +9,8 @@ import {
   NewMeliponary,
   FindOne,
   FindMeliponary,
+  Config,
+  AddFile,
 } from '../pages'
 import Route from './Route'
 
@@ -18,6 +20,8 @@ function Routes() {
       <Route exact path="/" component={SignIn} />
       <Route exact path="/cadastre-se" component={SignUp} />
       <Route isPrivate path="/home" component={Home} />
+      <Route isPrivate path="/meus-mapas/novo" component={AddFile} />
+      <Route isPrivate path="/meus-mapas" component={Config} />
       <Route isPrivate path="/meus-apiarios/novo" component={NewApiary} />
       <Route isPrivate path="/meus-apiarios/:id" component={FindOne} />
 

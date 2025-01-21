@@ -9,7 +9,7 @@ const Legend = () => {
 
   return (
     <div
-      className="absolute bottom-8 left-4 p-4 bg-white border border-gray-300 rounded-lg shadow-lg"
+      className="absolute bottom-20 left-4 p-4 bg-white border border-gray-300 rounded-lg shadow-lg"
       style={{ zIndex: 9999 }}
     >
       <h4 className="mb-2 font-bold">Legenda</h4>

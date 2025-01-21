@@ -1,5 +1,5 @@
 import logo from '../../assets/logo-geobee.svg'
-import { useForm, SubmitHandler } from 'react-hook-form'
+import { SubmitHandler, useForm } from 'react-hook-form'
 import { useAuth } from '../../hooks/useAuth.tsx'
 import { useLoading } from '../../hooks/useLoading.tsx'
 import Input from '../../components/Input'
@@ -8,8 +8,9 @@ import InputLabel from '../../components/Input/Label.tsx'
 import * as yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { Link } from 'react-router-dom'
+
 type Inputs = {
-  email: string
+  username: string
   password: string
 }
 
@@ -17,7 +18,7 @@ const SignIn = () => {
   const { signIn } = useAuth()
   const { loading } = useLoading()
   const signInFormSchema = yup.object().shape({
-    email: yup
+    username: yup
       .string()
       .required('Este campo é obrigatório')
       .email('E-mail inválido'),
@@ -47,13 +48,13 @@ const SignIn = () => {
         <form onSubmit={handleSubmit(handleSignIn)} className="w-full max-w-lg">
           <div className="flex flex-wrap -mx-3 mb-6">
             <InputContainer className="w-full px-3">
-              <InputLabel label="Email" name="email" />
+              <InputLabel label="Email" name="username" />
               <Input
                 className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
                 control={control}
-                name="email"
+                name="username"
                 placeholder="Digite seu Email..."
-                errors={errors?.email?.message}
+                errors={errors?.username?.message}
               />
             </InputContainer>
 

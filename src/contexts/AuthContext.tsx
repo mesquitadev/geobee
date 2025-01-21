@@ -3,9 +3,9 @@ import Cookies from 'js-cookie'
 import api from '../services'
 import { useLoading } from '../hooks/useLoading'
 import { useSnackbar } from 'notistack'
-
+import qs from 'qs'
 interface User {
-  email?: string
+  username?: string
   password?: string
 }
 
@@ -45,19 +45,26 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
   })
 
   const signIn = useCallback(
-    async ({ email, password }: User) => {
+    async ({ username, password }: User) => {
       setLoading(true)
       try {
-        const response = await api.post('auth/login', {
-          email,
-          password,
-        })
+        const response = await api.post(
+          'auth/login',
+          qs.stringify({ username, password }),
+          {
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+          },
+        )
 
-        const { token } = response.data
-        Cookies.set('GeoToken', token, {
+        // eslint-disable-next-line camelcase
+        const { access_token } = response.data
+        Cookies.set('GeoToken', access_token, {
           expires: 7,
         })
-        setData({ token })
+        // eslint-disable-next-line camelcase
+        setData({ token: access_token })
       } catch (err) {
         enqueueSnackbar({
           message:

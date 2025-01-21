@@ -12,7 +12,7 @@ class UserService {
   buscarDadosUsuarioLogado() {
     return new Promise<UserPayload>((resolve, reject) => {
       api
-        .get('/user/me')
+        .get('/users/me')
         .then((response) => resolve(response.data))
         .catch((error) => reject(error))
     })

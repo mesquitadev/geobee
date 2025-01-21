@@ -55,107 +55,6 @@ interface Inputs {
   acessoVeiculos: boolean
 }
 
-const calcularCapacidadeSuporteApicultura = (areaTotal: number) => {
-  const capacidadeSuporte = areaTotal / 7.07
-  return Math.round(capacidadeSuporte)
-}
-
-function calcularCapacidadeSuporteMeliponicultura(hectares: number) {
-  const arvoresPorHectare = 570
-  const quantidadeArvores = hectares * arvoresPorHectare
-  const arvoresPasto = quantidadeArvores * 0.45 // 45% das árvores fazem parte do pasto das abelhas
-  const colmeiasPorHectare = arvoresPasto / 100 // Cada colmeia precisa de 100 árvores
-  return Math.round(colmeiasPorHectare)
-}
-
-// async function processGeoJSON(geojsonUrl, latitude, longitude, tipo) {
-//   try {
-//     const response = await fetch(geojsonUrl)
-//     const geojsonData = await response.json()
-//
-//     const centro = turf.point([Number(longitude), Number(latitude)])
-//     const { raioVooDEC } = calcularRaioVoo({
-//       tipoCadastro: tipo,
-//     })
-//     const buffer = turf.buffer(centro, raioVooDEC, { units: 'kilometers' })
-//
-//     const layers = geojsonData.features
-//
-//     // Verifica camadas do buffer
-//     const featuresDentroBuffer = layers.filter((layer) => {
-//       return turf.booleanIntersects(layer, buffer)
-//     })
-//
-//     const areas: any = {}
-//     featuresDentroBuffer.forEach((layer) => {
-//       const nomeCamada = layer.properties.VEGETACAO
-//       const area = parseFloat(layer.properties['AREA (Ha)'])
-//       if (!areas[nomeCamada]) {
-//         areas[nomeCamada] = 0
-//       }
-//       areas[nomeCamada] += area
-//     })
-//
-//     const areaTotal =
-//       (areas.URBANO || 0) + (areas.ARBUSTIVO || 0) + (areas.HERBACEO || 0)
-//     const suporteApicultura = calcularCapacidadeSuporteApicultura(areaTotal)
-//     const pasto = calcularCapacidadeSuporteMeliponicultura(
-//       Number(areas.ARBOREO),
-//     )
-//
-//     if (tipo === 'APICULTOR') {
-//       return suporteApicultura
-//     } else if (tipo === 'MELIPONICULTOR') {
-//       return pasto
-//     }
-//   } catch (error) {
-//     console.error('Erro ao processar GeoJSON:', error)
-//   }
-// }
-async function processGeoJSON(geojsonUrls, latitude, longitude, tipo) {
-  try {
-    const centro = turf.point([Number(longitude), Number(latitude)])
-    const { raioVooDEC } = calcularRaioVoo({ tipoCadastro: tipo })
-    const buffer = turf.buffer(centro, raioVooDEC, { units: 'kilometers' })
-
-    const areas = {}
-
-    for (const url of geojsonUrls) {
-      const response = await fetch(url)
-      const geojsonData = await response.json()
-      const layers = geojsonData.features
-
-      const featuresDentroBuffer = layers.filter((layer) => {
-        return turf.booleanIntersects(layer, buffer)
-      })
-
-      featuresDentroBuffer.forEach((layer) => {
-        const nomeCamada = layer.properties.VEGETACAO
-        const area = parseFloat(layer.properties['AREA (Ha)'])
-        if (!areas[nomeCamada]) {
-          areas[nomeCamada] = 0
-        }
-        areas[nomeCamada] += area
-      })
-    }
-
-    const areaTotal =
-      (areas.URBANO || 0) + (areas.ARBUSTIVO || 0) + (areas.HERBACEO || 0)
-    const suporteApicultura = calcularCapacidadeSuporteApicultura(areaTotal)
-    const pasto = calcularCapacidadeSuporteMeliponicultura(
-      Number(areas.ARBOREO),
-    )
-
-    if (tipo === 'APICULTOR') {
-      return suporteApicultura
-    } else if (tipo === 'MELIPONICULTOR') {
-      return pasto
-    }
-  } catch (error) {
-    console.error('Erro ao processar GeoJSON:', error)
-  }
-}
-
 export default function NewApiary() {
   const { enqueueSnackbar } = useSnackbar()
   const { loading, setLoading } = useLoading()
@@ -198,32 +97,18 @@ export default function NewApiary() {
   })
   const { errors } = formState
 
-  const geojsonUrls = [
-    'https://raw.githubusercontent.com/mesquitadev/geobee-fe/main/src/components/Mapa/geobee.geojson',
-    'https://gist.githubusercontent.com/mesquitadev/b3454497da1301c26d8f165c31151e64/raw/10d1b940cdc22fe36e87579feb2605703ae8cc31/VEGETACAO_GEOBEE%2520(1).json',
-  ]
   const handleSignUp: SubmitHandler<Inputs> = useCallback(
     async (data: Inputs) => {
       setLoading(true)
       try {
-        const [kmls] = await Promise.all([
-          processGeoJSON(
-            geojsonUrls,
-            Number(latitude),
-            Number(longitude),
-            'APICULTOR',
-          ),
-        ])
         const updatedData = {
           ...data,
-          latitude,
-          longitude,
-          capacidadeDeSuporte: data.qtdColmeiasOutrosApiarios
-            ? kmls - Number(data.qtdColmeiasOutrosApiarios)
-            : kmls,
+          latitude: String(latitude),
+          longitude: String(longitude),
         }
 
-        await Promise.all([api.post('apiary', updatedData)])
+        console.log('dt', updatedData)
+        await Promise.all([api.post('apiaries', updatedData)])
         enqueueSnackbar('Cadastro realizado com sucesso!', {
           variant: 'success',
         })

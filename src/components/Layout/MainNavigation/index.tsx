@@ -1,12 +1,13 @@
 import NavItem from './NavItem.tsx'
-import { Home } from 'lucide-react'
+import { Cog, Home } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import api from '../../../services'
 import { useLoading } from '../../../hooks/useLoading.tsx'
 
 const AdminMenu = () => (
   <nav className="flex flex-col gap-0.5">
-    <NavItem to="/home" icon={Home} title="Início" />
+    <NavItem icon={Home} title="Início" to="/home" />
+    <NavItem icon={Cog} title="Configurar Mapas" to="/meus-mapas" />
   </nav>
 )
 
@@ -37,7 +38,8 @@ const Navigation = () => {
     const getMyData = async () => {
       try {
         setLoading(true) // Ativa o estado de carregamento antes da chamada da API
-        const { data } = await api.get('/user/me')
+        const { data } = await api.get('/users/me')
+        console.log('dt', data)
         setUserData(data)
       } catch (err) {
         console.error(err) // Melhor tratamento de erro

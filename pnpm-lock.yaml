@@ -44,6 +44,9 @@ importers:
       framer-motion:
         specifier: 10.12.16
         version: 10.12.16(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      geojson-vt:
+        specifier: ^4.0.2
+        version: 4.0.2
       js-cookie:
         specifier: ^3.0.5
         version: 3.0.5
@@ -4017,6 +4020,9 @@ packages:
 
   geojson-polygon-self-intersections@1.2.1:
     resolution: {integrity: sha512-/QM1b5u2d172qQVO//9CGRa49jEmclKEsYOQmWP9ooEjj63tBM51m2805xsbxkzlEELQ2REgTf700gUhhlegxA==}
+
+  geojson-vt@4.0.2:
+    resolution: {integrity: sha512-AV9ROqlNqoZEIJGfm1ncNjEXfkz2hdFlZf0qkVfmkwdKa8vj7H16YUOT81rJw1rdFhyEDlN2Tds91p/glzbl5A==}
 
   get-caller-file@2.0.5:
     resolution: {integrity: sha512-DyFP3BM/3YHTQOCUL/w0OZHR0lpKeGrxotcHWcqNEdnltqFwXVfhEBQ94eIo34AfQpo0rGki4cyIiftY06h2Fg==}
@@ -11404,6 +11410,8 @@ snapshots:
   geojson-polygon-self-intersections@1.2.1:
     dependencies:
       rbush: 2.0.2
+
+  geojson-vt@4.0.2: {}
 
   get-caller-file@2.0.5: {}
 
