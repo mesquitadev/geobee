@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useLoading } from '../../hooks/useLoading.tsx'
 import Breadcumbs from '../../components/Breadcumbs'
 import 'leaflet/dist/leaflet.css'
-import { Link, useHistory } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import BackdropLoading from '../../components/BackdropLoading/index.tsx'
 import {
   Dialog,

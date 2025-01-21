@@ -15,7 +15,6 @@ import marker from '../../assets/apiary.png'
 import beebox from '../../assets/bee-hive.png'
 import { getColor } from '../../utils'
 import Legend from '../../components/Legend'
-import axios from 'axios'
 
 const myIcon = new L.Icon({
   iconUrl: marker as string,

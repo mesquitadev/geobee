@@ -14,7 +14,7 @@ interface AuthState {
 }
 
 interface SignInCredentials {
-  email: string
+  username: string
   password: string
 }
 
