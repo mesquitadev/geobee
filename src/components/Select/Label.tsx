@@ -8,7 +8,7 @@ interface InputContainerProps {
 const LabelContainer = ({ name, label, ...rest }: InputContainerProps) => {
   return (
     <label
-      className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
+      className="mb-2 block text-xs font-bold uppercase tracking-wide text-gray-700"
       htmlFor={name}
       {...rest}
     >

@@ -1,7 +1,3 @@
-import { LogOut } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import { userService } from '../../services/UserService.ts'
-import { useLoading } from '../../hooks/useLoading.tsx'
 import {
   Dialog,
   DialogBackdrop,
@@ -9,7 +5,11 @@ import {
   DialogTitle,
 } from '@headlessui/react'
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
+import { LogOut } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { useAuth } from '../../hooks/useAuth.tsx'
+import { useLoading } from '../../hooks/useLoading.tsx'
+import { userService } from '../../services/UserService.ts'
 
 const Profile = () => {
   const { setLoading } = useLoading()
@@ -35,10 +35,6 @@ const Profile = () => {
   }
   return (
     <div className="flex items-center gap-3">
-      {/* <img */}
-      {/*  src="https://github.com/mesquitadev.png" */}
-      {/*  alt="" */}
-      {/*  className="w-10 h-10 rounded-full" */}-{/* /> */}
       <div className="flex flex-col truncate">
         <span className="text-sm font-semibold text-zinc-700">
           {userData.fullName}
@@ -47,7 +43,7 @@ const Profile = () => {
       </div>
       <button
         type="button"
-        className="ml-auto p-2 hover:bg-zinc-50 rounded-md"
+        className="ml-auto rounded-md p-2 hover:bg-zinc-50"
         onClick={() => setOpen(true)}
       >
         <LogOut className="h-5 w-5 text-zinc-500" />

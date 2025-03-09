@@ -1,4 +1,4 @@
-import { forwardRef, useRef, useImperativeHandle } from 'react'
+import { forwardRef, useImperativeHandle, useRef } from 'react'
 import { Control, Controller } from 'react-hook-form'
 
 // type Option = {
@@ -39,7 +39,7 @@ const Select = (
   }))
 
   const getError = (message: string) => {
-    return <p className="text-red-500 text-xs italic">{message}</p>
+    return <p className="text-xs italic text-red-500">{message}</p>
   }
 
   return (

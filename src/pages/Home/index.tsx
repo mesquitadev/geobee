@@ -84,7 +84,7 @@ export default function Home() {
     const fetchMaps = async () => {
       setLoading(true)
       try {
-        const response = await api.get('/maps')
+        const response = await api.get('maps/')
         const data = response.data
         setMaps(data)
       } catch (error) {

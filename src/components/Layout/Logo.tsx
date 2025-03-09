@@ -1,6 +1,6 @@
 const Logo = () => {
   return (
-    <strong className="flex mx-1 items-center gap-2 text-xl font-semibold text-zinc-900">
+    <strong className="mx-1 flex items-center gap-2 text-xl font-semibold text-zinc-900">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width="50"
@@ -26,7 +26,7 @@ const Logo = () => {
           />
         </g>
       </svg>
-      <span className="sr-only lg:not-sr-only   text-white">
+      <span className="sr-only text-white   lg:not-sr-only">
         GeoBEE | BeeMAPP
       </span>
     </strong>
