@@ -12,7 +12,7 @@ import { removeMask, validarCPF } from '../../utils'
 import { useCallback } from 'react'
 import api from '../../services'
 import { enqueueSnackbar } from 'notistack'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 type Inputs = {
   fullName: string
@@ -25,7 +25,7 @@ type Inputs = {
 
 const SignIn = () => {
   const { setLoading } = useLoading()
-  const history = useHistory()
+  const navigate = useNavigate()
   const signInFormSchema = yup.object().shape({
     fullName: yup.string().required('Este campo é obrigatório'),
     cpf: yup
@@ -79,7 +79,7 @@ const SignIn = () => {
           variant: 'success',
         })
 
-        history.push('/')
+        navigate('/')
       } catch (err) {
         enqueueSnackbar({
           message:
@@ -91,7 +91,7 @@ const SignIn = () => {
         setLoading(false)
       }
     },
-    [history, setLoading],
+    [navigate, setLoading],
   )
 
   const options = [

@@ -10,7 +10,7 @@ import InputContainer from '../../components/Input/Container.tsx'
 import InputLabel from '../../components/Input/Label.tsx'
 import { useLoading } from '../../hooks/useLoading.tsx'
 
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import api from '../../services'
 
 interface Inputs {
@@ -20,7 +20,7 @@ interface Inputs {
 export default function AddMap() {
   const { enqueueSnackbar } = useSnackbar()
   const { loading, setLoading } = useLoading()
-  const history = useHistory()
+  const navigate = useNavigate();
 
   const apiarioFormSchema = yup.object().shape({
     files: yup.mixed().required('Este campo é obrigatório'),
@@ -50,7 +50,7 @@ export default function AddMap() {
       enqueueSnackbar('Cadastro realizado com sucesso!', {
         variant: 'success',
       })
-      history.goBack()
+      navigate.goBack()
     } catch (err) {
       enqueueSnackbar(
         `Erro no cadastro! Ocorreu um erro ao cadastrar, ${err.response.data.message}`,

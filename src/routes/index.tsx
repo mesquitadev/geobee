@@ -1,45 +1,54 @@
-import { Switch } from 'react-router-dom'
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import {
+  AddFile,
+  Config,
+  FindMeliponary,
+  FindOne,
   Home,
+  MyApiaries,
+  MyMeliponaries,
+  NewApiary,
+  NewMeliponary,
   SignIn,
   SignUp,
-  MyApiaries,
-  NewApiary,
-  MyMeliponaries,
-  NewMeliponary,
-  FindOne,
-  FindMeliponary,
-  Config,
-  AddFile,
-} from '../pages'
-import Route from './Route'
+} from '../pages';
+import NotFound from '../pages/NotFound';
+import { PrivateRoute, PublicRoute } from './Route';
 
-function Routes() {
+function AppRoutes() {
   return (
-    <Switch>
-      <Route exact path="/" component={SignIn} />
-      <Route exact path="/cadastre-se" component={SignUp} />
-      <Route isPrivate path="/home" component={Home} />
-      <Route isPrivate path="/meus-mapas/novo" component={AddFile} />
-      <Route isPrivate path="/meus-mapas" component={Config} />
-      <Route isPrivate path="/meus-apiarios/novo" component={NewApiary} />
-      <Route isPrivate path="/meus-apiarios/:id" component={FindOne} />
+    <BrowserRouter>
+     <Routes>
+        <Route element={<PublicRoute />}>
+          <Route path='/' element={<SignIn />} />
+          <Route path='/cadastre-se' element={<SignUp />} />
+        </Route>
 
-      <Route isPrivate path="/meus-apiarios" component={MyApiaries} />
+        <Route element={<PrivateRoute />}>
+          <Route path='/home' element={<Home />} />
+        </Route>
 
-      <Route
-        isPrivate
-        path="/meus-meliponarios/novo"
-        component={NewMeliponary}
-      />
-      <Route
-        isPrivate
-        path="/meus-meliponarios/:id"
-        component={FindMeliponary}
-      />
-      <Route isPrivate path="/meus-meliponarios" component={MyMeliponaries} />
-    </Switch>
+        <Route path='/meus-mapas' element={<PrivateRoute />}>
+          <Route index element={<Config />} />
+          <Route path='novo' element={<AddFile />} />
+        </Route>
+
+        <Route path='/meus-apiarios' element={<PrivateRoute />}>
+          <Route index element={<MyApiaries />} />
+          <Route path='novo' element={<NewApiary />} />
+          <Route path=':id' element={<FindOne />} />
+        </Route>
+
+        <Route path='/meus-meliponarios' element={<PrivateRoute />}>
+          <Route index element={<MyMeliponaries />} />
+          <Route path='novo' element={<NewMeliponary />} />
+          <Route path=':id' element={<FindMeliponary />} />
+        </Route>
+
+        <Route path='*' element={<NotFound />} />
+     </Routes>
+    </BrowserRouter>
   )
 }
 
-export default Routes
+export default AppRoutes

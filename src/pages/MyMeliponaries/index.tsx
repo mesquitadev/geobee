@@ -3,7 +3,7 @@ import api from '../../services'
 import { useLoading } from '../../hooks/useLoading.tsx'
 import Breadcumbs from '../../components/Breadcumbs'
 import 'leaflet/dist/leaflet.css'
-import { Link, useHistory } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import BackdropLoading from '../../components/BackdropLoading/index.tsx'
 import {
   Dialog,
@@ -14,7 +14,7 @@ import {
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 
 export default function MyApiaries() {
-  const history = useHistory()
+  const navigate = useNavigate()
   const { loading, setLoading } = useLoading()
   const [apiaries, setApiaries] = useState([])
 
@@ -44,9 +44,9 @@ export default function MyApiaries() {
 
   const handleViewMeliponary = useCallback(
     (id: number) => {
-      history.push(`meus-meliponarios/${id}`)
+      navigate(`meus-meliponarios/${id}`)
     },
-    [history],
+    [navigate],
   )
 
   const handleDeleteMeliponary = useCallback(() => {

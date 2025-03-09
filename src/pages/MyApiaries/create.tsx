@@ -1,9 +1,9 @@
 // @ts-nocheck
-import { useCallback, useEffect, useState } from 'react'
-import api from '../../services'
-import { useLoading } from '../../hooks/useLoading.tsx'
-import Breadcumbs from '../../components/Breadcumbs'
+import { yupResolver } from '@hookform/resolvers/yup'
 import 'leaflet/dist/leaflet.css'
+import { useSnackbar } from 'notistack'
+import { useCallback, useEffect, useState } from 'react'
+import { SubmitHandler, useForm } from 'react-hook-form'
 import {
   MapContainer,
   Marker,
@@ -11,29 +11,27 @@ import {
   TileLayer,
   useMapEvents,
 } from 'react-leaflet'
-import { calcularRaioVoo } from '../../utils'
-import InputContainer from '../../components/Input/Container.tsx'
-import InputLabel from '../../components/Input/Label.tsx'
-import Input from '../../components/Input'
-import SelectContainer from '../../components/Select/Container.tsx'
-import Select from '../../components/Select'
 import * as yup from 'yup'
-import { SubmitHandler, useForm } from 'react-hook-form'
-import { yupResolver } from '@hookform/resolvers/yup'
-import { useSnackbar } from 'notistack'
-import * as turf from '@turf/turf'
 import marker from '../../assets/apiary.png'
 import BackdropLoading from '../../components/BackdropLoading'
+import Breadcumbs from '../../components/Breadcumbs'
+import Input from '../../components/Input'
+import InputContainer from '../../components/Input/Container.tsx'
+import InputLabel from '../../components/Input/Label.tsx'
+import Select from '../../components/Select'
+import SelectContainer from '../../components/Select/Container.tsx'
+import { useLoading } from '../../hooks/useLoading.tsx'
+import api from '../../services'
 
+import L from 'leaflet'
 import {
-  simNaoOptions,
   options,
   outrosApiariosRaio3kmOptions,
   qtdColmeiasOptions,
   qtdColmeiasOutrosApiariosOptions,
+  simNaoOptions,
   tempoIntineranteOptions,
 } from '../../utils/options.ts'
-import L from 'leaflet'
 
 interface Inputs {
   name: string
@@ -106,8 +104,6 @@ export default function NewApiary() {
           latitude: String(latitude),
           longitude: String(longitude),
         }
-
-        console.log('dt', updatedData)
         await Promise.all([api.post('apiaries', updatedData)])
         enqueueSnackbar('Cadastro realizado com sucesso!', {
           variant: 'success',

@@ -1,18 +1,10 @@
 // @ts-nocheck
-import { useCallback, useEffect, useState } from 'react'
-import api from '../../services'
-import { useLoading } from '../../hooks/useLoading.tsx'
-import Breadcumbs from '../../components/Breadcumbs'
-import 'leaflet/dist/leaflet.css'
-import InputContainer from '../../components/Input/Container.tsx'
-import InputLabel from '../../components/Input/Label.tsx'
-import Input from '../../components/Input'
-import SelectContainer from '../../components/Select/Container.tsx'
-import Select from '../../components/Select'
-import * as yup from 'yup'
-import { SubmitHandler, useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
+import L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
 import { enqueueSnackbar } from 'notistack'
+import { useCallback, useEffect, useState } from 'react'
+import { SubmitHandler, useForm } from 'react-hook-form'
 import {
   MapContainer,
   Marker,
@@ -20,19 +12,25 @@ import {
   TileLayer,
   useMapEvents,
 } from 'react-leaflet'
+import * as yup from 'yup'
+import marker from '../../assets/apiary.png'
 import BackdropLoading from '../../components/BackdropLoading'
+import Breadcumbs from '../../components/Breadcumbs'
+import Input from '../../components/Input'
+import InputContainer from '../../components/Input/Container.tsx'
+import InputLabel from '../../components/Input/Label.tsx'
+import Select from '../../components/Select'
+import SelectContainer from '../../components/Select/Container.tsx'
+import { useLoading } from '../../hooks/useLoading.tsx'
+import api from '../../services'
 import {
   especiesAbelhasOptions,
-  simNaoOptions,
   outrosApiariosRaio3kmOptions,
   qtdColmeiasOptions,
   qtdColmeiasOutrosApiariosOptions,
+  simNaoOptions,
   tipoInstalacaoApiarioOptions,
 } from '../../utils/options.ts'
-import * as turf from '@turf/turf'
-import { calcularRaioVoo } from '../../utils'
-import L from 'leaflet'
-import marker from '../../assets/apiary.png'
 
 type Inputs = {
   name: string
@@ -54,66 +52,6 @@ type Inputs = {
   capacidadeDeSuporte?: number
 }
 
-function calcularCapacidadeSuporteMeliponicultura(hectares: number) {
-  const colmeiasPorHectare = 1.5
-  const capacidadeSuporte = hectares * colmeiasPorHectare
-  return Math.round(capacidadeSuporte)
-}
-
-async function processGeoJSON(geojsonUrl, latitude, longitude, tipo, especie) {
-  try {
-    const response = await fetch(geojsonUrl)
-    const geojsonData = await response.json()
-
-    const centro = turf.point([Number(longitude), Number(latitude)])
-    const { raioVooDEC } = calcularRaioVoo({
-      tipoCadastro: tipo,
-      especie,
-    })
-
-    const buffer = turf.buffer(centro, raioVooDEC, { units: 'kilometers' })
-
-    const layers = geojsonData.features
-
-    // const featuresDentroBuffer = layers.filter((layer) => {
-    //   return turf.booleanIntersects(layer, buffer)
-    // })
-    //
-    // const areas = {}
-    // featuresDentroBuffer.forEach((layer) => {
-    //   const nomeCamada = layer.properties.VEGETACAO
-    //   const area = Number(layer.properties['AREA (Ha)'])
-    //   if (!areas[nomeCamada]) {
-    //     areas[nomeCamada] = 0
-    //   }
-    //   areas[nomeCamada] += area
-    // })
-
-    const featuresDentroBuffer = layers.filter((layer) => {
-      return turf.booleanIntersects(layer, buffer)
-    })
-
-    const areas: any = {}
-    featuresDentroBuffer.forEach((layer) => {
-      const nomeCamada = layer.properties.VEGETACAO
-      const area = turf.area(layer) / 10000 // Convertendo para hectares
-      if (!areas[nomeCamada]) {
-        areas[nomeCamada] = 0
-      }
-      areas[nomeCamada] += area
-    })
-
-    const pasto = calcularCapacidadeSuporteMeliponicultura(
-      Number(areas.ARBOREO),
-    )
-
-    if (tipo === 'MELIPONICULTOR') {
-      return pasto
-    }
-  } catch (error) {
-    console.error('Erro ao processar GeoJSON:', error)
-  }
-}
 
 export default function NewMeliponary() {
   const { loading, setLoading } = useLoading()
@@ -174,7 +112,6 @@ export default function NewMeliponary() {
           variant: 'success',
         })
       } catch (err) {
-        // @ts-ignore
         enqueueSnackbar({
           message: `Erro no cadastro! Ocorreu um erro ao cadastrar, ${err.response.data.message}`,
           variant: 'error',
