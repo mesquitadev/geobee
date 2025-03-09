@@ -1,7 +1,6 @@
+import L from 'leaflet'
+import { enqueueSnackbar } from 'notistack'
 import React, { Suspense, useEffect, useState } from 'react'
-import api from '../../services'
-import { useLoading } from '../../hooks/useLoading.tsx'
-import BackdropLoading from '../../components/BackdropLoading'
 import {
   CircleMarker,
   GeoJSON,
@@ -10,11 +9,13 @@ import {
   Popup,
   TileLayer,
 } from 'react-leaflet'
-import L from 'leaflet'
 import marker from '../../assets/apiary.png'
 import beebox from '../../assets/bee-hive.png'
-import { getColor } from '../../utils'
+import BackdropLoading from '../../components/BackdropLoading'
 import Legend from '../../components/Legend'
+import { useLoading } from '../../hooks/useLoading.tsx'
+import api from '../../services'
+import { getColor } from '../../utils'
 
 const myIcon = new L.Icon({
   iconUrl: marker as string,
@@ -40,6 +41,7 @@ export default function Home() {
   const [geoJson, setGeoJson] = useState<any>('')
   const [maps, setMaps] = useState<any>([])
   const [selectedMap, setSelectedMap] = useState<string>('')
+  const [geoJsonLoading, setGeoJsonLoading] = useState(false)
 
   useEffect(() => {
     const getMyData = async () => {
@@ -50,7 +52,9 @@ export default function Home() {
         setMeliponaryData(data)
         setApiaryData(apiary)
       } catch (err) {
-        console.error(err)
+        enqueueSnackbar('Erro ao carregar dados de apiários', {
+          variant: 'error',
+        })
       } finally {
         setLoading(false)
       }
@@ -77,33 +81,6 @@ export default function Home() {
   }, [setLoading])
 
   useEffect(() => {
-    // const fetchGeoJSONData = async () => {
-    //   setLoading(true)
-    //   try {
-    //     const response = await axios.get(
-    //       'https://api.geomaps.clubsunset.tech/list-geojson/',
-    //     )
-    //     const data = response.data
-    //     const files = data.files
-    //
-    //     if (files.length > 0) {
-    //       const geojsonData = await Promise.all(
-    //         files.map(async (file) => {
-    //           const geojsonResponse = await axios.get(
-    //             `https://api.geomaps.clubsunset.tech/geojson-content/${file}`,
-    //           )
-    //           return geojsonResponse.data
-    //         }),
-    //       )
-    //       setGeojsons(geojsonData)
-    //     }
-    //   } catch (error) {
-    //     console.error('Error fetching GeoJSON data:', error)
-    //   } finally {
-    //     setLoading(false)
-    //   }
-    // }
-
     const fetchMaps = async () => {
       setLoading(true)
       try {
@@ -111,27 +88,31 @@ export default function Home() {
         const data = response.data
         setMaps(data)
       } catch (error) {
-        console.error('Error fetching GeoJSON data:', error)
+        enqueueSnackbar('Erro ao carregar mapas', {
+          variant: 'error',
+        })
       } finally {
         setLoading(false)
       }
     }
 
     fetchMaps()
-
-    // fetchGeoJSONData()
   }, [setLoading])
 
   useEffect(() => {
     const fetchGeoJSON = async () => {
       setLoading(true)
+      setGeoJsonLoading(true)
       try {
         const response = await api.get('/maps/content/geobee.geojson')
         setGeoJson(response.data)
       } catch (error) {
-        console.error('Error fetching GeoJSON data:', error)
+        enqueueSnackbar('Erro ao carregar mapa', {
+          variant: 'error',
+        })
       } finally {
         setLoading(false)
+        setGeoJsonLoading(false)
       }
     }
 
@@ -140,14 +121,18 @@ export default function Home() {
 
   const handleSelectMap = async (url: string) => {
     setLoading(true)
+    setGeoJsonLoading(true)
     try {
       const response = await api.get(`${url}`)
       const data = response.data
       setGeoJson(data)
     } catch (error) {
-      console.error('Error fetching GeoJSON data:', error)
+      enqueueSnackbar('Erro ao carregar mapa', {
+        variant: 'error',
+      })
     } finally {
       setLoading(false)
+      setGeoJsonLoading(false)
     }
   }
 
@@ -159,10 +144,12 @@ export default function Home() {
   }
 
   return (
-    <Suspense fallback={<BackdropLoading isLoading={loading} />}>
-      <div className="w-full  bg-zinc-900 text-white justify-center p-2">
+    <Suspense
+      fallback={<BackdropLoading isLoading={loading || geoJsonLoading} />}
+    >
+      <div className="w-full  justify-center bg-zinc-900 p-2 text-white">
         <select
-          className="border-white bg-zinc-900 w-full"
+          className="w-full border-white bg-zinc-900"
           value={selectedMap}
           onChange={handleChange}
         >
@@ -180,33 +167,15 @@ export default function Home() {
         style={{ height: '100%', width: '100%', zIndex: 0 }}
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-        {/* {geojsons.map((geojson, index) => ( */}
-        {/*  <GeoJSON */}
-        {/*    key={index} */}
-        {/*    data={geojson} */}
-        {/*    style={(feature) => { */}
-        {/*      const type = feature.properties.VEGETAÇÃ */}
-        {/*      return { color: getColor(type) } */}
-        {/*    }} */}
-        {/*  /> */}
-        {/* ))} */}
 
-        {/* {geojsons.map((geojson, index) => ( */}
-        {/*  <GeoJSON */}
-        {/*    key={index} */}
-        {/*    data={geojson} */}
-        {/*    style={(feature) => { */}
-        {/*      const type = feature.properties.VEGETAÇÃ */}
-        {/*      return { color: getColor(type) } */}
-        {/*    }} */}
-        {/*  /> */}
-        {/* ))} */}
+        {geoJsonLoading && <BackdropLoading isLoading={geoJsonLoading} />}
 
         {geoJson && (
           <GeoJSON
             data={geoJson}
             style={(feature) => {
-              const type = feature.properties.VEGETAÇÃ
+              const type =
+                feature.properties.VEGETAÇÃ || feature.properties.CLASSE
               return { color: getColor(type) }
             }}
           />

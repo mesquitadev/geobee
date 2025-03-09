@@ -10,7 +10,7 @@ const BackdropLoading: React.FC<BackdropLoadingProps> = ({ isLoading }) => {
 
   return (
     <div
-      className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+      className="z-9999 fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
       style={{ zIndex: 9999 }}
     >
       <div className="loader"></div>

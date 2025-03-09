@@ -1,8 +1,8 @@
-import NavItem from './NavItem.tsx'
 import { Cog, Home } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import api from '../../../services'
 import { useLoading } from '../../../hooks/useLoading.tsx'
+import api from '../../../services'
+import NavItem from './NavItem.tsx'
 
 const AdminMenu = () => (
   <nav className="flex flex-col gap-0.5">

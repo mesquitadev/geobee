@@ -2,6 +2,8 @@ export function getColor(d: string) {
   switch (d) {
     case 'ARBOREO':
       return '#006400'
+    case 'ARBUSTIVO':
+      return '#006400'
     case 'URBANO':
       return '#FF0000'
     case 'SOLO EXPOSTO':

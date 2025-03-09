@@ -1,17 +1,15 @@
 // @ts-nocheck
-import React, { useCallback } from 'react'
-import { useLoading } from '../../hooks/useLoading.tsx'
-import Breadcumbs from '../../components/Breadcumbs'
+import { yupResolver } from '@hookform/resolvers/yup'
 import 'leaflet/dist/leaflet.css'
+import { useSnackbar } from 'notistack'
+import { useForm } from 'react-hook-form'
+import * as yup from 'yup'
+import BackdropLoading from '../../components/BackdropLoading'
+import Breadcumbs from '../../components/Breadcumbs'
 import InputContainer from '../../components/Input/Container.tsx'
 import InputLabel from '../../components/Input/Label.tsx'
-import * as yup from 'yup'
-import { useForm } from 'react-hook-form'
-import { yupResolver } from '@hookform/resolvers/yup'
-import { useSnackbar } from 'notistack'
-import BackdropLoading from '../../components/BackdropLoading'
+import { useLoading } from '../../hooks/useLoading.tsx'
 
-import axios from 'axios'
 import { useHistory } from 'react-router-dom'
 import api from '../../services'
 
@@ -43,7 +41,7 @@ export default function AddMap() {
       })
 
       await Promise.all([
-        api.post('/maps/upload', formData, {
+        api.post('/maps/upload/', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
@@ -67,24 +65,24 @@ export default function AddMap() {
   }
 
   return (
-    <div className="w-full h-full p-10">
+    <div className="h-full w-full p-10">
       <Breadcumbs pageName="Cadastrar Mapa" />
       <BackdropLoading isLoading={loading} />
       <div className="grid grid-cols-2">
         <div className="mb-5">
           <form onSubmit={handleSubmit(handleSignUp)} className="w-full">
-            <div className="flex flex-wrap mx-3 mb-6">
-              <InputContainer className="w-full  px-3 mb-6 md:mb-0">
+            <div className="mx-3 mb-6 flex flex-wrap">
+              <InputContainer className="mb-6  w-full px-3 md:mb-0">
                 <InputLabel label="Arquivo" name="files" />
                 <input
-                  className="appearance-none block w-full bg-gray-200 text-gray-700 border border-red-500 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white"
+                  className="mb-3 block w-full appearance-none rounded border border-red-500 bg-gray-200 px-4 py-3 leading-tight text-gray-700 focus:bg-white focus:outline-none"
                   type="file"
                   {...register('files')}
                   multiple
                   accept={'.geojson'}
                 />
                 {errors.files && (
-                  <p className="text-red-500 text-xs italic">
+                  <p className="text-xs italic text-red-500">
                     {errors.files.message}
                   </p>
                 )}

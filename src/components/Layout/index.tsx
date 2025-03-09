@@ -5,7 +5,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
   return (
     <div className="min-h-screen lg:grid lg:grid-cols-app">
       <Sidebar />
-      <main className="w-screen h-screen lg:col-start-2 lg:w-auto">
+      <main className="h-screen w-screen lg:col-start-2 lg:w-auto">
         {children}
       </main>
     </div>

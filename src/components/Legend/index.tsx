@@ -1,6 +1,7 @@
 const Legend = () => {
   const legendItems = [
     { label: 'ARBOREO', color: '#006400' },
+    { label: 'ARBUSTIVO', color: '#006400' },
     { label: 'URBANO', color: '#FF0000' },
     { label: 'SOLO EXPOSTO', color: '#FFA500' },
     { label: 'HERBACEO', color: '#006401' },
@@ -8,16 +9,13 @@ const Legend = () => {
   ]
 
   return (
-    <div
-      className="absolute bottom-20 left-4 p-4 bg-white border border-gray-300 rounded-lg shadow-lg"
-      style={{ zIndex: 9999 }}
-    >
+    <div className="absolute bottom-20 left-4 rounded-lg border border-gray-300 bg-white p-4 shadow-lg">
       <h4 className="mb-2 font-bold">Legenda</h4>
-      <ul className="list-none p-0 m-0">
+      <ul className="m-0 list-none p-0">
         {legendItems.map((item) => (
-          <li key={item.label} className="flex items-center mb-1">
+          <li key={item.label} className="mb-1 flex items-center">
             <span
-              className="w-5 h-5 mr-2 inline-block"
+              className="mr-2 inline-block h-5 w-5"
               style={{ backgroundColor: item.color }}
             ></span>
             {item.label}
