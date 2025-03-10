@@ -1,10 +1,12 @@
-#Build
-FROM node:latest AS frontend
+# Build stage
+FROM node:latest AS build
 WORKDIR /app
-COPY . /app
-RUN ls
-RUN cd /app && npm install && npm run build
-#Running
+COPY . .
+RUN npm install
+RUN npm run build
+
+# Production stage
 FROM nginx:stable-alpine
-COPY --from=frontend /app/dist /usr/share/nginx/html
-# COPY --from=frontend /app/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/dist /usr/share/nginx/html
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
