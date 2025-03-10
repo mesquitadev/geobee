@@ -21,7 +21,7 @@ export default function MyApiaries() {
   const fetchMeliponaries = useCallback(async () => {
     try {
       setLoading(true)
-      const { data } = await api.get('/meliponary')
+      const { data } = await api.get('meliponary/')
       setApiaries(data)
     } catch (err) {
       console.error(err)
@@ -60,11 +60,11 @@ export default function MyApiaries() {
   }, [fetchMeliponaries, selectedId])
 
   return (
-    <div className="w-full h-full p-10">
+    <div className="h-full w-full p-10">
       <BackdropLoading isLoading={loading} />
       <Breadcumbs pageName="Meus Meliponários" />
 
-      <div className="py-5 justify-end items-end">
+      <div className="items-end justify-end py-5">
         <Link
           to="/meus-meliponarios/novo"
           data-modal-target="authentication-modal"
@@ -75,35 +75,35 @@ export default function MyApiaries() {
         </Link>
       </div>
 
-      <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
+      <div className="border-stroke shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 rounded-sm border bg-white px-5 pb-2.5 pt-6 xl:pb-1">
         <h4 className="mb-6 text-xl font-semibold text-black dark:text-white">
           Meus Meliponários
         </h4>
 
         <div className="flex flex-col">
-          <div className="grid grid-cols-3 rounded-sm bg-gray-2 dark:bg-meta-4 sm:grid-cols-5">
+          <div className="bg-gray-2 dark:bg-meta-4 grid grid-cols-3 rounded-sm sm:grid-cols-5">
             <div className="p-2.5 xl:p-5">
-              <h5 className="text-sm font-medium uppercase xsm:text-base">
+              <h5 className="xsm:text-base text-sm font-medium uppercase">
                 Nome
               </h5>
             </div>
             <div className="p-2.5 text-center xl:p-5">
-              <h5 className="text-sm font-medium uppercase xsm:text-base">
+              <h5 className="xsm:text-base text-sm font-medium uppercase">
                 Tipo Instalação
               </h5>
             </div>
             <div className="p-2.5 text-center xl:p-5">
-              <h5 className="text-sm font-medium uppercase xsm:text-base">
+              <h5 className="xsm:text-base text-sm font-medium uppercase">
                 Tipo
               </h5>
             </div>
             <div className="hidden p-2.5 text-center sm:block xl:p-5">
-              <h5 className="text-sm font-medium uppercase xsm:text-base">
+              <h5 className="xsm:text-base text-sm font-medium uppercase">
                 Capacidade Suporte
               </h5>
             </div>
             <div className="hidden p-2.5 text-center sm:block xl:p-5">
-              <h5 className="text-sm font-medium uppercase xsm:text-base">
+              <h5 className="xsm:text-base text-sm font-medium uppercase">
                 Ações
               </h5>
             </div>
@@ -115,7 +115,7 @@ export default function MyApiaries() {
                 className={`grid grid-cols-3 sm:grid-cols-5 ${
                   key === apiaries.length - 1
                     ? ''
-                    : 'border-b border-stroke dark:border-strokedark'
+                    : 'border-stroke dark:border-strokedark border-b'
                 }`}
                 key={key}
               >

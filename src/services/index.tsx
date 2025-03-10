@@ -1,9 +1,7 @@
 import axios from 'axios'
 import Cookies from 'js-cookie'
 
-const baseURL =
-  import.meta.env.VITE_APP_AUTH_API ??
-  'https://mesquitadev-api-geobee.mp1rvc.easypanel.host/api/v1/'
+const baseURL = import.meta.env.VITE_APP_AUTH_API
 
 const api = axios.create({
   baseURL,

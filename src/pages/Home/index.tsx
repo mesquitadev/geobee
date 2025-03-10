@@ -31,6 +31,22 @@ const meliponaryIcon = new L.Icon({
   iconSize: [32, 32],
 })
 
+interface MeliponaryData {
+  id: number
+  name: string
+  latitude: string
+  longitude: string
+  capacidadeDeSuporte?: string
+}
+
+interface ApiaryData {
+  id: number
+  name: string
+  latitude: string
+  longitude: string
+  capacidadeDeSuporte?: string
+}
+
 export default function Home() {
   const { loading, setLoading } = useLoading()
   const [meliponaryData, setMeliponaryData] = useState(null)
@@ -47,14 +63,19 @@ export default function Home() {
     const getMyData = async () => {
       setLoading(true)
       try {
-        const { data } = await api.get('/meliponary/all')
-        const { data: apiary } = await api.get('/apiary/all')
-        setMeliponaryData(data)
-        setApiaryData(apiary)
+        const [meliponaryResponse, apiaryResponse] = await Promise.all([
+          api.get('/meliponary/all/'),
+          api.get('/apiaries/all/'),
+        ])
+        setMeliponaryData(meliponaryResponse.data)
+        setApiaryData(apiaryResponse.data)
       } catch (err) {
-        enqueueSnackbar('Erro ao carregar dados de apiários', {
-          variant: 'error',
-        })
+        enqueueSnackbar(
+          'Erro ao carregar dados de apiários ou meliponários existentes',
+          {
+            variant: 'error',
+          },
+        )
       } finally {
         setLoading(false)
       }
@@ -104,11 +125,13 @@ export default function Home() {
       setLoading(true)
       setGeoJsonLoading(true)
       try {
-        const response = await api.get('/maps/content/geobee.geojson')
+        const response = await api.get('/maps/content/sao_luis.geojson')
         setGeoJson(response.data)
       } catch (error) {
-        enqueueSnackbar('Erro ao carregar mapa', {
+        enqueueSnackbar('Erro ao carregar o mapa padrão', {
           variant: 'error',
+          preventDuplicate: true,
+          autoHideDuration: 3000,
         })
       } finally {
         setLoading(false)
@@ -123,11 +146,10 @@ export default function Home() {
     setLoading(true)
     setGeoJsonLoading(true)
     try {
-      const response = await api.get(`${url}`)
-      const data = response.data
-      setGeoJson(data)
+      const [geoJsonResponse] = await Promise.all([api.get(`${url}`)])
+      setGeoJson(geoJsonResponse.data)
     } catch (error) {
-      enqueueSnackbar('Erro ao carregar mapa', {
+      enqueueSnackbar('Erro ao carregar mapa padrão!', {
         variant: 'error',
       })
     } finally {
@@ -181,7 +203,7 @@ export default function Home() {
           />
         )}
 
-        {meliponaryData?.map((data) => {
+        {meliponaryData?.map((data: MeliponaryData) => {
           return (
             <React.Fragment key={data.id}>
               <Marker
@@ -202,7 +224,7 @@ export default function Home() {
           )
         })}
 
-        {apiaryData?.map((data) => {
+        {apiaryData?.map((data: ApiaryData) => {
           return (
             <React.Fragment key={data.id}>
               <Marker
@@ -210,7 +232,7 @@ export default function Home() {
                 position={[Number(data.latitude), Number(data.longitude)]}
               >
                 <Popup>
-                  Apiário {data.name} - Capacidade de Suporte :{' '}
+                  Apiário {data.name} - Cap. de Suporte :{' '}
                   {data.capacidadeDeSuporte ? data.capacidadeDeSuporte : '0'}
                 </Popup>
               </Marker>

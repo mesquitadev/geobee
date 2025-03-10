@@ -52,7 +52,6 @@ type Inputs = {
   capacidadeDeSuporte?: number
 }
 
-
 export default function NewMeliponary() {
   const { loading, setLoading } = useLoading()
   const [disabled, setDisabled] = useState(false)
@@ -105,7 +104,7 @@ export default function NewMeliponary() {
           longitude: String(longitude),
         }
 
-        await Promise.all([api.post('meliponaries', updatedData)])
+        await Promise.all([api.post('meliponary/', updatedData)])
         // @ts-ignore
         enqueueSnackbar({
           message: 'Cadastro realizado com sucesso!',
@@ -246,17 +245,17 @@ export default function NewMeliponary() {
   })
 
   return (
-    <div className="w-full h-full p-10">
+    <div className="h-full w-full p-10">
       <Breadcumbs pageName="Cadastrar Meliponário" />
       <BackdropLoading isLoading={loading} />
       <div className="grid grid-cols-1 md:grid-cols-2">
         <div className="mb-5">
-          <p className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">
+          <p className="mb-2 block text-xs font-bold uppercase tracking-wide text-gray-700">
             Selecione as Coordenadas
           </p>
           <button
             onClick={getUserLocation}
-            className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 my-3"
+            className="my-3 flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
           >
             Usar Minha Localização
           </button>
@@ -276,11 +275,11 @@ export default function NewMeliponary() {
         </div>
         <div className="mb-5">
           <form onSubmit={handleSubmit(handleSignUp)} className="w-full">
-            <div className="flex flex-wrap mx-3 mb-6">
-              <InputContainer className="w-full  px-3 mb-6 md:mb-0">
+            <div className="mx-3 mb-6 flex flex-wrap">
+              <InputContainer className="mb-6  w-full px-3 md:mb-0">
                 <InputLabel label="Nome" name="name" />
                 <Input
-                  className="appearance-none block w-full bg-gray-200 text-gray-700 border border-red-500 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white"
+                  className="mb-3 block w-full appearance-none rounded border border-red-500 bg-gray-200 px-4 py-3 leading-tight text-gray-700 focus:bg-white focus:outline-none"
                   control={control}
                   name="name"
                   placeholder="Nome para identificação do meliponário..."
@@ -288,10 +287,10 @@ export default function NewMeliponary() {
                 />
               </InputContainer>
 
-              <InputContainer className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
+              <InputContainer className="mb-6 w-full px-3 md:mb-0 md:w-1/2">
                 <InputLabel label="Latitude" name="latitude" />
                 <Input
-                  className="appearance-none block w-full bg-gray-200 text-gray-700 border border-red-500 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white"
+                  className="mb-3 block w-full appearance-none rounded border border-red-500 bg-gray-200 px-4 py-3 leading-tight text-gray-700 focus:bg-white focus:outline-none"
                   control={control}
                   name="latitude"
                   placeholder="0"
@@ -300,10 +299,10 @@ export default function NewMeliponary() {
                   errors={errors?.latitude?.message}
                 />
               </InputContainer>
-              <InputContainer className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
+              <InputContainer className="mb-6 w-full px-3 md:mb-0 md:w-1/2">
                 <InputLabel label="Longitude" name="longitude" />
                 <Input
-                  className="appearance-none block w-full bg-gray-200 text-gray-700 border border-red-500 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white"
+                  className="mb-3 block w-full appearance-none rounded border border-red-500 bg-gray-200 px-4 py-3 leading-tight text-gray-700 focus:bg-white focus:outline-none"
                   control={control}
                   name="longitude"
                   placeholder="0"
@@ -322,7 +321,7 @@ export default function NewMeliponary() {
                   options={tipoInstalacaoApiarioOptions}
                   control={control}
                   name="tipoInstalacao"
-                  className="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                  className="block w-full appearance-none rounded border border-gray-200 bg-gray-200 px-4 py-3 pr-8 leading-tight text-gray-700 focus:border-gray-500 focus:bg-white focus:outline-none"
                   errors={errors?.tipoInstalacao?.message}
                 />
               </SelectContainer>
@@ -336,7 +335,7 @@ export default function NewMeliponary() {
                   options={especiesAbelhasOptions}
                   control={control}
                   name="especieAbelha"
-                  className="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                  className="block w-full appearance-none rounded border border-gray-200 bg-gray-200 px-4 py-3 pr-8 leading-tight text-gray-700 focus:border-gray-500 focus:bg-white focus:outline-none"
                   errors={errors?.especieAbelha?.message}
                 />
               </SelectContainer>
@@ -350,7 +349,7 @@ export default function NewMeliponary() {
                   options={qtdColmeiasOptions}
                   control={control}
                   name="quantidadeColmeias"
-                  className="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                  className="block w-full appearance-none rounded border border-gray-200 bg-gray-200 px-4 py-3 pr-8 leading-tight text-gray-700 focus:border-gray-500 focus:bg-white focus:outline-none"
                   errors={errors?.quantidadeColmeias?.message}
                 />
               </SelectContainer>
@@ -364,7 +363,7 @@ export default function NewMeliponary() {
                   options={outrosApiariosRaio3kmOptions}
                   control={control}
                   name="outrosMeliponariosRaio1km"
-                  className="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                  className="block w-full appearance-none rounded border border-gray-200 bg-gray-200 px-4 py-3 pr-8 leading-tight text-gray-700 focus:border-gray-500 focus:bg-white focus:outline-none"
                   errors={errors?.outrosMeliponariosRaio1km?.message}
                 />
               </SelectContainer>
@@ -380,7 +379,7 @@ export default function NewMeliponary() {
                     options={qtdColmeiasOutrosApiariosOptions}
                     control={control}
                     name="qtdColmeiasOutrosMeliponarios"
-                    className="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                    className="block w-full appearance-none rounded border border-gray-200 bg-gray-200 px-4 py-3 pr-8 leading-tight text-gray-700 focus:border-gray-500 focus:bg-white focus:outline-none"
                     errors={errors?.qtdColmeiasOutrosMeliponarios?.message}
                   />
                 </SelectContainer>
@@ -395,7 +394,7 @@ export default function NewMeliponary() {
                   options={simNaoOptions}
                   control={control}
                   name="fontesNectarPolen"
-                  className="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                  className="block w-full appearance-none rounded border border-gray-200 bg-gray-200 px-4 py-3 pr-8 leading-tight text-gray-700 focus:border-gray-500 focus:bg-white focus:outline-none"
                   errors={errors?.fontesNectarPolen?.message}
                 />
               </SelectContainer>
@@ -408,7 +407,7 @@ export default function NewMeliponary() {
                   options={simNaoOptions}
                   control={control}
                   name="disponibilidadeAgua"
-                  className="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                  className="block w-full appearance-none rounded border border-gray-200 bg-gray-200 px-4 py-3 pr-8 leading-tight text-gray-700 focus:border-gray-500 focus:bg-white focus:outline-none"
                   errors={errors?.disponibilidadeAgua?.message}
                 />
               </SelectContainer>
@@ -421,7 +420,7 @@ export default function NewMeliponary() {
                   options={simNaoOptions}
                   control={control}
                   name="sombreamentoNatural"
-                  className="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                  className="block w-full appearance-none rounded border border-gray-200 bg-gray-200 px-4 py-3 pr-8 leading-tight text-gray-700 focus:border-gray-500 focus:bg-white focus:outline-none"
                   errors={errors?.sombreamentoNatural?.message}
                 />
               </SelectContainer>
@@ -435,7 +434,7 @@ export default function NewMeliponary() {
                   options={simNaoOptions}
                   control={control}
                   name="protecaoVentosFortes"
-                  className="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                  className="block w-full appearance-none rounded border border-gray-200 bg-gray-200 px-4 py-3 pr-8 leading-tight text-gray-700 focus:border-gray-500 focus:bg-white focus:outline-none"
                   errors={errors?.protecaoVentosFortes?.message}
                 />
               </SelectContainer>
@@ -449,7 +448,7 @@ export default function NewMeliponary() {
                   options={simNaoOptions}
                   control={control}
                   name="distanciaSeguraContaminacao"
-                  className="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                  className="block w-full appearance-none rounded border border-gray-200 bg-gray-200 px-4 py-3 pr-8 leading-tight text-gray-700 focus:border-gray-500 focus:bg-white focus:outline-none"
                   errors={errors?.distanciaSeguraContaminacao?.message}
                 />
               </SelectContainer>
@@ -462,7 +461,7 @@ export default function NewMeliponary() {
                   options={simNaoOptions}
                   control={control}
                   name="distanciaMinimaConstrucoes"
-                  className="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                  className="block w-full appearance-none rounded border border-gray-200 bg-gray-200 px-4 py-3 pr-8 leading-tight text-gray-700 focus:border-gray-500 focus:bg-white focus:outline-none"
                   errors={errors?.distanciaMinimaConstrucoes?.message}
                 />
               </SelectContainer>
@@ -476,7 +475,7 @@ export default function NewMeliponary() {
                   options={simNaoOptions}
                   control={control}
                   name="distanciaSeguraLavouras"
-                  className="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                  className="block w-full appearance-none rounded border border-gray-200 bg-gray-200 px-4 py-3 pr-8 leading-tight text-gray-700 focus:border-gray-500 focus:bg-white focus:outline-none"
                   errors={errors?.distanciaSeguraLavouras?.message}
                 />
               </SelectContainer>

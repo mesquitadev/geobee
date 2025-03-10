@@ -39,7 +39,6 @@ const Navigation = () => {
       try {
         setLoading(true) // Ativa o estado de carregamento antes da chamada da API
         const { data } = await api.get('/users/me')
-        console.log('dt', data)
         setUserData(data)
       } catch (err) {
         console.error(err) // Melhor tratamento de erro
