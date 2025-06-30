@@ -1,13 +1,40 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="./src/assets/logo-geobee.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="description" content="GeoBEE - Sistema de Gerenciamento para Apicultores e Meliponicultores" />
+
+    <!-- PWA e Mobile específico -->
+    <meta name="theme-color" content="#4f46e5" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="GeoBEE" />
+
+    <!-- Ícones para iOS -->
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152x152.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180x180.png" />
+
+    <!-- Prevenir o número de telefone de se transformar em link clicável -->
+    <meta name="format-detection" content="telephone=no" />
+
+    <!-- Melhorar performance de carregamento de fontes -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
     <title>GeoBEE | BeeMAPPER</title>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <noscript>
+      <div class="p-6 text-center">
+        <h2 class="text-xl font-bold">JavaScript Necessário</h2>
+        <p>Este aplicativo precisa de JavaScript para funcionar. Por favor, ative o JavaScript e recarregue a página.</p>
+      </div>
+    </noscript>
   </body>
 </html>
