@@ -44,7 +44,7 @@ export default function MyApiaries() {
 
   const handleViewMeliponary = useCallback(
     (id: number) => {
-      navigate(`meus-meliponarios/${id}`)
+      navigate(`/meus-meliponarios/${id}`)
     },
     [navigate],
   )

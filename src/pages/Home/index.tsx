@@ -64,8 +64,8 @@ export default function Home() {
       setLoading(true)
       try {
         const [meliponaryResponse, apiaryResponse] = await Promise.all([
-          api.get('/meliponary/all/'),
-          api.get('/apiaries/all/'),
+          api.get('/meliponary/all'),
+          api.get('/apiaries/all'),
         ])
         setMeliponaryData(meliponaryResponse.data)
         setApiaryData(apiaryResponse.data)
