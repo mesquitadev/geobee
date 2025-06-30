@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, memo } from 'react'
 import api from '../../services'
 import { useLoading } from '../../hooks/useLoading.tsx'
 import Breadcumbs from '../../components/Breadcumbs'
@@ -12,11 +12,25 @@ import {
   DialogTitle,
 } from '@headlessui/react'
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
+import { useSnackbar } from 'notistack'
 
-export default function MyApiaries() {
+// Definindo interface para tipagem dos meliponários
+interface Meliponary {
+  id: number
+  name: string
+  tipoInstalacao: string
+  capacidadeDeSuporte: string
+}
+
+const MyMeliponaries = () => {
   const navigate = useNavigate()
   const { loading, setLoading } = useLoading()
-  const [apiaries, setApiaries] = useState([])
+  const { enqueueSnackbar } = useSnackbar()
+  const [apiaries, setApiaries] = useState<Meliponary[]>([])
+  const [open, setOpen] = useState(false)
+  const [selectedId, setSelectedId] = useState<number>()
+  // Estado para controlar a exclusão em andamento
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const fetchMeliponaries = useCallback(async () => {
     try {
@@ -25,17 +39,15 @@ export default function MyApiaries() {
       setApiaries(data)
     } catch (err) {
       console.error(err)
+      enqueueSnackbar('Erro ao buscar meliponários', { variant: 'error' })
     } finally {
       setLoading(false)
     }
-  }, [setLoading])
+  }, [setLoading, enqueueSnackbar])
 
   useEffect(() => {
     fetchMeliponaries()
   }, [fetchMeliponaries])
-
-  const [open, setOpen] = useState(false)
-  const [selectedId, setSelectedId] = useState<number>()
 
   const handleOpenCloseModal = useCallback((id: number) => {
     setOpen((state) => !state)
@@ -49,15 +61,25 @@ export default function MyApiaries() {
     [navigate],
   )
 
-  const handleDeleteMeliponary = useCallback(() => {
-    api
-      .delete(`/meliponary/${selectedId}`)
-      .then(() => {
-        setOpen(false)
-        fetchMeliponaries()
+  const handleDeleteMeliponary = useCallback(async () => {
+    try {
+      setIsDeleting(true) // Indica que a exclusão está em andamento
+      await api.delete(`/meliponary/${selectedId}`)
+      setOpen(false)
+      fetchMeliponaries()
+      enqueueSnackbar('Meliponário removido com sucesso!', {
+        variant: 'success',
       })
-      .catch((e) => console.error(e))
-  }, [fetchMeliponaries, selectedId])
+    } catch (error) {
+      console.error(error)
+      const errorMessage =
+        error.response?.data?.message ||
+        'Ocorreu um erro ao remover o meliponário'
+      enqueueSnackbar(errorMessage, { variant: 'error' })
+    } finally {
+      setIsDeleting(false) // Reseta o estado após a conclusão
+    }
+  }, [fetchMeliponaries, selectedId, enqueueSnackbar])
 
   return (
     <div className="h-full w-full p-10">
@@ -80,79 +102,85 @@ export default function MyApiaries() {
           Meus Meliponários
         </h4>
 
-        <div className="flex flex-col">
-          <div className="bg-gray-2 dark:bg-meta-4 grid grid-cols-3 rounded-sm sm:grid-cols-5">
-            <div className="p-2.5 xl:p-5">
-              <h5 className="xsm:text-base text-sm font-medium uppercase">
-                Nome
-              </h5>
-            </div>
-            <div className="p-2.5 text-center xl:p-5">
-              <h5 className="xsm:text-base text-sm font-medium uppercase">
-                Tipo Instalação
-              </h5>
-            </div>
-            <div className="p-2.5 text-center xl:p-5">
-              <h5 className="xsm:text-base text-sm font-medium uppercase">
-                Tipo
-              </h5>
-            </div>
-            <div className="hidden p-2.5 text-center sm:block xl:p-5">
-              <h5 className="xsm:text-base text-sm font-medium uppercase">
-                Capacidade Suporte
-              </h5>
-            </div>
-            <div className="hidden p-2.5 text-center sm:block xl:p-5">
-              <h5 className="xsm:text-base text-sm font-medium uppercase">
-                Ações
-              </h5>
-            </div>
-          </div>
-
-          {apiaries?.map((brand, key) => {
-            return (
-              <div
-                className={`grid grid-cols-3 sm:grid-cols-5 ${
-                  key === apiaries.length - 1
-                    ? ''
-                    : 'border-stroke dark:border-strokedark border-b'
-                }`}
-                key={key}
-              >
-                <div className="flex items-center gap-3 p-2.5 xl:p-5">
-                  <p className="hidden text-black sm:block">{brand.name}</p>
-                </div>
-
-                <div className="flex items-center justify-center p-2.5 xl:p-5">
-                  <p className="text-black">{brand.tipoInstalacao}</p>
-                </div>
-
-                <div className="flex items-center justify-center p-2.5 xl:p-5">
-                  <p className="text-meta-3">MELIPONÁRIO</p>
-                </div>
-
-                <div className="flex items-center justify-center p-2.5 xl:p-5">
-                  <p className="text-meta-3">{brand.capacidadeDeSuporte}</p>
-                </div>
-
-                <div className="hidden items-center justify-center p-2.5 sm:flex xl:p-5">
-                  <button
-                    onClick={() => handleViewMeliponary(brand.id)}
-                    className=" mr-2 flex rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                  >
-                    Visualizar
-                  </button>
-                  <button
-                    onClick={() => handleOpenCloseModal(brand.id)}
-                    className=" mr-2 flex rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                  >
-                    Apagar
-                  </button>
-                </div>
+        {apiaries.length === 0 ? (
+          <p className="text-center text-gray-500">
+            Nenhum meliponário encontrado.
+          </p>
+        ) : (
+          <div className="flex flex-col">
+            <div className="bg-gray-2 dark:bg-meta-4 grid grid-cols-3 rounded-sm sm:grid-cols-5">
+              <div className="p-2.5 xl:p-5">
+                <h5 className="xsm:text-base text-sm font-medium uppercase">
+                  Nome
+                </h5>
               </div>
-            )
-          })}
-        </div>
+              <div className="p-2.5 text-center xl:p-5">
+                <h5 className="xsm:text-base text-sm font-medium uppercase">
+                  Tipo Instalação
+                </h5>
+              </div>
+              <div className="p-2.5 text-center xl:p-5">
+                <h5 className="xsm:text-base text-sm font-medium uppercase">
+                  Tipo
+                </h5>
+              </div>
+              <div className="hidden p-2.5 text-center sm:block xl:p-5">
+                <h5 className="xsm:text-base text-sm font-medium uppercase">
+                  Capacidade Suporte
+                </h5>
+              </div>
+              <div className="hidden p-2.5 text-center sm:block xl:p-5">
+                <h5 className="xsm:text-base text-sm font-medium uppercase">
+                  Ações
+                </h5>
+              </div>
+            </div>
+
+            {apiaries?.map((brand, key) => {
+              return (
+                <div
+                  className={`grid grid-cols-3 sm:grid-cols-5 ${
+                    key === apiaries.length - 1
+                      ? ''
+                      : 'border-stroke dark:border-strokedark border-b'
+                  }`}
+                  key={key}
+                >
+                  <div className="flex items-center gap-3 p-2.5 xl:p-5">
+                    <p className="hidden text-black sm:block">{brand.name}</p>
+                  </div>
+
+                  <div className="flex items-center justify-center p-2.5 xl:p-5">
+                    <p className="text-black">{brand.tipoInstalacao}</p>
+                  </div>
+
+                  <div className="flex items-center justify-center p-2.5 xl:p-5">
+                    <p className="text-meta-3">MELIPONÁRIO</p>
+                  </div>
+
+                  <div className="flex items-center justify-center p-2.5 xl:p-5">
+                    <p className="text-meta-3">{brand.capacidadeDeSuporte}</p>
+                  </div>
+
+                  <div className="hidden items-center justify-center p-2.5 sm:flex xl:p-5">
+                    <button
+                      onClick={() => handleViewMeliponary(brand.id)}
+                      className=" mr-2 flex rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                    >
+                      Visualizar
+                    </button>
+                    <button
+                      onClick={() => handleOpenCloseModal(brand.id)}
+                      className=" mr-2 flex rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                    >
+                      Apagar
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
       </div>
 
       <Dialog
@@ -185,11 +213,12 @@ export default function MyApiaries() {
                       as="h3"
                       className="text-base font-semibold leading-6 text-gray-900"
                     >
-                      Deletar Meliponário?
+                      Confirmação de exclusão
                     </DialogTitle>
                     <div className="mt-2">
                       <p className="text-sm text-gray-500">
-                        Deseja apagar o meliponário?
+                        Tem certeza que deseja excluir este meliponário? Esta
+                        ação não poderá ser desfeita.
                       </p>
                     </div>
                   </div>
@@ -199,17 +228,23 @@ export default function MyApiaries() {
                 <button
                   type="button"
                   onClick={handleDeleteMeliponary}
-                  className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto"
+                  className={`inline-flex w-full justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm sm:ml-3 sm:w-auto ${
+                    isDeleting
+                      ? 'cursor-not-allowed bg-red-400'
+                      : 'bg-red-600 hover:bg-red-500'
+                  }`}
+                  disabled={isDeleting}
                 >
-                  Sim
+                  {isDeleting ? 'Excluindo...' : 'Confirmar exclusão'}
                 </button>
                 <button
                   type="button"
                   data-autofocus
                   onClick={() => setOpen(false)}
-                  className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                  className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:mt-0 sm:w-auto"
+                  disabled={isDeleting}
                 >
-                  Não
+                  Cancelar
                 </button>
               </div>
             </DialogPanel>
@@ -219,3 +254,5 @@ export default function MyApiaries() {
     </div>
   )
 }
+
+export default memo(MyMeliponaries)

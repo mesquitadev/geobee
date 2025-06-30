@@ -2,9 +2,10 @@
 import { yupResolver } from '@hookform/resolvers/yup'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import { enqueueSnackbar } from 'notistack'
-import { useCallback, useEffect, useState } from 'react'
-import { SubmitHandler, useForm } from 'react-hook-form'
+import { useSnackbar } from 'notistack'
+import { useCallback, useEffect, useState, useMemo, memo } from 'react'
+import { SubmitHandler, useForm, Resolver } from 'react-hook-form'
+import { useNavigate } from 'react-router-dom'
 import {
   MapContainer,
   Marker,
@@ -32,28 +33,37 @@ import {
   tipoInstalacaoApiarioOptions,
 } from '../../utils/options.ts'
 
-type Inputs = {
+interface Inputs {
   name: string
   latitude: number
   longitude: number
   tipoInstalacao: string
   especieAbelha?: string
   quantidadeColmeias: string
-  outrosMeliponariosRaio1km: boolean
+  outrosMeliponariosRaio1km: string
   qtdColmeiasOutrosMeliponarios?: string | null
-  fontesNectarPolen: boolean
-  disponibilidadeAgua: boolean
-  sombreamentoNatural: boolean
-  protecaoVentosFortes: boolean
-  distanciaSeguraContaminacao: boolean
-  distanciaMinimaConstrucoes: boolean
-  distanciaSeguraLavouras: boolean
-  acessoVeiculos: boolean
-  capacidadeDeSuporte?: number
+  fontesNectarPolen: string
+  disponibilidadeAgua: string
+  sombreamentoNatural: string
+  protecaoVentosFortes: string
+  distanciaSeguraContaminacao: string
+  distanciaMinimaConstrucoes: string
+  distanciaSeguraLavouras: string
+  acessoVeiculos: string
+  capacidadeDeSuporte?: string
 }
 
-export default function NewMeliponary() {
+// Tipo para as notificações de validação
+interface ValidationNotification {
+  message: string
+  variant: 'warning' | 'info' | 'error' | 'success'
+  disableForm?: boolean
+}
+
+const NewMeliponary = () => {
+  const { enqueueSnackbar } = useSnackbar()
   const { loading, setLoading } = useLoading()
+  const navigate = useNavigate()
   const [disabled, setDisabled] = useState(false)
   const [latitude, setLatitude] = useState<number>(0)
   const [longitude, setLongitude] = useState<number>(0)
@@ -72,27 +82,68 @@ export default function NewMeliponary() {
     especieAbelha: yup.string().required('Este campo é obrigatório'),
     quantidadeColmeias: yup.string().required('Este campo é obrigatório'),
     outrosMeliponariosRaio1km: yup
-      .boolean()
+      .string()
       .required('Este campo é obrigatório'),
     qtdColmeiasOutrosMeliponarios: yup.string().nullable().optional(),
-    fontesNectarPolen: yup.boolean().required('Este campo é obrigatório'),
-    disponibilidadeAgua: yup.boolean().required('Este campo é obrigatório'),
-    sombreamentoNatural: yup.boolean().required('Este campo é obrigatório'),
-    protecaoVentosFortes: yup.boolean().required('Este campo é obrigatório'),
+    fontesNectarPolen: yup.string().required('Este campo é obrigatório'),
+    disponibilidadeAgua: yup.string().required('Este campo é obrigatório'),
+    sombreamentoNatural: yup.string().required('Este campo é obrigatório'),
+    protecaoVentosFortes: yup.string().required('Este campo é obrigatório'),
     distanciaSeguraContaminacao: yup
-      .boolean()
+      .string()
       .required('Este campo é obrigatório'),
     distanciaMinimaConstrucoes: yup
-      .boolean()
+      .string()
       .required('Este campo é obrigatório'),
-    distanciaSeguraLavouras: yup.boolean().required('Este campo é obrigatório'),
+    distanciaSeguraLavouras: yup.string().required('Este campo é obrigatório'),
+    acessoVeiculos: yup.string().required('Este campo é obrigatório'),
+    capacidadeDeSuporte: yup.string().optional(),
   })
-  const { handleSubmit, formState, control, watch } = useForm({
+
+  const { handleSubmit, formState, control, watch } = useForm<Inputs>({
     mode: 'onBlur',
     reValidateMode: 'onBlur',
-    resolver: yupResolver(meliponarioFormSchema),
+    resolver: yupResolver<Inputs>(meliponarioFormSchema) as Resolver<Inputs>,
   })
   const { errors } = formState
+
+  // Observar todos os campos de uma vez para melhor performance
+  const watchedFields = watch([
+    'outrosMeliponariosRaio1km',
+    'fontesNectarPolen',
+    'disponibilidadeAgua',
+    'sombreamentoNatural',
+    'protecaoVentosFortes',
+    'distanciaSeguraContaminacao',
+    'distanciaMinimaConstrucoes',
+    'distanciaSeguraLavouras',
+    'acessoVeiculos',
+  ])
+
+  // Desestruturação dos valores observados
+  const [
+    outrosMeliponariosRaio1km,
+    fontesNectarPolen,
+    disponibilidadeAgua,
+    sombreamentoNatural,
+    protecaoVentosFortes,
+    distanciaSeguraContaminacao,
+    distanciaMinimaConstrucoes,
+    distanciaSeguraLavouras,
+    acessoVeiculos,
+  ] = watchedFields
+
+  // Memoização do ícone do mapa
+  const myIcon = useMemo(
+    () =>
+      new L.Icon({
+        iconUrl: marker as string,
+        iconRetinaUrl: marker as string,
+        popupAnchor: [-0, -0],
+        iconSize: [32, 32],
+      }),
+    [],
+  )
 
   const handleSignUp: SubmitHandler<Inputs> = useCallback(
     async (data: Inputs) => {
@@ -104,24 +155,119 @@ export default function NewMeliponary() {
           longitude: String(longitude),
         }
 
-        await Promise.all([api.post('meliponary/', updatedData)])
-        // @ts-ignore
-        enqueueSnackbar({
-          message: 'Cadastro realizado com sucesso!',
+        await api.post('meliponary/', updatedData)
+
+        enqueueSnackbar('Cadastro realizado com sucesso!', {
           variant: 'success',
         })
+
+        navigate('/meus-meliponarios')
       } catch (err) {
-        enqueueSnackbar({
-          message: `Erro no cadastro! Ocorreu um erro ao cadastrar, ${err.response.data.message}`,
+        const errorMessage = err.response?.data?.message || 'Erro desconhecido'
+
+        enqueueSnackbar(`Erro no cadastro! ${errorMessage}`, {
           variant: 'error',
         })
-        setLoading(false)
       } finally {
         setLoading(false)
       }
     },
-    [latitude, longitude, setLoading],
+    [enqueueSnackbar, latitude, longitude, setLoading, navigate],
   )
+
+  // Função para validar os campos do formulário e exibir notificações apropriadas
+  const validateFormFields = useCallback(() => {
+    const notifications: ValidationNotification[] = []
+
+    if (fontesNectarPolen === 'false') {
+      notifications.push({
+        message:
+          'OOPS! Aqui não é um local adequado para colocar o meliponário!',
+        variant: 'warning',
+        disableForm: true,
+      })
+    }
+
+    if (disponibilidadeAgua === 'false') {
+      notifications.push({
+        message: 'OOPS! Será necessário adicionar água de qualidade no local!',
+        variant: 'info',
+      })
+    }
+
+    if (sombreamentoNatural === 'false') {
+      notifications.push({
+        message: 'OOPS! Será necessário colocar as caixas à sombra!',
+        variant: 'info',
+      })
+    }
+
+    if (protecaoVentosFortes === 'false') {
+      notifications.push({
+        message:
+          'OOPS! Aqui não é um local adequado para colocar o meliponário!',
+        variant: 'warning',
+        disableForm: true,
+      })
+    }
+
+    if (distanciaSeguraContaminacao === 'false') {
+      notifications.push({
+        message:
+          'OOPS! Aqui não é um local adequado para colocar o meliponário!',
+        variant: 'warning',
+        disableForm: true,
+      })
+    }
+
+    if (distanciaMinimaConstrucoes === 'false') {
+      notifications.push({
+        message:
+          'OOPS! Aqui não é um local adequado para colocar o meliponário!',
+        variant: 'warning',
+        disableForm: true,
+      })
+    }
+
+    if (distanciaSeguraLavouras === 'false') {
+      notifications.push({
+        message:
+          'OOPS! Aqui não é um local adequado para colocar o meliponário!',
+        variant: 'warning',
+        disableForm: true,
+      })
+    }
+
+    if (acessoVeiculos === 'false') {
+      notifications.push({
+        message:
+          'É necessário que haja acesso para entrada e saída do meliponário',
+        variant: 'warning',
+      })
+    }
+
+    return {
+      notifications,
+      shouldDisableForm: notifications.some((n) => n.disableForm),
+    }
+  }, [
+    fontesNectarPolen,
+    disponibilidadeAgua,
+    sombreamentoNatural,
+    protecaoVentosFortes,
+    distanciaSeguraContaminacao,
+    distanciaMinimaConstrucoes,
+    distanciaSeguraLavouras,
+    acessoVeiculos,
+  ])
+
+  useEffect(() => {
+    const { notifications, shouldDisableForm } = validateFormFields()
+    notifications.forEach(({ message, variant }) => {
+      enqueueSnackbar(message, { variant })
+    })
+    setDisabled(shouldDisableForm)
+  }, [validateFormFields, enqueueSnackbar])
 
   const handleLocationSelect = (lat: number, lng: number) => {
     setLatitude(lat)
@@ -129,96 +275,21 @@ export default function NewMeliponary() {
     setPosition({ lat, lng })
   }
 
-  const LocationMarker = () => {
+  // Definindo o componente LocationMarker com displayName
+  const LocationMarker = memo(() => {
     useMapEvents({
       click(e) {
         handleLocationSelect(e.latlng.lat, e.latlng.lng)
       },
     })
-    return position === null ? null : <Marker position={position}></Marker>
-  }
-  // @ts-ignore
-  const outrosMeliponariosRaio1km = watch('outrosMeliponariosRaio1km')
-  // @ts-ignore
-  const fontesNectarPolen = watch('fontesNectarPolen')
-  // @ts-ignore
-  const disponibilidadeAgua = watch('disponibilidadeAgua')
-  // @ts-ignore
-  const sombreamentoNatural = watch('sombreamentoNatural')
-  // @ts-ignore
-  const protecaoVentosFortes = watch('protecaoVentosFortes')
-  // @ts-ignore
-  const distanciaSeguraContaminacao = watch('distanciaSeguraContaminacao')
-  // @ts-ignore
-  const distanciaMinimaConstrucoes = watch('distanciaMinimaConstrucoes')
-  // @ts-ignore
-  const distanciaSeguraLavouras = watch('distanciaSeguraLavouras')
-
-  useEffect(() => {
-    if (fontesNectarPolen === 'false') {
-      setDisabled(true)
-      enqueueSnackbar(
-        'OOPS! Aqui não é um local adequado para colocar o meliponário!',
-        {
-          variant: 'warning',
-        },
-      )
-    }
-
-    if (disponibilidadeAgua === 'false') {
-      enqueueSnackbar(
-        'OOPS! Será necessário adicionar água de qualidade no local!',
-        {
-          variant: 'info',
-        },
-      )
-    }
-
-    if (sombreamentoNatural === 'false') {
-      enqueueSnackbar('OOPS! Será necessário colocar as caixas à sombra! ', {
-        variant: 'info',
-      })
-    }
-    if (protecaoVentosFortes === 'false') {
-      enqueueSnackbar(
-        'OOPS! Aqui não é um local adequado para colocar o meliponário!',
-        { variant: 'warning' },
-      )
-    }
-    if (distanciaSeguraContaminacao === 'false') {
-      enqueueSnackbar(
-        'OOPS! Aqui não é um local adequado para colocar o meliponário!',
-        { variant: 'warning' },
-      )
-    }
-    if (distanciaMinimaConstrucoes === 'false') {
-      enqueueSnackbar(
-        'OOPS! Aqui não é um local adequado para colocar o meliponário!',
-        { variant: 'warning' },
-      )
-      setDisabled(true)
-    } else {
-      setDisabled(false)
-    }
-
-    if (distanciaSeguraLavouras === 'false') {
-      enqueueSnackbar(
-        'OOPS! Aqui não é um local adequado para colocar o meliponário!',
-        { variant: 'warning' },
-      )
-      setDisabled(true)
-    } else {
-      setDisabled(false)
-    }
-  }, [
-    disponibilidadeAgua,
-    distanciaMinimaConstrucoes,
-    distanciaSeguraContaminacao,
-    distanciaSeguraLavouras,
-    fontesNectarPolen,
-    protecaoVentosFortes,
-    sombreamentoNatural,
-  ])
+    return position === null ? null : (
+      <Marker position={position} icon={myIcon}>
+        <Popup>Coordenadas selecionadas</Popup>
+      </Marker>
+    )
+  })
+  // Adicionando displayName explícito para o componente memoizado
+  LocationMarker.displayName = 'LocationMarker'
 
   const getUserLocation = () => {
     if (navigator.geolocation) {
@@ -236,13 +307,6 @@ export default function NewMeliponary() {
       )
     }
   }
-
-  const myIcon = new L.Icon({
-    iconUrl: marker as string,
-    iconRetinaUrl: marker as string,
-    popupAnchor: [-0, -0],
-    iconSize: [32, 32],
-  })
 
   return (
     <div className="h-full w-full p-10">
@@ -494,3 +558,6 @@ export default function NewMeliponary() {
     </div>
   )
 }
+
+export default memo(NewMeliponary)
+memo(NewMeliponary).displayName = 'NewMeliponary'

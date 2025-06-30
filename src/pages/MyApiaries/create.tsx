@@ -1,9 +1,9 @@
-// @ts-nocheck
 import { yupResolver } from '@hookform/resolvers/yup'
 import 'leaflet/dist/leaflet.css'
 import { useSnackbar } from 'notistack'
-import { useCallback, useEffect, useState } from 'react'
-import { SubmitHandler, useForm } from 'react-hook-form'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Resolver, SubmitHandler, useForm } from 'react-hook-form'
+import { useNavigate } from 'react-router-dom'
 import {
   MapContainer,
   Marker,
@@ -38,24 +38,31 @@ interface Inputs {
   latitude: number
   longitude: number
   tipoInstalacao: string
-  tempoItinerante?: string
+  tempoItinerante?: string | null
   quantidadeColmeias: string
-  outrosApiariosRaio3km: boolean
+  outrosApiariosRaio3km: string
   qtdColmeiasOutrosApiarios?: string | null
   fontesNectarPolen: string
-  disponibilidadeAgua: boolean
-  sombreamentoNatural: boolean
-  protecaoVentosFortes: boolean
-  distanciaSeguraContaminacao: boolean
-  distanciaMinimaConstrucoes: boolean
-  distanciaSeguraLavouras: boolean
-  capacidadeDeSuporte?: string
-  acessoVeiculos: boolean
+  disponibilidadeAgua: string
+  sombreamentoNatural: string
+  protecaoVentosFortes: string
+  distanciaSeguraContaminacao: string
+  distanciaMinimaConstrucoes: string
+  distanciaSeguraLavouras: string
+  acessoVeiculos: string
+}
+
+// Tipo para as notificações de validação
+interface ValidationNotification {
+  message: string
+  variant: 'warning' | 'info' | 'error' | 'success'
+  disableForm?: boolean
 }
 
 export default function NewApiary() {
   const { enqueueSnackbar } = useSnackbar()
   const { loading, setLoading } = useLoading()
+  const navigate = useNavigate()
   const [disabled, setDisabled] = useState(false)
   const [latitude, setLatitude] = useState<number>(0)
   const [longitude, setLongitude] = useState<number>(0)
@@ -71,29 +78,162 @@ export default function NewApiary() {
     latitude: yup.number().optional(),
     longitude: yup.number().optional(),
     tipoInstalacao: yup.string().required('Este campo é obrigatório'),
-    tempoIntinerante: yup.string().nullable().optional(),
+    tempoItinerante: yup.string().nullable().optional(),
     quantidadeColmeias: yup.string().required('Este campo é obrigatório'),
-    outrosApiariosRaio3km: yup.boolean().required('Este campo é obrigatório'),
+    outrosApiariosRaio3km: yup.string().required('Este campo é obrigatório'),
     qtdColmeiasOutrosApiarios: yup.string().nullable().optional(),
-    fontesNectarPolen: yup.boolean().required('Este campo é obrigatório'),
-    disponibilidadeAgua: yup.boolean().required('Este campo é obrigatório'),
-    sombreamentoNatural: yup.boolean().required('Este campo é obrigatório'),
-    protecaoVentosFortes: yup.boolean().required('Este campo é obrigatório'),
+    fontesNectarPolen: yup.string().required('Este campo é obrigatório'),
+    disponibilidadeAgua: yup.string().required('Este campo é obrigatório'),
+    sombreamentoNatural: yup.string().required('Este campo é obrigatório'),
+    protecaoVentosFortes: yup.string().required('Este campo é obrigatório'),
     distanciaSeguraContaminacao: yup
-      .boolean()
+      .string()
       .required('Este campo é obrigatório'),
     distanciaMinimaConstrucoes: yup
-      .boolean()
+      .string()
       .required('Este campo é obrigatório'),
-    distanciaSeguraLavouras: yup.boolean().required('Este campo é obrigatório'),
-    acessoVeiculos: yup.boolean().required('Este campo é obrigatório'),
+    distanciaSeguraLavouras: yup.string().required('Este campo é obrigatório'),
+    acessoVeiculos: yup.string().required('Este campo é obrigatório'),
   })
+
   const { handleSubmit, formState, control, watch } = useForm<Inputs>({
     mode: 'onBlur',
     reValidateMode: 'onBlur',
-    resolver: yupResolver(apiarioFormSchema),
+    resolver: yupResolver<Inputs>(apiarioFormSchema) as Resolver<Inputs>,
   })
   const { errors } = formState
+
+  const watchedFields = watch([
+    'tipoInstalacao',
+    'outrosApiariosRaio3km',
+    'fontesNectarPolen',
+    'disponibilidadeAgua',
+    'sombreamentoNatural',
+    'protecaoVentosFortes',
+    'distanciaSeguraContaminacao',
+    'distanciaMinimaConstrucoes',
+    'distanciaSeguraLavouras',
+    'acessoVeiculos',
+  ])
+
+  // Desestruturação dos valores observados
+  const [
+    tipoInstalacao,
+    outrosApiariosRaio3km,
+    fontesNectarPolen,
+    disponibilidadeAgua,
+    sombreamentoNatural,
+    protecaoVentosFortes,
+    distanciaSeguraContaminacao,
+    distanciaMinimaConstrucoes,
+    distanciaSeguraLavouras,
+    acessoVeiculos,
+  ] = watchedFields
+
+  // Memoização do ícone do mapa
+  const myIcon = useMemo(
+    () =>
+      new L.Icon({
+        iconUrl: marker as string,
+        iconRetinaUrl: marker as string,
+        popupAnchor: [-0, -0],
+        iconSize: [32, 32],
+      }),
+    [],
+  )
+
+  // Função para validar os campos do formulário e exibir notificações apropriadas
+  const validateFormFields = useCallback(() => {
+    const notifications: ValidationNotification[] = []
+
+    if (fontesNectarPolen === 'false') {
+      notifications.push({
+        message: 'OOPS! Aqui não é um local adequado para colocar o apiário!',
+        variant: 'warning',
+        disableForm: true,
+      })
+    }
+
+    if (disponibilidadeAgua === 'false') {
+      notifications.push({
+        message: 'OOPS! Será necessário adicionar água de qualidade no local!',
+        variant: 'info',
+      })
+    }
+
+    if (sombreamentoNatural === 'false') {
+      notifications.push({
+        message: 'OOPS! Será necessário colocar as caixas à sombra!',
+        variant: 'info',
+      })
+    }
+
+    if (protecaoVentosFortes === 'false') {
+      notifications.push({
+        message: 'OOPS! Aqui não é um local adequado para colocar o apiário!',
+        variant: 'warning',
+        disableForm: true,
+      })
+    }
+
+    if (distanciaSeguraContaminacao === 'false') {
+      notifications.push({
+        message: 'OOPS! Aqui não é um local adequado para colocar o apiário!',
+        variant: 'warning',
+        disableForm: true,
+      })
+    }
+
+    if (distanciaMinimaConstrucoes === 'false') {
+      notifications.push({
+        message: 'OOPS! Aqui não é um local adequado para colocar o apiário!',
+        variant: 'warning',
+        disableForm: true,
+      })
+    }
+
+    if (distanciaSeguraLavouras === 'false') {
+      notifications.push({
+        message: 'OOPS! Aqui não é um local adequado para colocar o apiário!',
+        variant: 'warning',
+        disableForm: true,
+      })
+    }
+
+    if (acessoVeiculos === 'false') {
+      notifications.push({
+        message: 'É necessário que haja acesso para entrada e saída do apiário',
+        variant: 'warning',
+      })
+    }
+
+    return {
+      notifications,
+      shouldDisableForm: notifications.some((n) => n.disableForm),
+    }
+  }, [
+    fontesNectarPolen,
+    disponibilidadeAgua,
+    sombreamentoNatural,
+    protecaoVentosFortes,
+    distanciaSeguraContaminacao,
+    distanciaMinimaConstrucoes,
+    distanciaSeguraLavouras,
+    acessoVeiculos,
+  ])
+
+  // Efeito para validar os campos quando eles mudarem
+  useEffect(() => {
+    const { notifications, shouldDisableForm } = validateFormFields()
+
+    // Atualiza o estado de desabilitado
+    setDisabled(shouldDisableForm)
+
+    // Exibe as notificações
+    notifications.forEach((notification) => {
+      enqueueSnackbar(notification.message, { variant: notification.variant })
+    })
+  }, [validateFormFields, enqueueSnackbar])
 
   const handleSignUp: SubmitHandler<Inputs> = useCallback(
     async (data: Inputs) => {
@@ -104,43 +244,57 @@ export default function NewApiary() {
           latitude: String(latitude),
           longitude: String(longitude),
         }
-        await Promise.all([api.post('apiaries', updatedData)])
+
+        await api.post('apiaries', updatedData)
+
         enqueueSnackbar('Cadastro realizado com sucesso!', {
           variant: 'success',
         })
+
+        // Redireciona para a lista de apiários após o sucesso
+        navigate('/meus-apiarios')
       } catch (err) {
-        enqueueSnackbar(
-          `Erro no cadastro! Ocorreu um erro ao cadastrar, ${err.response.data.message}`,
-          {
-            variant: 'error',
-          },
-        )
-        setLoading(false)
+        const errorMessage = err.response?.data?.message || 'Erro desconhecido'
+        enqueueSnackbar(`Erro no cadastro! ${errorMessage}`, {
+          variant: 'error',
+        })
       } finally {
         setLoading(false)
       }
     },
-    [enqueueSnackbar, latitude, longitude, setLoading],
+    [enqueueSnackbar, latitude, longitude, setLoading, navigate],
   )
 
-  const handleLocationSelect = (lat: number, lng: number) => {
+  const handleLocationSelect = useCallback((lat: number, lng: number) => {
     setLatitude(lat)
     setLongitude(lng)
     setPosition({ lat, lng })
-  }
+  }, [])
 
-  const LocationMarker = () => {
+  // Componente separado para corrigir o erro do Hook
+  const LocationMarker = ({
+    onLocationSelect,
+    position,
+    icon,
+  }: {
+    onLocationSelect: (lat: number, lng: number) => void
+    position: { lat: number; lng: number } | null
+    icon: L.Icon
+  }) => {
     useMapEvents({
       click(e) {
-        handleLocationSelect(e.latlng.lat, e.latlng.lng)
+        onLocationSelect(e.latlng.lat, e.latlng.lng)
       },
     })
+
     return position === null ? null : (
-      <Marker icon={myIcon} position={position}></Marker>
+      <Marker icon={icon} position={position}>
+        <Popup>Localização selecionada</Popup>
+      </Marker>
     )
   }
 
-  const getUserLocation = () => {
+  const getUserLocation = useCallback(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -152,117 +306,23 @@ export default function NewApiary() {
         },
         (error) => {
           console.error(error)
+          enqueueSnackbar('Não foi possível obter sua localização', {
+            variant: 'error',
+          })
         },
       )
-    }
-  }
-
-  // @ts-ignore
-  const tipoInstalacao = watch('tipoInstalacao')
-  // @ts-ignore
-  const outrosApiariosRaio3km = watch('outrosApiariosRaio3km')
-  // @ts-ignore
-  const fontesNectarPolen = watch('fontesNectarPolen')
-  // @ts-ignore
-  const disponibilidadeAgua = watch('disponibilidadeAgua')
-  // @ts-ignore
-  const sombreaentoNatural = watch('sombreamentoNatural')
-  // @ts-ignore
-  const protecaoVentosFortes = watch('protecaoVentosFortes')
-  // @ts-ignore
-  const distanciaSeguraContaminacao = watch('distanciaSeguraContaminacao')
-  // @ts-ignore
-  const distanciaMinimaConstrucoes = watch('distanciaMinimaConstrucoes')
-  // @ts-ignore
-  const distanciaMinimaLavouras = watch('distanciaSeguraLavouras')
-  // @ts-ignore
-  const acessoVeiculos = watch('acessoVeiculos')
-
-  useEffect(() => {
-    if (fontesNectarPolen === 'false') {
-      setDisabled(true)
-      enqueueSnackbar(
-        'OOPS! Aqui não é um local adequado para colocar o apiário!',
-        { variant: 'warning' },
-      )
-    }
-    if (disponibilidadeAgua === 'false') {
-      enqueueSnackbar(
-        'OOPS! Será necessário adicionar água de qualidade no local!',
-        { variant: 'info' },
-      )
-    }
-    if (sombreaentoNatural === 'false') {
-      enqueueSnackbar('OOPS! Será necessário colocar as caixas à sombra! ', {
-        variant: 'info',
+    } else {
+      enqueueSnackbar('Seu navegador não suporta geolocalização', {
+        variant: 'warning',
       })
     }
-    if (protecaoVentosFortes === 'false') {
-      enqueueSnackbar(
-        'OOPS! Aqui não é um local adequado para colocar o apiário!',
-        { variant: 'warning' },
-      )
-    }
-    if (distanciaSeguraContaminacao === 'false') {
-      enqueueSnackbar(
-        'OOPS! Aqui não é um local adequado para colocar o apiário!',
-        { variant: 'warning' },
-      )
-    }
-
-    if (distanciaMinimaConstrucoes === 'false') {
-      enqueueSnackbar(
-        'OOPS! Aqui não é um local adequado para colocar o apiário!',
-        { variant: 'warning' },
-      )
-      setDisabled(true)
-    } else {
-      setDisabled(false)
-    }
-
-    if (distanciaMinimaLavouras === 'false') {
-      enqueueSnackbar(
-        'OOPS! Aqui não é um local adequado para colocar o apiário!',
-        { variant: 'warning' },
-      )
-      setDisabled(true)
-    } else {
-      setDisabled(false)
-    }
-
-    if (acessoVeiculos === 'false') {
-      enqueueSnackbar(
-        'É necessário que haja acesso para entrada e saída do apiário',
-        {
-          variant: 'warning',
-        },
-      )
-    }
-  }, [
-    outrosApiariosRaio3km,
-    disponibilidadeAgua,
-    distanciaMinimaConstrucoes,
-    distanciaMinimaLavouras,
-    distanciaSeguraContaminacao,
-    enqueueSnackbar,
-    fontesNectarPolen,
-    protecaoVentosFortes,
-    sombreaentoNatural,
-    acessoVeiculos,
-  ])
-
-  const myIcon = new L.Icon({
-    iconUrl: marker as string,
-    iconRetinaUrl: marker as string,
-    popupAnchor: [-0, -0],
-    iconSize: [32, 32],
-  })
+  }, [handleLocationSelect, enqueueSnackbar])
 
   return (
-    <div className="h-full w-full p-10">
+    <div className="h-full w-full p-4 md:p-10">
       <Breadcumbs pageName="Cadastrar Apiário" />
       <BackdropLoading isLoading={loading} />
-      <div className="grid grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div className="mb-5">
           <p className="mb-2 block text-xs font-bold uppercase tracking-wide text-gray-700">
             Selecione as Coordenadas
@@ -273,26 +333,38 @@ export default function NewApiary() {
           >
             Usar Minha Localização
           </button>
-          <MapContainer
-            center={[-2.5555334824608353, -44.208297729492195]}
-            zoom={13}
-            style={{ height: '400px', width: '100%' }}
-          >
-            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-            {userLocation && (
-              <Marker icon={myIcon} position={userLocation}>
-                <Popup>Você está aqui</Popup>
-              </Marker>
-            )}
-            <LocationMarker />
-          </MapContainer>
+          <div className="h-[300px] w-full md:h-[400px]">
+            <MapContainer
+              center={[-2.5555334824608353, -44.208297729492195]}
+              zoom={13}
+              style={{ height: '100%', width: '100%' }}
+            >
+              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+              {userLocation && (
+                <Marker icon={myIcon} position={userLocation}>
+                  <Popup>Você está aqui</Popup>
+                </Marker>
+              )}
+              <LocationMarker
+                onLocationSelect={handleLocationSelect}
+                position={position}
+                icon={myIcon}
+              />
+            </MapContainer>
+          </div>
+          {position && (
+            <div className="mt-2 rounded-md bg-green-100 p-2 text-sm text-green-800">
+              Coordenadas selecionadas: {latitude.toFixed(6)},{' '}
+              {longitude.toFixed(6)}
+            </div>
+          )}
         </div>
         <div className="mb-5">
           <form onSubmit={handleSubmit(handleSignUp)} className="w-full">
-            <div className="mx-3 mb-6 flex flex-wrap">
+            <div className="mx-1 mb-6 flex flex-wrap md:mx-3">
               <InputContainer className="mb-6  w-full px-3 md:mb-0">
                 <InputLabel label="Nome" name="name" />
-                <Input
+                <Input<Inputs>
                   className="mb-3 block w-full appearance-none rounded border border-red-500 bg-gray-200 px-4 py-3 leading-tight text-gray-700 focus:bg-white focus:outline-none"
                   control={control}
                   name="name"
@@ -302,7 +374,7 @@ export default function NewApiary() {
               </InputContainer>
               <InputContainer className="mb-6 w-full px-3 md:mb-0 md:w-1/2">
                 <InputLabel label="Latitude" name="latitude" />
-                <Input
+                <Input<Inputs>
                   className="mb-3 block w-full appearance-none rounded border border-red-500 bg-gray-200 px-4 py-3 leading-tight text-gray-700 focus:bg-white focus:outline-none"
                   control={control}
                   name="latitude"
@@ -314,7 +386,7 @@ export default function NewApiary() {
               </InputContainer>
               <InputContainer className="mb-6 w-full px-3 md:mb-0 md:w-1/2">
                 <InputLabel label="Longitude" name="longitude" />
-                <Input
+                <Input<Inputs>
                   className="mb-3 block w-full appearance-none rounded border border-red-500 bg-gray-200 px-4 py-3 leading-tight text-gray-700 focus:bg-white focus:outline-none"
                   control={control}
                   name="longitude"
@@ -329,7 +401,7 @@ export default function NewApiary() {
                   label="O apiário a ser instalado será?"
                   name="tipoInstalacao"
                 />
-                <Select
+                <Select<Inputs>
                   options={options}
                   control={control}
                   name="tipoInstalacao"
@@ -344,7 +416,7 @@ export default function NewApiary() {
                     label="Caso você tenha respondido intinerante, por quanto tempo pretende ficar neste local?"
                     name="role"
                   />
-                  <Select
+                  <Select<Inputs>
                     options={tempoIntineranteOptions}
                     control={control}
                     name="tempoItinerante"
@@ -358,7 +430,7 @@ export default function NewApiary() {
                   label="Quantas Colméias pretende instalar nesse apiário?"
                   name="quantidadeColmeias"
                 />
-                <Select
+                <Select<Inputs>
                   options={qtdColmeiasOptions}
                   control={control}
                   name="quantidadeColmeias"
@@ -371,7 +443,7 @@ export default function NewApiary() {
                   label="Há outros apiários no raio de 3 KM?"
                   name="outrosApiariosRaio3km"
                 />
-                <Select
+                <Select<Inputs>
                   options={outrosApiariosRaio3kmOptions}
                   control={control}
                   name="outrosApiariosRaio3km"
@@ -379,14 +451,13 @@ export default function NewApiary() {
                   errors={errors?.quantidadeColmeias?.message}
                 />
               </SelectContainer>
-              {/* @ts-ignore */}
               {outrosApiariosRaio3km === 'true' ? (
                 <SelectContainer className="w-full px-3 py-2">
                   <InputLabel
                     label="Caso haja outros apiários no raio de 3 KM, qual a quantidade de colméias?"
                     name="qtdColmeiasOutrosApiarios"
                   />
-                  <Select
+                  <Select<Inputs>
                     options={qtdColmeiasOutrosApiariosOptions}
                     control={control}
                     name="qtdColmeiasOutrosApiarios"
@@ -400,7 +471,7 @@ export default function NewApiary() {
                   label="Há fontes de néctar e pólen (flores) até 3km do local que pretende instalar o apiário?"
                   name="fontesNectarPolen"
                 />
-                <Select
+                <Select<Inputs>
                   options={simNaoOptions}
                   control={control}
                   name="fontesNectarPolen"
@@ -413,7 +484,7 @@ export default function NewApiary() {
                   label="Há disponibilidade de água de qualidade até 500m a partir do local escolhido?"
                   name="disponibilidadeAgua"
                 />
-                <Select
+                <Select<Inputs>
                   options={simNaoOptions}
                   control={control}
                   name="disponibilidadeAgua"
@@ -426,7 +497,7 @@ export default function NewApiary() {
                   label="Há sombreamento natural para as colméias?"
                   name="sombreamentoNatural"
                 />
-                <Select
+                <Select<Inputs>
                   options={simNaoOptions}
                   control={control}
                   name="sombreamentoNatural"
@@ -439,7 +510,7 @@ export default function NewApiary() {
                   label="Há proteção contra ventos fortes?"
                   name="protecaoVentosFortes"
                 />
-                <Select
+                <Select<Inputs>
                   options={simNaoOptions}
                   control={control}
                   name="protecaoVentosFortes"
@@ -452,7 +523,7 @@ export default function NewApiary() {
                   label="Há uma distancia segura (mínimo de 3km) de possíveis fontes de contaminação (lixões, matadouros, fábrica de doces, engenhos, dentre outros)?"
                   name="distanciaSeguraContaminacao"
                 />
-                <Select
+                <Select<Inputs>
                   options={simNaoOptions}
                   control={control}
                   name="distanciaSeguraContaminacao"
@@ -465,7 +536,7 @@ export default function NewApiary() {
                   label="O local onde pretende instalar seu apiario atende a uma distancia mínima (400m) de currais, casas, escolas, estradas movimentadas, aviários e outras construções?"
                   name="distanciaMinimaConstrucoes"
                 />
-                <Select
+                <Select<Inputs>
                   options={simNaoOptions}
                   control={control}
                   name="distanciaMinimaConstrucoes"
@@ -478,7 +549,7 @@ export default function NewApiary() {
                   label="O local possui uma distância segura (3km) de lavouras (milho, soja, transgênicos, dentre outros)?"
                   name="distanciaSeguraLavouras"
                 />
-                <Select
+                <Select<Inputs>
                   options={simNaoOptions}
                   control={control}
                   name="distanciaSeguraLavouras"
@@ -504,9 +575,9 @@ export default function NewApiary() {
             <button
               disabled={disabled}
               type="submit"
-              className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:cursor-not-allowed disabled:bg-gray-400"
             >
-              Cadastrar
+              {position ? 'Cadastrar' : 'Selecione as coordenadas no mapa'}
             </button>
           </form>
         </div>

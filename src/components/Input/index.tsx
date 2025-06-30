@@ -1,59 +1,72 @@
 import React, { forwardRef, useRef, useImperativeHandle } from 'react'
-import { Control, Controller } from 'react-hook-form'
+import { Control, Controller, FieldValues, Path } from 'react-hook-form'
 
-interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  control: Control
-  name: string
+interface InputProps<T extends FieldValues = FieldValues>
+  extends React.InputHTMLAttributes<HTMLInputElement> {
+  control: Control<T>
+  name: Path<T>
   type?: string
   className?: string
   placeholder?: string
   errors: any
 }
 
-const Input = (
-  {
-    control,
-    name,
-    type = 'text',
-    placeholder,
-    errors,
-    className,
-    ...rest
-  }: InputProps,
-  ref: any,
-) => {
-  const inputElementRef = useRef<HTMLInputElement | null>(null)
-
-  useImperativeHandle(ref, () => ({
-    focus: () => {
-      inputElementRef.current?.focus()
-    },
-  }))
-
-  const getError = (message: string) => {
-    return <p className="text-red-500 text-xs italic">{message}</p>
-  }
-
-  return (
-    <Controller
-      control={control}
-      name={name}
-      render={({ field }) => (
-        <>
-          <input
-            {...field}
-            ref={inputElementRef}
-            className={className}
-            id={name}
-            type={type}
-            placeholder={placeholder}
-            {...rest}
-          />
-          {getError(errors)}
-        </>
-      )}
-    />
-  )
+interface InputComponentType {
+  <T extends FieldValues>(
+    props: InputProps<T> & { ref?: React.ForwardedRef<unknown> },
+  ): React.ReactElement
+  displayName?: string
 }
 
-export default forwardRef(Input)
+const Input = forwardRef(
+  <T extends FieldValues>(
+    {
+      control,
+      name,
+      type = 'text',
+      placeholder,
+      errors,
+      className,
+      ...rest
+    }: InputProps<T>,
+    ref: any,
+  ) => {
+    const inputElementRef = useRef<HTMLInputElement | null>(null)
+
+    useImperativeHandle(ref, () => ({
+      focus: () => {
+        inputElementRef.current?.focus()
+      },
+    }))
+
+    const getError = (message: string) => {
+      return <p className="text-xs italic text-red-500">{message}</p>
+    }
+
+    return (
+      <Controller
+        control={control}
+        name={name}
+        render={({ field }) => (
+          <>
+            <input
+              {...field}
+              ref={inputElementRef}
+              className={className}
+              id={name}
+              type={type}
+              placeholder={placeholder}
+              {...rest}
+            />
+            {getError(errors)}
+          </>
+        )}
+      />
+    )
+  },
+) as InputComponentType
+
+// Agora podemos atribuir displayName sem erros
+Input.displayName = 'Input'
+
+export default Input

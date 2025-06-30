@@ -1,77 +1,84 @@
-import { forwardRef, useImperativeHandle, useRef } from 'react'
-import { Control, Controller } from 'react-hook-form'
+import React, { forwardRef, useImperativeHandle, useRef } from 'react'
+import { Control, Controller, FieldValues, Path } from 'react-hook-form'
 
-// type Option = {
-//   value: string
-//   label: string
-// }
-type Options = any
+// Atualizando a interface para aceitar string ou boolean como valor
+type Option = {
+  value: string | boolean
+  label: string
+}
 
-interface InputProps {
-  control: Control
-  name: string
+interface InputProps<T extends FieldValues = FieldValues> {
+  control: Control<T>
+  name: Path<T>
   type?: string
   className?: string
   placeholder?: string
   errors: any
-  options: Options
+  options: Option[]
 }
 
-const Select = (
-  {
-    control,
-    name,
-    type = 'text',
-    placeholder,
-    errors,
-    className,
-    options,
-    ...rest
-  }: InputProps,
-  ref: any,
-) => {
-  const inputElementRef = useRef<HTMLSelectElement | null>(null)
-
-  useImperativeHandle(ref, () => ({
-    focus: () => {
-      inputElementRef.current?.focus()
-    },
-  }))
-
-  const getError = (message: string) => {
-    return <p className="text-xs italic text-red-500">{message}</p>
-  }
-
-  return (
-    <Controller
-      control={control}
-      name={name}
-      render={({ field }) => (
-        <>
-          <div className="relative">
-            <select className={className} id={name} {...rest} {...field}>
-              <option>Selecione uma opção...</option>
-              {options.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            {/* <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700"> */}
-            {/*  <svg */}
-            {/*    className="fill-current h-4 w-4" */}
-            {/*    xmlns="http://www.w3.org/2000/svg" */}
-            {/*    viewBox="0 0 20 20" */}
-            {/*  > */}
-            {/*    <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /> */}
-            {/*  </svg> */}
-            {/* </div> */}
-          </div>
-          {getError(errors)}
-        </>
-      )}
-    />
-  )
+// Definindo o tipo para o componente forwardRef com displayName
+interface SelectComponentType {
+  <T extends FieldValues>(
+    props: InputProps<T> & { ref?: React.ForwardedRef<unknown> },
+  ): React.ReactElement
+  displayName?: string
 }
 
-export default forwardRef(Select)
+const Select = forwardRef(
+  <T extends FieldValues>(
+    {
+      control,
+      name,
+      type = 'text',
+      placeholder,
+      errors,
+      className,
+      options,
+      ...rest
+    }: InputProps<T>,
+    ref: any,
+  ) => {
+    const inputElementRef = useRef<HTMLSelectElement | null>(null)
+
+    useImperativeHandle(ref, () => ({
+      focus: () => {
+        inputElementRef.current?.focus()
+      },
+    }))
+
+    const getError = (message: string) => {
+      return <p className="text-xs italic text-red-500">{message}</p>
+    }
+
+    return (
+      <Controller
+        control={control}
+        name={name}
+        render={({ field }) => (
+          <>
+            <div className="relative">
+              <select className={className} id={name} {...rest} {...field}>
+                <option>Selecione uma opção...</option>
+                {options.map((option) => (
+                  <option
+                    key={String(option.value)}
+                    value={String(option.value)}
+                  >
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {getError(errors)}
+          </>
+        )}
+      />
+    )
+  },
+) as SelectComponentType
+
+// Agora podemos atribuir displayName sem erros
+Select.displayName = 'Select'
+
+export default Select

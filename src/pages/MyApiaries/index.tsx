@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, memo } from 'react'
 import api from '../../services'
 import { useLoading } from '../../hooks/useLoading.tsx'
 import Breadcumbs from '../../components/Breadcumbs'
@@ -12,11 +12,24 @@ import {
   DialogTitle,
 } from '@headlessui/react'
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
+import { useSnackbar } from 'notistack'
 
-export default function MyApiaries() {
+// Definindo interface para tipagem dos apiários
+interface Apiary {
+  id: number
+  name: string
+  tipoInstalacao: string
+  capacidadeDeSuporte: string
+}
+
+const MyApiaries = () => {
   const navigate = useNavigate()
   const { loading, setLoading } = useLoading()
-  const [apiaries, setApiaries] = useState(null)
+  const [apiaries, setApiaries] = useState<Apiary[]>([])
+  const [open, setOpen] = useState(false)
+  const [selectedId, setSelectedId] = useState<number>()
+  const [isDeleting, setIsDeleting] = useState(false)
+  const { enqueueSnackbar } = useSnackbar()
 
   const fetchApiaries = useCallback(async () => {
     try {
@@ -25,10 +38,13 @@ export default function MyApiaries() {
       setApiaries(data)
     } catch (err) {
       console.error(err)
+      enqueueSnackbar('Erro ao carregar apiários. Tente novamente.', {
+        variant: 'error',
+      })
     } finally {
       setLoading(false)
     }
-  }, [setLoading])
+  }, [setLoading, enqueueSnackbar])
 
   useEffect(() => {
     fetchApiaries()
@@ -41,29 +57,92 @@ export default function MyApiaries() {
     [navigate],
   )
 
-  const [open, setOpen] = useState(false)
-  const [selectedId, setSelectedId] = useState<number>()
-
   const handleOpenCloseModal = useCallback((id: number) => {
     setOpen((state) => !state)
     setSelectedId(id)
   }, [])
-  const handleDeleteApiary = useCallback(() => {
-    api
-      .delete(`/apiaries/${selectedId}`)
-      .then(() => {
-        setOpen(false)
-        fetchApiaries()
-      })
-      .catch((e) => console.error(e))
-  }, [fetchApiaries, selectedId])
+
+  const handleDeleteApiary = useCallback(async () => {
+    try {
+      setIsDeleting(true)
+      await api.delete(`/apiaries/${selectedId}`)
+      setOpen(false)
+      fetchApiaries()
+      enqueueSnackbar('Apiário removido com sucesso!', { variant: 'success' })
+    } catch (error) {
+      console.error(error)
+      enqueueSnackbar('Erro ao remover apiário', { variant: 'error' })
+    } finally {
+      setIsDeleting(false)
+    }
+  }, [fetchApiaries, selectedId, enqueueSnackbar])
+
+  // Componente memoizado para os botões de ação
+  const ActionButtons = memo(({ id }: { id: number }) => (
+    <div className="hidden items-center justify-center space-x-2 p-2.5 sm:flex xl:p-5">
+      <button
+        onClick={() => handleViewApiary(id)}
+        className="flex rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+        aria-label="Visualizar apiário"
+      >
+        Visualizar
+      </button>
+      <button
+        onClick={() => handleOpenCloseModal(id)}
+        className="flex rounded-md bg-red-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
+        aria-label="Apagar apiário"
+      >
+        Apagar
+      </button>
+    </div>
+  ))
+
+  ActionButtons.displayName = 'ActionButtons'
+
+  // Componente memoizado para a linha da tabela
+  const ApiaryRow = memo(
+    ({ apiary, isLast }: { apiary: Apiary; isLast: boolean }) => (
+      <div
+        className={`grid grid-cols-3 sm:grid-cols-5 ${
+          !isLast ? 'border-stroke dark:border-strokedark border-b' : ''
+        }`}
+      >
+        <div className="flex items-center gap-3 p-2.5 xl:p-5">
+          <p className="hidden text-black sm:block">
+            {apiary.name || 'Sem nome'}
+          </p>
+        </div>
+
+        <div className="flex items-center justify-center p-2.5 xl:p-5">
+          <p className="text-black">{apiary.tipoInstalacao}</p>
+        </div>
+
+        <div className="flex items-center justify-center p-2.5 xl:p-5">
+          <p className="text-meta-3">APIÁRIO</p>
+        </div>
+
+        <div className="flex items-center justify-center p-2.5 xl:p-5">
+          <p className="text-meta-3">
+            {apiary.capacidadeDeSuporte || 'Não definida'}
+          </p>
+        </div>
+
+        <ActionButtons id={apiary.id} />
+      </div>
+    ),
+  )
+
+  ApiaryRow.displayName = 'ApiaryRow'
 
   return (
     <div className="h-full w-full p-10">
       <BackdropLoading isLoading={loading} />
       <Breadcumbs pageName="Meus Apiários" />
 
-      <div className="items-end justify-end py-5">
+      <div className="flex items-center justify-between py-5">
+        <h2 className="hidden text-xl font-bold text-gray-800 md:block">
+          Lista de Apiários
+        </h2>
         <Link
           to="/meus-apiarios/novo"
           data-modal-target="authentication-modal"
@@ -108,57 +187,29 @@ export default function MyApiaries() {
             </div>
           </div>
 
-          {apiaries?.map((brand, key) => {
-            return (
-              <div
-                className={`grid grid-cols-3 sm:grid-cols-5 ${
-                  key === apiaries.length - 1
-                    ? ''
-                    : 'border-stroke dark:border-strokedark border-b'
-                }`}
-                key={key}
-              >
-                <div className="flex items-center gap-3 p-2.5 xl:p-5">
-                  <p className="hidden text-black sm:block">{brand.name}</p>
-                </div>
-
-                <div className="flex items-center justify-center p-2.5 xl:p-5">
-                  <p className="text-black">{brand.tipoInstalacao}</p>
-                </div>
-
-                <div className="flex items-center justify-center p-2.5 xl:p-5">
-                  <p className="text-meta-3">APIÁRIO</p>
-                </div>
-
-                <div className="flex items-center justify-center p-2.5 xl:p-5">
-                  <p className="text-meta-3">{brand.capacidadeDeSuporte}</p>
-                </div>
-
-                <div className="hidden items-center justify-center p-2.5 sm:flex xl:p-5">
-                  <button
-                    onClick={() => handleViewApiary(brand.id)}
-                    className=" mr-2 flex rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                  >
-                    Visualizar
-                  </button>
-                  <button
-                    onClick={() => handleOpenCloseModal(brand.id)}
-                    className=" mr-2 flex rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                  >
-                    Apagar
-                  </button>
-                </div>
-              </div>
-            )
-          })}
+          {apiaries.length > 0 ? (
+            apiaries.map((apiary, index) => (
+              <ApiaryRow
+                key={apiary.id}
+                apiary={apiary}
+                isLast={index === apiaries.length - 1}
+              />
+            ))
+          ) : (
+            <div className="flex items-center justify-center p-8">
+              <p className="text-gray-500">
+                Nenhum apiário encontrado. Clique em Adicionar Apiário para
+                criar um novo.
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
       <Dialog
         open={open}
-        onClose={() => setOpen(false)}
+        onClose={() => !isDeleting && setOpen(false)}
         className="relative z-10"
-        style={{ zIndex: 9999 }}
       >
         <DialogBackdrop
           transition
@@ -184,11 +235,12 @@ export default function MyApiaries() {
                       as="h3"
                       className="text-base font-semibold leading-6 text-gray-900"
                     >
-                      Deletar Apiário?
+                      Deletar Apiário
                     </DialogTitle>
                     <div className="mt-2">
                       <p className="text-sm text-gray-500">
-                        Deseja apagar o apiário?
+                        Tem certeza que deseja apagar este apiário? Esta ação
+                        não pode ser desfeita.
                       </p>
                     </div>
                   </div>
@@ -197,15 +249,21 @@ export default function MyApiaries() {
               <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
                 <button
                   type="button"
+                  disabled={isDeleting}
                   onClick={handleDeleteApiary}
-                  className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto"
+                  className={`inline-flex w-full justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm sm:ml-3 sm:w-auto ${
+                    isDeleting
+                      ? 'cursor-not-allowed bg-red-400'
+                      : 'bg-red-600 hover:bg-red-500'
+                  }`}
                 >
-                  Apagar
+                  {isDeleting ? 'Apagando...' : 'Apagar'}
                 </button>
                 <button
                   type="button"
+                  disabled={isDeleting}
                   onClick={() => setOpen(false)}
-                  className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                  className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:mt-0 sm:w-auto"
                 >
                   Cancelar
                 </button>
@@ -217,3 +275,6 @@ export default function MyApiaries() {
     </div>
   )
 }
+
+export default memo(MyApiaries)
+memo(MyApiaries).displayName = 'MyApiaries'
