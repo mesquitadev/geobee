@@ -13,6 +13,7 @@ import {
 } from '@headlessui/react'
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import { useSnackbar } from 'notistack'
+import { PlusCircle, Eye, Trash2 } from 'lucide-react'
 
 // Definindo interface para tipagem dos apiários
 interface Apiary {
@@ -77,195 +78,206 @@ const MyApiaries = () => {
     }
   }, [fetchApiaries, selectedId, enqueueSnackbar])
 
-  // Componente memoizado para os botões de ação
-  const ActionButtons = memo(({ id }: { id: number }) => (
-    <div className="hidden items-center justify-center space-x-2 p-2.5 sm:flex xl:p-5">
-      <button
-        onClick={() => handleViewApiary(id)}
-        className="flex rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-        aria-label="Visualizar apiário"
-      >
-        Visualizar
-      </button>
-      <button
-        onClick={() => handleOpenCloseModal(id)}
-        className="flex rounded-md bg-red-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
-        aria-label="Apagar apiário"
-      >
-        Apagar
-      </button>
-    </div>
-  ))
-
-  ActionButtons.displayName = 'ActionButtons'
-
-  // Componente memoizado para a linha da tabela
-  const ApiaryRow = memo(
-    ({ apiary, isLast }: { apiary: Apiary; isLast: boolean }) => (
-      <div
-        className={`grid grid-cols-3 sm:grid-cols-5 ${
-          !isLast ? 'border-stroke dark:border-strokedark border-b' : ''
-        }`}
-      >
-        <div className="flex items-center gap-3 p-2.5 xl:p-5">
-          <p className="hidden text-black sm:block">
-            {apiary.name || 'Sem nome'}
-          </p>
-        </div>
-
-        <div className="flex items-center justify-center p-2.5 xl:p-5">
-          <p className="text-black">{apiary.tipoInstalacao}</p>
-        </div>
-
-        <div className="flex items-center justify-center p-2.5 xl:p-5">
-          <p className="text-meta-3">APIÁRIO</p>
-        </div>
-
-        <div className="flex items-center justify-center p-2.5 xl:p-5">
-          <p className="text-meta-3">
-            {apiary.capacidadeDeSuporte || 'Não definida'}
-          </p>
-        </div>
-
-        <ActionButtons id={apiary.id} />
-      </div>
-    ),
-  )
-
-  ApiaryRow.displayName = 'ApiaryRow'
-
   return (
-    <div className="h-full w-full p-10">
+    <div className="h-full w-full p-4 md:p-6 lg:p-10">
       <BackdropLoading isLoading={loading} />
       <Breadcumbs pageName="Meus Apiários" />
 
-      <div className="flex items-center justify-between py-5">
-        <h2 className="hidden text-xl font-bold text-gray-800 md:block">
-          Lista de Apiários
-        </h2>
+      <div className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
+          Meus Apiários
+        </h1>
+
         <Link
           to="/meus-apiarios/novo"
-          data-modal-target="authentication-modal"
-          data-modal-toggle="authentication-modal"
-          className="flex rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+          className="flex items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >
-          Adicionar Apiário
+          <PlusCircle className="h-5 w-5" />
+          <span>Adicionar Apiário</span>
         </Link>
       </div>
 
-      <div className="border-stroke shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 rounded-sm border bg-white px-5 pb-2.5 pt-6 xl:pb-1">
-        <h4 className="mb-6 text-xl font-semibold text-black dark:text-white">
-          Meus Apiários
-        </h4>
-
-        <div className="flex flex-col">
-          <div className="bg-gray-2 dark:bg-meta-4 grid grid-cols-3 rounded-sm sm:grid-cols-5">
-            <div className="p-2.5 xl:p-5">
-              <h5 className="xsm:text-base text-sm font-medium uppercase">
-                Nome
-              </h5>
-            </div>
-            <div className="p-2.5 text-center xl:p-5">
-              <h5 className="xsm:text-base text-sm font-medium uppercase">
-                Tipo Instalação
-              </h5>
-            </div>
-            <div className="p-2.5 text-center xl:p-5">
-              <h5 className="xsm:text-base text-sm font-medium uppercase">
-                Tipo
-              </h5>
-            </div>
-            <div className="hidden p-2.5 text-center sm:block xl:p-5">
-              <h5 className="xsm:text-base text-sm font-medium uppercase">
-                Capacidade Suporte
-              </h5>
-            </div>
-            <div className="hidden p-2.5 text-center sm:block xl:p-5">
-              <h5 className="xsm:text-base text-sm font-medium uppercase">
-                Ações
-              </h5>
-            </div>
+      {apiaries.length === 0 ? (
+        <div className="flex flex-col items-center justify-center rounded-lg border border-gray-100 bg-white p-10 shadow-sm dark:border-zinc-700 dark:bg-zinc-800">
+          <div className="text-center">
+            <p className="mt-2 text-gray-500 dark:text-gray-400">
+              Nenhum apiário encontrado.
+            </p>
+            <Link
+              to="/meus-apiarios/novo"
+              className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-indigo-600 hover:text-indigo-500"
+            >
+              <PlusCircle className="h-4 w-4" />
+              <span>Adicionar seu primeiro apiário</span>
+            </Link>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Versão para Desktop - Tabela */}
+          <div className="hidden overflow-hidden rounded-lg border border-gray-200 shadow-sm md:block dark:border-zinc-700">
+            <table className="w-full text-left">
+              <thead className="bg-gray-100 dark:bg-zinc-800">
+                <tr>
+                  <th className="px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-300">
+                    Nome
+                  </th>
+                  <th className="px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-300">
+                    Tipo Instalação
+                  </th>
+                  <th className="px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-300">
+                    Tipo
+                  </th>
+                  <th className="px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-300">
+                    Capacidade Suporte
+                  </th>
+                  <th className="px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-300">
+                    Ações
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200 bg-white dark:divide-zinc-700 dark:bg-zinc-900">
+                {apiaries.map((apiary) => (
+                  <tr
+                    key={apiary.id}
+                    className="transition-colors hover:bg-gray-50 dark:hover:bg-zinc-800"
+                  >
+                    <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-200">
+                      {apiary.name}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-200">
+                      {apiary.tipoInstalacao}
+                    </td>
+                    <td className="px-4 py-3 text-sm font-medium text-amber-600 dark:text-amber-400">
+                      APIÁRIO
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-200">
+                      {apiary.capacidadeDeSuporte}
+                    </td>
+                    <td className="px-4 py-2">
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => handleViewApiary(apiary.id)}
+                          className="rounded-md bg-indigo-100 p-1.5 text-indigo-700 transition-colors hover:bg-indigo-200"
+                          title="Visualizar"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleOpenCloseModal(apiary.id)}
+                          className="rounded-md bg-red-100 p-1.5 text-red-700 transition-colors hover:bg-red-200"
+                          title="Remover"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
 
-          {apiaries.length > 0 ? (
-            apiaries.map((apiary, index) => (
-              <ApiaryRow
+          {/* Versão para Mobile - Cards */}
+          <div className="grid grid-cols-1 gap-4 md:hidden">
+            {apiaries.map((apiary) => (
+              <div
                 key={apiary.id}
-                apiary={apiary}
-                isLast={index === apiaries.length - 1}
-              />
-            ))
-          ) : (
-            <div className="flex items-center justify-center p-8">
-              <p className="text-gray-500">
-                Nenhum apiário encontrado. Clique em Adicionar Apiário para
-                criar um novo.
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
+                className="overflow-hidden rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-zinc-700 dark:bg-zinc-800"
+              >
+                <div className="mb-3 flex items-center justify-between">
+                  <h3 className="font-medium text-gray-900 dark:text-gray-100">
+                    {apiary.name}
+                  </h3>
+                  <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900 dark:text-amber-100">
+                    APIÁRIO
+                  </span>
+                </div>
+
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">
+                      Tipo Instalação:
+                    </span>
+                    <span className="text-gray-800 dark:text-gray-200">
+                      {apiary.tipoInstalacao}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">
+                      Capacidade de Suporte:
+                    </span>
+                    <span className="text-gray-800 dark:text-gray-200">
+                      {apiary.capacidadeDeSuporte}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="mt-4 flex justify-end space-x-3">
+                  <button
+                    onClick={() => handleViewApiary(apiary.id)}
+                    className="flex items-center justify-center gap-1 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-indigo-700"
+                  >
+                    <Eye className="h-3 w-3" />
+                    <span>Visualizar</span>
+                  </button>
+                  <button
+                    onClick={() => handleOpenCloseModal(apiary.id)}
+                    className="flex items-center justify-center gap-1 rounded-md bg-red-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-red-700"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                    <span>Remover</span>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
 
       <Dialog
         open={open}
         onClose={() => !isDeleting && setOpen(false)}
         className="relative z-10"
       >
-        <DialogBackdrop
-          transition
-          className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity data-[closed]:opacity-0 data-[enter]:duration-300 data-[leave]:duration-200 data-[enter]:ease-out data-[leave]:ease-in"
-        />
+        <DialogBackdrop className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" />
 
         <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
-          <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-            <DialogPanel
-              transition
-              className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all data-[closed]:translate-y-4 data-[closed]:opacity-0 data-[enter]:duration-300 data-[leave]:duration-200 data-[enter]:ease-out data-[leave]:ease-in sm:my-8 sm:w-full sm:max-w-lg data-[closed]:sm:translate-y-0 data-[closed]:sm:scale-95"
-            >
-              <div className="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
-                <div className="sm:flex sm:items-start">
-                  <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
-                    <ExclamationTriangleIcon
-                      aria-hidden="true"
-                      className="h-6 w-6 text-red-600"
-                    />
-                  </div>
-                  <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
-                    <DialogTitle
-                      as="h3"
-                      className="text-base font-semibold leading-6 text-gray-900"
-                    >
-                      Deletar Apiário
-                    </DialogTitle>
-                    <div className="mt-2">
-                      <p className="text-sm text-gray-500">
-                        Tem certeza que deseja apagar este apiário? Esta ação
-                        não pode ser desfeita.
-                      </p>
-                    </div>
-                  </div>
-                </div>
+          <div className="flex min-h-full items-center justify-center p-4 text-center">
+            <DialogPanel className="w-full max-w-md transform overflow-hidden rounded-lg bg-white p-6 text-left align-middle shadow-xl transition-all dark:bg-zinc-800">
+              <DialogTitle
+                as="h3"
+                className="flex items-center gap-2 text-lg font-medium leading-6 text-gray-900 dark:text-gray-100"
+              >
+                <ExclamationTriangleIcon
+                  className="h-6 w-6 text-red-600"
+                  aria-hidden="true"
+                />
+                <span>Remover Apiário</span>
+              </DialogTitle>
+              <div className="mt-3">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Você tem certeza que deseja remover este apiário? Esta ação
+                  não pode ser desfeita.
+                </p>
               </div>
-              <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+
+              <div className="mt-6 flex justify-end gap-3">
                 <button
                   type="button"
+                  className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none dark:border-zinc-600 dark:bg-zinc-700 dark:text-gray-200 dark:hover:bg-zinc-600"
+                  onClick={() => setOpen(false)}
                   disabled={isDeleting}
-                  onClick={handleDeleteApiary}
-                  className={`inline-flex w-full justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm sm:ml-3 sm:w-auto ${
-                    isDeleting
-                      ? 'cursor-not-allowed bg-red-400'
-                      : 'bg-red-600 hover:bg-red-500'
-                  }`}
                 >
-                  {isDeleting ? 'Apagando...' : 'Apagar'}
+                  Cancelar
                 </button>
                 <button
                   type="button"
+                  className="inline-flex justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                  onClick={handleDeleteApiary}
                   disabled={isDeleting}
-                  onClick={() => setOpen(false)}
-                  className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:mt-0 sm:w-auto"
                 >
-                  Cancelar
+                  {isDeleting ? 'Removendo...' : 'Remover'}
                 </button>
               </div>
             </DialogPanel>

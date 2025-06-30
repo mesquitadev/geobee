@@ -1,6 +1,6 @@
 import L from 'leaflet'
 import { enqueueSnackbar } from 'notistack'
-import React, { Suspense, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   CircleMarker,
   GeoJSON,
@@ -17,6 +17,7 @@ import { useLoading } from '../../hooks/useLoading.tsx'
 import api from '../../services'
 import { getColor } from '../../utils'
 
+// Ícones para o mapa
 const myIcon = new L.Icon({
   iconUrl: marker as string,
   iconRetinaUrl: marker as string,
@@ -31,6 +32,7 @@ const meliponaryIcon = new L.Icon({
   iconSize: [32, 32],
 })
 
+// Interfaces para tipagem dos dados
 interface MeliponaryData {
   id: number
   name: string
@@ -59,6 +61,7 @@ export default function Home() {
   const [selectedMap, setSelectedMap] = useState<string>('')
   const [geoJsonLoading, setGeoJsonLoading] = useState(false)
 
+  // Carregar dados dos apiários e meliponários
   useEffect(() => {
     const getMyData = async () => {
       setLoading(true)
@@ -72,15 +75,14 @@ export default function Home() {
       } catch (err) {
         enqueueSnackbar(
           'Erro ao carregar dados de apiários ou meliponários existentes',
-          {
-            variant: 'error',
-          },
+          { variant: 'error' },
         )
       } finally {
         setLoading(false)
       }
     }
 
+    // Obter localização do usuário
     const getUserLocation = () => {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
@@ -97,10 +99,11 @@ export default function Home() {
       }
     }
 
-    Promise.all([getMyData()])
+    getMyData()
     getUserLocation()
   }, [setLoading])
 
+  // Carregar lista de mapas disponíveis
   useEffect(() => {
     const fetchMaps = async () => {
       setLoading(true)
@@ -109,9 +112,7 @@ export default function Home() {
         const data = response.data
         setMaps(data)
       } catch (error) {
-        enqueueSnackbar('Erro ao carregar mapas', {
-          variant: 'error',
-        })
+        enqueueSnackbar('Erro ao carregar mapas', { variant: 'error' })
       } finally {
         setLoading(false)
       }
@@ -120,6 +121,7 @@ export default function Home() {
     fetchMaps()
   }, [setLoading])
 
+  // Carregar mapa padrão
   useEffect(() => {
     const fetchGeoJSON = async () => {
       setLoading(true)
@@ -142,6 +144,7 @@ export default function Home() {
     fetchGeoJSON()
   }, [setLoading])
 
+  // Manipulador de mudança de mapa
   const handleSelectMap = async (url: string) => {
     setLoading(true)
     setGeoJsonLoading(true)
@@ -149,9 +152,7 @@ export default function Home() {
       const [geoJsonResponse] = await Promise.all([api.get(`${url}`)])
       setGeoJson(geoJsonResponse.data)
     } catch (error) {
-      enqueueSnackbar('Erro ao carregar mapa padrão!', {
-        variant: 'error',
-      })
+      enqueueSnackbar('Erro ao carregar mapa!', { variant: 'error' })
     } finally {
       setLoading(false)
       setGeoJsonLoading(false)
@@ -166,53 +167,58 @@ export default function Home() {
   }
 
   return (
-    <Suspense
-      fallback={<BackdropLoading isLoading={loading || geoJsonLoading} />}
-    >
-      <div className="w-full  justify-center bg-zinc-900 p-2 text-white">
+    <div className="flex h-full w-full flex-col">
+      {/* Indicador de carregamento */}
+      {(loading || geoJsonLoading) && <BackdropLoading isLoading={true} />}
+
+      {/* Seletor de mapas */}
+      <div className="z-10 border-b border-gray-200 bg-white px-3 py-2 shadow-sm dark:border-zinc-700 dark:bg-zinc-800">
         <select
-          className="w-full border-white bg-zinc-900"
+          className="w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none dark:border-gray-600 dark:bg-zinc-800 dark:text-gray-200"
           value={selectedMap}
           onChange={handleChange}
         >
           <option value="">Selecione um mapa</option>
-          {maps.map((map) => (
+          {maps.map((map: any) => (
             <option key={map.id} value={map.url}>
               {map.name}
             </option>
           ))}
         </select>
       </div>
-      <MapContainer
-        center={[-2.5555334824608353, -44.208297729492195]}
-        zoom={13}
-        style={{ height: '100%', width: '100%', zIndex: 0 }}
-      >
-        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
-        {geoJsonLoading && <BackdropLoading isLoading={geoJsonLoading} />}
+      {/* Contêiner do mapa */}
+      <div className="relative flex-1">
+        <MapContainer
+          center={[-2.5555334824608353, -44.208297729492195]}
+          zoom={13}
+          className="h-full w-full"
+        >
+          {/* Camada base do mapa */}
+          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
-        {geoJson && (
-          <GeoJSON
-            data={geoJson}
-            style={(feature) => {
-              const type =
-                feature.properties.VEGETAÇÃ || feature.properties.CLASSE
-              return { color: getColor(type) }
-            }}
-          />
-        )}
+          {/* Dados GeoJSON */}
+          {geoJson && (
+            <GeoJSON
+              data={geoJson}
+              style={(feature) => {
+                const type =
+                  feature.properties.VEGETAÇÃ || feature.properties.CLASSE
+                return { color: getColor(type) }
+              }}
+            />
+          )}
 
-        {meliponaryData?.map((data: MeliponaryData) => {
-          return (
+          {/* Marcadores de meliponários */}
+          {meliponaryData?.map((data: MeliponaryData) => (
             <React.Fragment key={data.id}>
               <Marker
                 icon={meliponaryIcon}
                 position={[Number(data.latitude), Number(data.longitude)]}
               >
                 <Popup>
-                  Meliponário {data.name} - Capacidade de Suporte :{' '}
-                  {data.capacidadeDeSuporte ? data.capacidadeDeSuporte : '0'}
+                  Meliponário {data.name} - Capacidade de Suporte:{' '}
+                  {data.capacidadeDeSuporte || '0'}
                 </Popup>
               </Marker>
               <CircleMarker
@@ -221,44 +227,42 @@ export default function Home() {
                 color="blue"
               />
             </React.Fragment>
-          )
-        })}
+          ))}
 
-        {apiaryData?.map((data: ApiaryData) => {
-          return (
+          {/* Marcadores de apiários */}
+          {apiaryData?.map((data: ApiaryData) => (
             <React.Fragment key={data.id}>
               <Marker
                 icon={myIcon}
                 position={[Number(data.latitude), Number(data.longitude)]}
               >
                 <Popup>
-                  Apiário {data.name} - Cap. de Suporte :{' '}
-                  {data.capacidadeDeSuporte ? data.capacidadeDeSuporte : '0'}
+                  Apiário {data.name} - Cap. de Suporte:{' '}
+                  {data.capacidadeDeSuporte || '0'}
                 </Popup>
               </Marker>
               <CircleMarker
                 center={[Number(data.latitude), Number(data.longitude)]}
-                radius={20} // Ajuste o raio conforme necessário
-                color="blue" // Ajuste a cor conforme necessário
+                radius={20}
+                color="blue"
               />
             </React.Fragment>
-          )
-        })}
+          ))}
 
-        {userLocation && (
-          <React.Fragment key="user-location">
-            <Marker position={userLocation}>
-              <Popup>Você está aqui</Popup>
-            </Marker>
-            <CircleMarker
-              center={userLocation}
-              radius={20} // Ajuste o raio conforme necessário
-              color="blue" // Ajuste a cor conforme necessário
-            />
-          </React.Fragment>
-        )}
-        <Legend />
-      </MapContainer>
-    </Suspense>
+          {/* Marcador da localização do usuário */}
+          {userLocation && (
+            <React.Fragment>
+              <Marker position={userLocation}>
+                <Popup>Você está aqui</Popup>
+              </Marker>
+              <CircleMarker center={userLocation} radius={20} color="blue" />
+            </React.Fragment>
+          )}
+
+          {/* Legenda do mapa */}
+          <Legend />
+        </MapContainer>
+      </div>
+    </div>
   )
 }

@@ -15,13 +15,14 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
       {/* Overlay escuro para dispositivos móveis quando o sidebar estiver aberto */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          className="fixed inset-0 z-20 bg-black/50 lg:hidden"
           onClick={onClose}
+          aria-hidden="true"
         />
       )}
 
       <aside
-        className={`fixed left-0 top-0 z-50 flex h-full w-[280px] flex-col gap-6 overflow-auto 
+        className={`fixed left-0 top-0 z-30 flex h-full w-[280px] flex-col gap-6 overflow-auto 
           border-r border-zinc-200 bg-white p-4 transition-transform duration-300 ease-in-out
           ${isOpen ? 'translate-x-0' : '-translate-x-full'} 
           lg:bottom-0 lg:w-80 lg:translate-x-0 lg:px-5 lg:py-8 dark:border-zinc-800 dark:bg-zinc-900`}

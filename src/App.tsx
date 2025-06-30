@@ -5,6 +5,7 @@ import Routes from './routes'
 import AppProvider from './providers/AppProvider.tsx'
 import { SnackbarProvider } from 'notistack'
 import { initMobileTweaks } from './utils/mobileTweaks'
+import InstallPWA from './components/InstallPWA'
 
 function App() {
   // Inicializa ajustes para melhorar a experiência em dispositivos móveis
@@ -23,6 +24,7 @@ function App() {
     >
       <AppProvider>
         <Routes />
+        <InstallPWA />
       </AppProvider>
     </SnackbarProvider>
   )
