@@ -2,3 +2,12 @@
 from = "/*"
 to = "index.html"
 status = 200
+
+[build]
+  command = "yarn build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "18.20.8"
+  NPM_FLAGS = "--no-optional"
+  YARN_VERSION = "1.22.22"

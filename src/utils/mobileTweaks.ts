@@ -74,11 +74,18 @@ export const disableBodyScrollWhenModalOpen = (isModalOpen: boolean) => {
 /**
  * Detecta se o dispositivo está em modo standalone (app na tela inicial)
  */
-export const isInStandaloneMode = () => {
-  return (
-    window.navigator.standalone ||
-    window.matchMedia('(display-mode: standalone)').matches
-  )
+export const isInStandaloneMode = (): boolean => {
+  // Verifica a propriedade 'standalone' do Safari iOS
+  // Esta propriedade não existe no tipo Navigator padrão, por isso precisamos verificá-la com segurança
+  const nav = navigator as any
+  const isStandaloneSafari = nav.standalone === true
+
+  // Verifica se está em modo standalone em outros navegadores (Chrome, Firefox, etc.)
+  const isStandaloneMode = window.matchMedia(
+    '(display-mode: standalone)',
+  ).matches
+
+  return isStandaloneSafari || isStandaloneMode
 }
 
 /**
