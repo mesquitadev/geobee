@@ -171,7 +171,7 @@ export default function Home() {
       {/* Indicador de carregamento */}
       {(loading || geoJsonLoading) && <BackdropLoading isLoading={true} />}
 
-      {/* Seletor de mapas */}
+      {/* Seletor de mapas - visível em todos os dispositivos */}
       <div className="z-10 border-b border-gray-200 bg-white px-3 py-2 shadow-sm dark:border-zinc-700 dark:bg-zinc-800">
         <select
           className="w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none dark:border-gray-600 dark:bg-zinc-800 dark:text-gray-200"
