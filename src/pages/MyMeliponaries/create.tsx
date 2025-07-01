@@ -319,7 +319,7 @@ const NewMeliponary = () => {
   }
 
   return (
-    <div className="h-full w-full p-10">
+    <div className="h-full w-full p-10 pb-0">
       <Breadcumbs pageName="Cadastrar Meliponário" />
       <BackdropLoading isLoading={loading} />
       <div className="grid grid-cols-1 md:grid-cols-2">
@@ -347,8 +347,8 @@ const NewMeliponary = () => {
             <LocationMarker />
           </MapContainer>
         </div>
-        <div className="mb-5">
-          <form onSubmit={handleSubmit(handleSignUp)} className="w-full">
+        <div className="mb-0">
+          <form onSubmit={handleSubmit(handleSignUp)} className="w-full mb-0 pb-24 md:pb-20">
             <div className="mx-3 mb-6 flex flex-wrap">
               <InputContainer className="mb-6  w-full px-3 md:mb-0">
                 <InputLabel label="Nome" name="name" />

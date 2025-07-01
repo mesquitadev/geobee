@@ -319,10 +319,10 @@ export default function NewApiary() {
   }, [handleLocationSelect, enqueueSnackbar])
 
   return (
-    <div className="h-full w-full p-4 md:p-10">
+    <div className="h-full w-full p-10 pb-0">
       <Breadcumbs pageName="Cadastrar Apiário" />
       <BackdropLoading isLoading={loading} />
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+      <div className="grid grid-cols-1 md:grid-cols-2">
         <div className="mb-5">
           <p className="mb-2 block text-xs font-bold uppercase tracking-wide text-gray-700">
             Selecione as Coordenadas
@@ -333,34 +333,29 @@ export default function NewApiary() {
           >
             Usar Minha Localização
           </button>
-          <div className="h-[300px] w-full md:h-[400px]">
-            <MapContainer
-              center={[-2.5555334824608353, -44.208297729492195]}
-              zoom={13}
-              style={{ height: '100%', width: '100%' }}
-            >
-              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-              {userLocation && (
-                <Marker icon={myIcon} position={userLocation}>
-                  <Popup>Você está aqui</Popup>
-                </Marker>
-              )}
-              <LocationMarker
-                onLocationSelect={handleLocationSelect}
-                position={position}
-                icon={myIcon}
-              />
-            </MapContainer>
-          </div>
-          {position && (
-            <div className="mt-2 rounded-md bg-green-100 p-2 text-sm text-green-800">
-              Coordenadas selecionadas: {latitude.toFixed(6)},{' '}
-              {longitude.toFixed(6)}
-            </div>
-          )}
+          <MapContainer
+            center={[-2.5555334824608353, -44.208297729492195]}
+            zoom={13}
+            style={{ height: '400px', width: '100%' }}
+          >
+            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+            {userLocation && (
+              <Marker icon={myIcon} position={userLocation}>
+                <Popup>Você está aqui</Popup>
+              </Marker>
+            )}
+            <LocationMarker
+              onLocationSelect={handleLocationSelect}
+              position={position}
+              icon={myIcon}
+            />
+          </MapContainer>
         </div>
-        <div className="mb-5">
-          <form onSubmit={handleSubmit(handleSignUp)} className="w-full">
+        <div className="mb-0">
+          <form
+            onSubmit={handleSubmit(handleSignUp)}
+            className="mb-0 w-full pb-24 md:pb-20"
+          >
             <div className="mx-1 mb-6 flex flex-wrap md:mx-3">
               <InputContainer className="mb-6  w-full px-3 md:mb-0">
                 <InputLabel label="Nome" name="name" />

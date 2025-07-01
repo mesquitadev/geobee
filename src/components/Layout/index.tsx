@@ -29,8 +29,10 @@ const Layout = ({ children }: { children: ReactNode }) => {
         {/* Sidebar */}
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-        {/* Conteúdo principal - ajustado para considerar a sidebar em desktop */}
-        <main className="flex-1 overflow-auto lg:pl-80">{children}</main>
+        {/* Conteúdo principal - ajustado para scroll suave */}
+        <main className="flex-1 overflow-y-auto scroll-smooth lg:pl-80">
+          {children}
+        </main>
       </div>
     </div>
   )
