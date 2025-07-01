@@ -4,34 +4,53 @@ import { useLoading } from '../../../hooks/useLoading.tsx'
 import api from '../../../services'
 import NavItem from './NavItem.tsx'
 
-const AdminMenu = () => (
+interface NavigationProps {
+  onNavigate?: () => void
+}
+
+const AdminMenu = ({ onNavigate }: NavigationProps) => (
   <nav className="flex flex-col gap-0.5">
-    <NavItem icon={Home} title="Início" to="/home" />
-    <NavItem icon={Cog} title="Configurar Mapas" to="/meus-mapas" />
+    <NavItem icon={Home} title="Início" to="/home" onNavigate={onNavigate} />
+    <NavItem
+      icon={Cog}
+      title="Configurar Mapas"
+      to="/meus-mapas"
+      onNavigate={onNavigate}
+    />
   </nav>
 )
 
-const ApicultorMenu = () => (
+const ApicultorMenu = ({ onNavigate }: NavigationProps) => (
   <nav className="flex flex-col gap-0.5">
-    <NavItem icon={Home} title="Início" to="/home" />
-    <NavItem icon={Home} title="Meu Apiário" to="/meus-apiarios" />
+    <NavItem icon={Home} title="Início" to="/home" onNavigate={onNavigate} />
+    <NavItem
+      icon={Home}
+      title="Meu Apiário"
+      to="/meus-apiarios"
+      onNavigate={onNavigate}
+    />
   </nav>
 )
 
-const MeliponicultorMenu = () => (
+const MeliponicultorMenu = ({ onNavigate }: NavigationProps) => (
   <nav className="flex flex-col gap-0.5">
-    <NavItem icon={Home} title="Início" to="/home" />
-    <NavItem icon={Home} title="Meu Meliponário" to="/meus-meliponarios" />
+    <NavItem icon={Home} title="Início" to="/home" onNavigate={onNavigate} />
+    <NavItem
+      icon={Home}
+      title="Meu Meliponário"
+      to="/meus-meliponarios"
+      onNavigate={onNavigate}
+    />
   </nav>
 )
 
-const DefaultMenu = () => (
+const DefaultMenu = ({ onNavigate }: NavigationProps) => (
   <nav className="flex flex-col gap-0.5">
-    <NavItem to="/home" icon={Home} title="Início" />
+    <NavItem to="/home" icon={Home} title="Início" onNavigate={onNavigate} />
   </nav>
 )
 
-const Navigation = () => {
+const Navigation = ({ onNavigate }: NavigationProps) => {
   const { setLoading } = useLoading()
   const [userData, setUserData] = useState(null)
   useEffect(() => {
@@ -50,20 +69,26 @@ const Navigation = () => {
     getMyData() // Chama a função dentro do useEffect
   }, [setLoading]) // Dependências vazias significam que isso roda apenas uma vez, na montagem do componente
 
-  const Menu = ({ role }: { role: string | undefined | null }) => {
+  const Menu = ({
+    role,
+    onNavigate,
+  }: {
+    role: string | undefined | null
+    onNavigate?: () => void
+  }) => {
     switch (role) {
       case 'ADMIN':
-        return <AdminMenu />
+        return <AdminMenu onNavigate={onNavigate} />
       case 'MELIPONICULTOR':
-        return <MeliponicultorMenu />
+        return <MeliponicultorMenu onNavigate={onNavigate} />
       case 'APICULTOR':
-        return <ApicultorMenu />
+        return <ApicultorMenu onNavigate={onNavigate} />
       default:
-        return <DefaultMenu />
+        return <DefaultMenu onNavigate={onNavigate} />
     }
   }
 
-  return <Menu role={userData?.role} />
+  return <Menu role={userData?.role} onNavigate={onNavigate} />
 }
 
 export default Navigation

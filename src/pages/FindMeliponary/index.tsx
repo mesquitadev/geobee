@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import api from '../../services'
 import { useLoading } from '../../hooks/useLoading.tsx'
 import BackdropLoading from '../../components/BackdropLoading'
@@ -22,7 +22,8 @@ const meliponaryIcon = new L.Icon({
   popupAnchor: [-0, -0],
   iconSize: [32, 32],
 })
-export default function Home() {
+
+export default function FindMeliponary() {
   const { loading, setLoading } = useLoading()
   const [geojson, setGeojson] = useState(null)
   const [userLocation, setUserLocation] = useState<[number, number] | null>(
@@ -31,14 +32,11 @@ export default function Home() {
   const [selectedCoordinates, setSelectedCoordinates] = useState<
     [number, number] | null
   >(null)
-
-  const [apiary, setApiary] = useState<any>()
-
+  const [meliponary, setMeliponary] = useState<any>()
   const { id } = useParams<{ id: string }>()
 
   useEffect(() => {
     const getMaps = async () => {
-      setLoading(true)
       try {
         const response = await fetch(
           'https://raw.githubusercontent.com/mesquitadev/geobee-fe/main/src/components/Mapa/geobee.geojson',
@@ -47,16 +45,14 @@ export default function Home() {
         setGeojson(data)
       } catch (err) {
         console.error(err)
-      } finally {
-        setLoading(false)
       }
     }
 
     const getDataById = async (id: string) => {
-      setLoading(true)
       try {
+        setLoading(true)
         const { data } = await api.get(`/meliponary/${id}`)
-        setApiary(data)
+        setMeliponary(data)
         setSelectedCoordinates([data.latitude, data.longitude])
       } catch (err) {
         console.error(err)
@@ -81,22 +77,30 @@ export default function Home() {
       }
     }
 
-    Promise.all([getDataById(id), getMaps()])
-    getUserLocation()
+    if (id) {
+      getDataById(id)
+      getMaps()
+      getUserLocation()
+    }
   }, [id, setLoading])
 
   return (
-    <>
-      <BackdropLoading isLoading={loading} />
-      {apiary && apiary.latitude && apiary.longitude && (
+    <div className="flex h-full w-full flex-col">
+      {loading && <BackdropLoading isLoading={loading} />}
+
+      {/* Contêiner do mapa */}
+      <div className="relative flex-1">
         <MapContainer
           center={
             selectedCoordinates || [-2.5555334824608353, -44.208297729492195]
           }
           zoom={13}
-          style={{ height: '100%', width: '100%' }}
+          className="h-full w-full"
         >
+          {/* Camada base do mapa */}
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+
+          {/* Dados GeoJSON */}
           {geojson && (
             <GeoJSON
               data={geojson}
@@ -107,36 +111,46 @@ export default function Home() {
             />
           )}
 
-          {apiary && (
-            <>
+          {/* Marcador do meliponário */}
+          {meliponary && (
+            <React.Fragment>
               <Marker
                 icon={meliponaryIcon}
-                key={apiary.id}
-                position={[apiary.latitude, apiary.longitude]}
+                position={[
+                  Number(meliponary.latitude),
+                  Number(meliponary.longitude),
+                ]}
               >
                 <Popup>
-                  Apiário - {apiary.name} - Capacidade de Suporte :{' '}
-                  {apiary.capacidadeDeSuporte
-                    ? apiary.capacidadeDeSuporte
-                    : '0'}
+                  Meliponário {meliponary.name} - Cap. de Suporte:{' '}
+                  {meliponary.capacidadeDeSuporte || 'N/A'}
                 </Popup>
               </Marker>
               <CircleMarker
-                center={[apiary.latitude, apiary.longitude]}
-                radius={20} // Ajuste o raio conforme necessário
-                color="blue" // Ajuste a cor conforme necessário
+                center={[
+                  Number(meliponary.latitude),
+                  Number(meliponary.longitude),
+                ]}
+                radius={20}
+                color="blue"
               />
-            </>
+            </React.Fragment>
           )}
 
+          {/* Marcador da localização do usuário */}
           {userLocation && (
-            <Marker position={userLocation}>
-              <Popup>Você está aqui</Popup>
-            </Marker>
+            <React.Fragment>
+              <Marker position={userLocation}>
+                <Popup>Você está aqui</Popup>
+              </Marker>
+              <CircleMarker center={userLocation} radius={20} color="blue" />
+            </React.Fragment>
           )}
+
+          {/* Legenda do mapa */}
           <Legend />
         </MapContainer>
-      )}
-    </>
+      </div>
+    </div>
   )
 }

@@ -5,6 +5,7 @@ export default {
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       gridTemplateColumns: {
@@ -20,23 +21,32 @@ export default {
         violet: {
           25: '#FCFAFF',
         },
-
-        geobee: {
-          100: '#F3C508',
+        background: 'hsl(var(--background))',
+        foreground: 'hsl(var(--foreground))',
+        primary: {
+          DEFAULT: 'hsl(var(--primary))',
+          foreground: 'hsl(var(--primary-foreground))',
         },
-
-        error: {
-          25: '#FFFBFA',
-          50: '#FEF3F2',
-          100: '#FEE4E2',
-          200: '#FECDCA',
-          300: '#FDA29B',
-          400: '#F97066',
-          500: '#F04438',
-          600: '#D92D20',
-          700: '#B42318',
-          800: '#912018',
-          900: '#7A271A',
+        secondary: {
+          DEFAULT: 'hsl(var(--secondary))',
+          foreground: 'hsl(var(--secondary-foreground))',
+        },
+        accent: {
+          DEFAULT: 'hsl(var(--accent))',
+          foreground: 'hsl(var(--accent-foreground))',
+        },
+        muted: {
+          DEFAULT: 'hsl(var(--muted))',
+          foreground: 'hsl(var(--muted-foreground))',
+        },
+        destructive: {
+          DEFAULT: 'hsl(var(--destructive))',
+          foreground: 'hsl(var(--destructive-foreground))',
+        },
+        border: 'hsl(var(--border))',
+        card: {
+          DEFAULT: 'hsl(var(--card))',
+          foreground: 'hsl(var(--card-foreground))',
         },
       },
 

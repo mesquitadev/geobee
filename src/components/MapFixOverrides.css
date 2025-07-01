@@ -1,0 +1,39 @@
+/* Estilos específicos para corrigir problemas de sobreposição de mapas */
+
+/* Forçar z-index alto para containers de mapa */
+.map-fix-container {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  z-index: 999 !important; /* Um valor extremamente alto para garantir que fique acima de qualquer outra coisa */
+}
+
+/* Garantir que os controles do mapa fiquem visíveis */
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 1000 !important;
+}
+
+/* Forçar o mapa a ocupar todo o espaço disponível */
+.map-fix-container .leaflet-container {
+  height: 100% !important;
+  width: 100% !important;
+}
+
+/* Remover qualquer overlay que possa estar causando a sobreposição */
+.leaflet-overlay-pane {
+  z-index: 400 !important;
+}
+
+/* Garantir que os popups fiquem acima de outros elementos */
+.leaflet-popup-pane {
+  z-index: 1200 !important;
+}
+
+/* Impedir que elementos externos ao mapa interfiram */
+.map-wrapper {
+  isolation: isolate;
+  position: relative;
+  height: 100%;
+  flex: 1;
+}

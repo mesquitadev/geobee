@@ -245,7 +245,7 @@ export default function NewApiary() {
           longitude: String(longitude),
         }
 
-        await api.post('apiaries', updatedData)
+        await api.post('apiaries/', updatedData)
 
         enqueueSnackbar('Cadastro realizado com sucesso!', {
           variant: 'success',

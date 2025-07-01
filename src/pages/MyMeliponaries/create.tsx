@@ -162,8 +162,18 @@ const NewMeliponary = () => {
         })
 
         navigate('/meus-meliponarios')
-      } catch (err) {
-        const errorMessage = err.response?.data?.message || 'Erro desconhecido'
+      } catch (err: any) {
+        console.error('Erro ao salvar meliponário:', err)
+
+        let errorMessage = 'Erro desconhecido ao cadastrar meliponário'
+        if (
+          err &&
+          err.response &&
+          err.response.data &&
+          err.response.data.message
+        ) {
+          errorMessage = err.response.data.message
+        }
 
         enqueueSnackbar(`Erro no cadastro! ${errorMessage}`, {
           variant: 'error',
@@ -381,7 +391,7 @@ const NewMeliponary = () => {
                   label="O meliponário a ser instalado será?"
                   name="tipoInstalacao"
                 />
-                <Select
+                <Select<Inputs>
                   options={tipoInstalacaoApiarioOptions}
                   control={control}
                   name="tipoInstalacao"
@@ -395,7 +405,7 @@ const NewMeliponary = () => {
                   label="Qual a espécie de abelha sem ferrão pretende criar?"
                   name="role"
                 />
-                <Select
+                <Select<Inputs>
                   options={especiesAbelhasOptions}
                   control={control}
                   name="especieAbelha"
@@ -409,7 +419,7 @@ const NewMeliponary = () => {
                   label="Quantas Colméias pretende instalar nesse meliponário?"
                   name="quantidadeColmeias"
                 />
-                <Select
+                <Select<Inputs>
                   options={qtdColmeiasOptions}
                   control={control}
                   name="quantidadeColmeias"
@@ -423,7 +433,7 @@ const NewMeliponary = () => {
                   label="Há outros meliponários no raio de 1 KM?"
                   name="outrosMeliponariosRaio1km"
                 />
-                <Select
+                <Select<Inputs>
                   options={outrosApiariosRaio3kmOptions}
                   control={control}
                   name="outrosMeliponariosRaio1km"
@@ -439,7 +449,7 @@ const NewMeliponary = () => {
                     label="Caso haja outros meliponários no raio de 1 KM, qual a quantidade de colméias?"
                     name="qtdColmeiasOutrosApiarios"
                   />
-                  <Select
+                  <Select<Inputs>
                     options={qtdColmeiasOutrosApiariosOptions}
                     control={control}
                     name="qtdColmeiasOutrosMeliponarios"
@@ -454,7 +464,7 @@ const NewMeliponary = () => {
                   label="Há fontes de néctar e pólen (flores) até 2km do local que pretende instalar o meliponário?"
                   name="fontesNectarPolen"
                 />
-                <Select
+                <Select<Inputs>
                   options={simNaoOptions}
                   control={control}
                   name="fontesNectarPolen"
@@ -467,7 +477,7 @@ const NewMeliponary = () => {
                   label="Há disponibilidade de água de qualidade até 500m a partir do local escolhido?"
                   name="disponibilidadeAgua"
                 />
-                <Select
+                <Select<Inputs>
                   options={simNaoOptions}
                   control={control}
                   name="disponibilidadeAgua"
@@ -480,7 +490,7 @@ const NewMeliponary = () => {
                   label="Há sombreamento natural para as colméias?"
                   name="sombreamentoNatural"
                 />
-                <Select
+                <Select<Inputs>
                   options={simNaoOptions}
                   control={control}
                   name="sombreamentoNatural"
@@ -494,7 +504,7 @@ const NewMeliponary = () => {
                   label="Há proteção contra ventos fortes?"
                   name="protecaoVentosFortes"
                 />
-                <Select
+                <Select<Inputs>
                   options={simNaoOptions}
                   control={control}
                   name="protecaoVentosFortes"
@@ -508,7 +518,7 @@ const NewMeliponary = () => {
                   label="Há uma distancia segura (mínimo de 3km) de possíveis fontes de contaminação (lixões, matadouros, fábrica de doces, engenhos, dentre outros)?"
                   name="distanciaSeguraContaminacao"
                 />
-                <Select
+                <Select<Inputs>
                   options={simNaoOptions}
                   control={control}
                   name="distanciaSeguraContaminacao"
@@ -521,7 +531,7 @@ const NewMeliponary = () => {
                   label="O local onde pretende instalar seu meliponário atende a uma distância mínima (400m) de estradas movimentadas, currais, aviários, pocilgas e outras construções?"
                   name="distanciaMinimaConstrucoes"
                 />
-                <Select
+                <Select<Inputs>
                   options={simNaoOptions}
                   control={control}
                   name="distanciaMinimaConstrucoes"
@@ -535,12 +545,26 @@ const NewMeliponary = () => {
                   label="O local possui uma distância segura (3km) de lavouras (milho, soja, transgênicos, dentre outros)?"
                   name="distanciaSeguraLavouras"
                 />
-                <Select
+                <Select<Inputs>
                   options={simNaoOptions}
                   control={control}
                   name="distanciaSeguraLavouras"
                   className="block w-full appearance-none rounded border border-gray-200 bg-gray-200 px-4 py-3 pr-8 leading-tight text-gray-700 focus:border-gray-500 focus:bg-white focus:outline-none"
                   errors={errors?.distanciaSeguraLavouras?.message}
+                />
+              </SelectContainer>
+
+              <SelectContainer className="w-full px-3 py-2">
+                <InputLabel
+                  label="O local pretendido apiário é de fácil acesso para entrada e saída de veiculos automobilisticos?   "
+                  name="acessoVeiculos"
+                />
+                <Select
+                  options={simNaoOptions}
+                  control={control}
+                  name="acessoVeiculos"
+                  className="block w-full appearance-none rounded border border-gray-200 bg-gray-200 px-4 py-3 pr-8 leading-tight text-gray-700 focus:border-gray-500 focus:bg-white focus:outline-none"
+                  errors={errors?.acessoVeiculos?.message}
                 />
               </SelectContainer>
             </div>

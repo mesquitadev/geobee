@@ -6,16 +6,25 @@ interface NavItemProps {
   title: string
   to: string
   icon: ElementType
+  onNavigate?: () => void
 }
 
-const NavItem = ({ title, to, icon: Icon }: NavItemProps) => {
+const NavItem = ({ title, to, icon: Icon, onNavigate }: NavItemProps) => {
   const location = useLocation()
   const isActive = location.pathname === to
+
+  const handleClick = () => {
+    // Chama a função onNavigate para fechar o sidebar quando um item é clicado
+    if (onNavigate) {
+      onNavigate()
+    }
+  }
 
   return (
     <nav className="w-full space-y-0.5">
       <Link
         to={to}
+        onClick={handleClick}
         className={`group flex items-center gap-3 rounded-lg px-4 py-3 outline-none transition-all duration-200 
           ${
             isActive
