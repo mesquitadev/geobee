@@ -187,6 +187,11 @@ export default function Home() {
         </select>
       </div>
 
+      {/* Legenda do mapa - agora acima do mapa */}
+      <div className="px-3 py-2">
+        <Legend />
+      </div>
+
       {/* Contêiner do mapa */}
       <div className="relative flex-1">
         <MapContainer
@@ -258,9 +263,6 @@ export default function Home() {
               <CircleMarker center={userLocation} radius={20} color="blue" />
             </React.Fragment>
           )}
-
-          {/* Legenda do mapa */}
-          <Legend />
         </MapContainer>
       </div>
     </div>

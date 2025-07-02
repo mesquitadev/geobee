@@ -88,63 +88,81 @@ export default function FindApiary() {
     <div className="flex h-full w-full flex-col">
       {loading && <BackdropLoading isLoading={loading} />}
 
-      {/* Contêiner do mapa */}
-      <div className="relative flex-1">
-        <MapContainer
-          center={
-            selectedCoordinates || [-2.5555334824608353, -44.208297729492195]
-          }
-          zoom={13}
-          className="h-full w-full"
-        >
-          {/* Camada base do mapa */}
-          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+      {apiary && apiary.latitude && apiary.longitude && (
+        <>
+          {/* Título e Legenda do mapa - agora acima do mapa */}
+          <div className="px-3 py-2">
+            <h2 className="mb-2 text-lg font-semibold">
+              Apiário: {apiary.name}
+            </h2>
+            <Legend />
+          </div>
 
-          {/* Dados GeoJSON */}
-          {geojson && (
-            <GeoJSON
-              data={geojson}
-              style={(feature) => {
-                const type = feature.properties.VEGETACAO
-                return { color: getColor(type) }
-              }}
-            />
-          )}
+          {/* Contêiner do mapa */}
+          <div className="relative flex-1">
+            <MapContainer
+              center={
+                selectedCoordinates || [
+                  -2.5555334824608353, -44.208297729492195,
+                ]
+              }
+              zoom={13}
+              className="h-full w-full"
+            >
+              {/* Camada base do mapa */}
+              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
-          {/* Marcador do apiário */}
-          {apiary && (
-            <React.Fragment>
-              <Marker
-                icon={meliponaryIcon}
-                position={[Number(apiary.latitude), Number(apiary.longitude)]}
-              >
-                <Popup>
-                  Apiário {apiary.name} - Cap. de Suporte:{' '}
-                  {apiary.capacidadeDeSuporte || 'N/A'}
-                </Popup>
-              </Marker>
-              <CircleMarker
-                center={[Number(apiary.latitude), Number(apiary.longitude)]}
-                radius={20}
-                color="blue"
-              />
-            </React.Fragment>
-          )}
+              {/* Dados GeoJSON */}
+              {geojson && (
+                <GeoJSON
+                  data={geojson}
+                  style={(feature) => {
+                    const type = feature.properties.VEGETACAO
+                    return { color: getColor(type) }
+                  }}
+                />
+              )}
 
-          {/* Marcador da localização do usuário */}
-          {userLocation && (
-            <React.Fragment>
-              <Marker position={userLocation}>
-                <Popup>Você está aqui</Popup>
-              </Marker>
-              <CircleMarker center={userLocation} radius={20} color="blue" />
-            </React.Fragment>
-          )}
+              {/* Marcador do apiário */}
+              {apiary && (
+                <React.Fragment>
+                  <Marker
+                    icon={meliponaryIcon}
+                    position={[
+                      Number(apiary.latitude),
+                      Number(apiary.longitude),
+                    ]}
+                  >
+                    <Popup>
+                      Apiário {apiary.name} - Cap. de Suporte:{' '}
+                      {apiary.capacidadeDeSuporte || 'N/A'}
+                    </Popup>
+                  </Marker>
+                  <CircleMarker
+                    center={[Number(apiary.latitude), Number(apiary.longitude)]}
+                    radius={20}
+                    color="blue"
+                  />
+                </React.Fragment>
+              )}
 
-          {/* Legenda do mapa */}
-          <Legend />
-        </MapContainer>
-      </div>
+              {/* Marcador da localização do usuário */}
+              {userLocation && (
+                <React.Fragment>
+                  <Marker position={userLocation}>
+                    <Popup>Sua localização</Popup>
+                  </Marker>
+                  <CircleMarker
+                    center={userLocation}
+                    radius={20}
+                    color="blue"
+                  />
+                </React.Fragment>
+              )}
+            </MapContainer>
+          </div>
+        </>
+      )}
     </div>
   )
 }

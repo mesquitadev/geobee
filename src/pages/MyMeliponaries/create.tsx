@@ -348,7 +348,10 @@ const NewMeliponary = () => {
           </MapContainer>
         </div>
         <div className="mb-0">
-          <form onSubmit={handleSubmit(handleSignUp)} className="w-full mb-0 pb-24 md:pb-20">
+          <form
+            onSubmit={handleSubmit(handleSignUp)}
+            className="mb-0 w-full pb-24 md:pb-20"
+          >
             <div className="mx-3 mb-6 flex flex-wrap">
               <InputContainer className="mb-6  w-full px-3 md:mb-0">
                 <InputLabel label="Nome" name="name" />
