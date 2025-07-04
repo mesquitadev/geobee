@@ -1,8 +1,8 @@
 import {
-    Dialog,
-    DialogBackdrop,
-    DialogPanel,
-    DialogTitle,
+  Dialog,
+  DialogBackdrop,
+  DialogPanel,
+  DialogTitle,
 } from '@headlessui/react'
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import 'leaflet/dist/leaflet.css'
@@ -12,16 +12,17 @@ import BackdropLoading from '../../components/BackdropLoading/index.tsx'
 import Breadcumbs from '../../components/Breadcumbs'
 import { useLoading } from '../../hooks/useLoading.tsx'
 import api from '../../services/index.tsx'
+import { Eye, PlusCircle, Trash2 } from 'lucide-react'
 
-export default function MyApiaries() {
+export default function MyMaps() {
   const { loading, setLoading } = useLoading()
-  const [apiaries, setApiaries] = useState(null)
+  const [maps, setMaps] = useState<any[]>([])
 
   const fetchApiaries = useCallback(async () => {
     try {
       setLoading(true)
       const response = await api.get('maps/')
-      setApiaries(response.data)
+      setMaps(response.data)
     } catch (err) {
       console.error(err)
     } finally {
@@ -51,69 +52,116 @@ export default function MyApiaries() {
   }, [fetchApiaries, selectedId])
 
   return (
-    <div className="h-full w-full p-10">
+    <div className="h-full w-full p-4 md:p-6 lg:p-10">
       <BackdropLoading isLoading={loading} />
       <Breadcumbs pageName="Meus Mapas" />
-
-      <div className="items-end justify-end py-5">
+      <div className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
+          Meus Mapas
+        </h1>
         <Link
           to="/meus-mapas/novo"
-          data-modal-target="authentication-modal"
-          data-modal-toggle="authentication-modal"
-          className="flex rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+          className="flex items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >
-          Adicionar Mapa
+          <PlusCircle className="h-5 w-5" />
+          <span>Adicionar Mapa</span>
         </Link>
       </div>
-
-      <div className="border-stroke shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 rounded-sm border bg-white px-5 pb-2.5 pt-6 xl:pb-1">
-        <h4 className="mb-6 text-xl font-semibold text-black dark:text-white">
-          Meus Mapas
-        </h4>
-
-        <div className="flex flex-col">
-          <div className="bg-gray-2 dark:bg-meta-4 grid grid-cols-3 rounded-sm sm:grid-cols-5">
-            <div className="p-2.5 xl:p-5">
-              <h5 className="xsm:text-base text-sm font-medium uppercase">
-                Mapa
-              </h5>
-            </div>
-            <div className="hidden p-2.5 text-center sm:block xl:p-5">
-              <h5 className="xsm:text-base text-sm font-medium uppercase">
-                Ações
-              </h5>
-            </div>
+      {maps.length === 0 ? (
+        <div className="flex flex-col items-center justify-center rounded-lg border border-gray-100 bg-white p-10 shadow-sm dark:border-zinc-700 dark:bg-zinc-800">
+          <div className="text-center">
+            <p className="mt-2 text-gray-500 dark:text-gray-400">
+              Nenhum mapa encontrado.
+            </p>
+            <Link
+              to="/meus-mapas/novo"
+              className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-indigo-600 hover:text-indigo-500"
+            >
+              <PlusCircle className="h-4 w-4" />
+              <span>Adicionar seu primeiro mapa</span>
+            </Link>
           </div>
-
-          {apiaries?.map((brand, key) => {
-            console.log('map', brand)
-            return (
-              <div
-                className={`grid grid-cols-3 sm:grid-cols-5 ${
-                  key === apiaries.length - 1
-                    ? ''
-                    : 'border-stroke dark:border-strokedark border-b'
-                }`}
-                key={brand.id}
-              >
-                <div className="flex items-center gap-3 p-2.5 xl:p-5">
-                  <p className="hidden text-black sm:block">{brand.name}</p>
-                </div>
-
-                <div className="hidden items-center justify-center p-2.5 sm:flex xl:p-5">
-                  <button
-                    onClick={() => handleOpenCloseModal(brand.id)}
-                    className=" mr-2 flex rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+        </div>
+      ) : (
+        <>
+          {/* Desktop Table */}
+          <div className="hidden overflow-hidden rounded-lg border border-gray-200 shadow-sm dark:border-zinc-700 md:block">
+            <table className="w-full text-left">
+              <thead className="bg-gray-100 dark:bg-zinc-800">
+                <tr>
+                  <th className="px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-300">
+                    Nome
+                  </th>
+                  <th className="px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-300">
+                    Ações
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200 bg-white dark:divide-zinc-700 dark:bg-zinc-900">
+                {maps.map((map) => (
+                  <tr
+                    key={map.id}
+                    className="transition-colors hover:bg-gray-50 dark:hover:bg-zinc-800"
                   >
-                    Apagar
+                    <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-200">
+                      {map.name}
+                    </td>
+                    <td className="px-4 py-2">
+                      <div className="flex space-x-2">
+                        <Link
+                          to={`/meus-mapas/${map.id}`}
+                          className="rounded-md bg-indigo-100 p-1.5 text-indigo-700 transition-colors hover:bg-indigo-200"
+                          title="Visualizar"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Link>
+                        <button
+                          onClick={() => handleOpenCloseModal(map.id)}
+                          className="rounded-md bg-red-100 p-1.5 text-red-700 transition-colors hover:bg-red-200"
+                          title="Remover"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {/* Mobile Cards */}
+          <div className="grid grid-cols-1 gap-4 md:hidden">
+            {maps.map((map) => (
+              <div
+                key={map.id}
+                className="overflow-hidden rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-zinc-700 dark:bg-zinc-800"
+              >
+                <div className="mb-3 flex items-center justify-between">
+                  <h3 className="font-medium text-gray-900 dark:text-gray-100">
+                    {map.name}
+                  </h3>
+                </div>
+                <div className="mt-4 flex justify-end space-x-3">
+                  <Link
+                    to={`/meus-mapas/${map.id}`}
+                    className="flex items-center justify-center gap-1 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-indigo-700"
+                  >
+                    <Eye className="h-3 w-3" />
+                    <span>Visualizar</span>
+                  </Link>
+                  <button
+                    onClick={() => handleOpenCloseModal(map.id)}
+                    className="flex items-center justify-center gap-1 rounded-md bg-red-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-red-700"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                    <span>Remover</span>
                   </button>
                 </div>
               </div>
-            )
-          })}
-        </div>
-      </div>
-
+            ))}
+          </div>
+        </>
+      )}
       <Dialog
         open={open}
         onClose={() => setOpen(false)}
@@ -164,7 +212,6 @@ export default function MyApiaries() {
                 </button>
                 <button
                   type="button"
-                  data-autofocus
                   onClick={() => setOpen(false)}
                   className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
                 >
