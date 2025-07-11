@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import api from '../../services'
 import { useLoading } from '../../hooks/useLoading.tsx'
 import BackdropLoading from '../../components/BackdropLoading'
 import {
@@ -15,6 +14,8 @@ import beebox from '../../assets/bee-hive.png'
 import { getColor } from '../../utils'
 import Legend from '../../components/Legend'
 import { useParams } from 'react-router-dom'
+import { useGetMeliponaryQuery } from '../../redux/slices/meliponarySlice'
+import { useSnackbar } from 'notistack'
 
 const meliponaryIcon = new L.Icon({
   iconUrl: beebox as string,
@@ -24,7 +25,7 @@ const meliponaryIcon = new L.Icon({
 })
 
 export default function FindMeliponary() {
-  const { loading, setLoading } = useLoading()
+  const { setLoading } = useLoading()
   const [geojson, setGeojson] = useState(null)
   const [userLocation, setUserLocation] = useState<[number, number] | null>(
     null,
@@ -32,8 +33,24 @@ export default function FindMeliponary() {
   const [selectedCoordinates, setSelectedCoordinates] = useState<
     [number, number] | null
   >(null)
-  const [meliponary, setMeliponary] = useState<any>()
   const { id } = useParams<{ id: string }>()
+  const {
+    data: meliponary,
+    isLoading: meliponaryLoading,
+    error: meliponaryError,
+  } = useGetMeliponaryQuery(id!, { skip: !id })
+  const { enqueueSnackbar } = useSnackbar()
+
+  // Adiciona controle de loading global
+  React.useEffect(() => {
+    setLoading(meliponaryLoading)
+  }, [meliponaryLoading, setLoading])
+
+  React.useEffect(() => {
+    if (meliponaryError) {
+      enqueueSnackbar('Erro ao carregar meliponário', { variant: 'error' })
+    }
+  }, [meliponaryError, enqueueSnackbar])
 
   useEffect(() => {
     const getMaps = async () => {
@@ -47,20 +64,6 @@ export default function FindMeliponary() {
         console.error(err)
       }
     }
-
-    const getDataById = async (id: string) => {
-      try {
-        setLoading(true)
-        const { data } = await api.get(`/meliponary/${id}`)
-        setMeliponary(data)
-        setSelectedCoordinates([data.latitude, data.longitude])
-      } catch (err) {
-        console.error(err)
-      } finally {
-        setLoading(false)
-      }
-    }
-
     const getUserLocation = () => {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
@@ -76,18 +79,24 @@ export default function FindMeliponary() {
         )
       }
     }
-
     if (id) {
-      getDataById(id)
       getMaps()
       getUserLocation()
     }
-  }, [id, setLoading])
+  }, [id])
+
+  useEffect(() => {
+    if (meliponary && meliponary.latitude && meliponary.longitude) {
+      setSelectedCoordinates([meliponary.latitude, meliponary.longitude])
+    }
+  }, [meliponary])
 
   return (
     <div className="flex h-full w-full flex-col">
-      {loading && <BackdropLoading isLoading={loading} />}
-
+      {/* {(loading || meliponaryLoading) && <BackdropLoading isLoading={true} />} */}
+      {meliponaryError && (
+        <div className="p-4 text-red-600">Erro ao carregar meliponário.</div>
+      )}
       {meliponary && meliponary.latitude && meliponary.longitude && (
         <>
           {/* Título e Legenda do mapa - agora acima do mapa */}

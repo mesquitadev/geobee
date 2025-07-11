@@ -9,42 +9,37 @@ import { LogOut } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../hooks/useAuth.tsx'
 import { useLoading } from '../../hooks/useLoading.tsx'
-import { userService } from '../../services/UserService.ts'
+import { useGetMeQuery } from '../../redux/slices/usersSlice'
+import { tw } from '../../utils/tw'
 
 const Profile = () => {
   const { setLoading } = useLoading()
   const { signOut } = useAuth()
-  const [userData, setUserData] = useState<any>({})
   const [open, setOpen] = useState(false)
-  useEffect(() => {
-    setLoading(true)
-    userService
-      .buscarDadosUsuarioLogado()
-      .then((response) => {
-        setUserData(response)
-        setLoading(false)
-      })
-      .catch()
-      .finally(() => {
-        setLoading(false)
-      })
-  }, [setLoading])
+  const { data: userData, isLoading } = useGetMeQuery()
 
-  const handleSignOut = () => {
-    signOut()
-  }
+  useEffect(() => {
+    setLoading(isLoading)
+    return () => setLoading(false)
+  }, [isLoading, setLoading])
+
+  const handleSignOut = () => signOut()
+
   return (
     <div className="flex items-center gap-3">
       <div className="flex flex-col truncate">
         <span className="text-sm font-semibold text-zinc-700">
-          {userData.fullName}
+          {userData?.fullName}
         </span>
-        <span className="truncate text-sm text-zinc-500">{userData.email}</span>
+        <span className="truncate text-sm text-zinc-500">
+          {userData?.email}
+        </span>
       </div>
       <button
         type="button"
-        className="ml-auto rounded-md p-2 hover:bg-zinc-50"
+        className={tw('ml-auto rounded-md p-2', 'hover:bg-zinc-50')}
         onClick={() => setOpen(true)}
+        aria-label="Sair"
       >
         <LogOut className="h-5 w-5 text-zinc-500" />
       </button>
@@ -58,7 +53,6 @@ const Profile = () => {
           transition
           className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity data-[closed]:opacity-0 data-[enter]:duration-300 data-[leave]:duration-200 data-[enter]:ease-out data-[leave]:ease-in"
         />
-
         <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
           <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
             <DialogPanel
@@ -88,11 +82,19 @@ const Profile = () => {
                   </div>
                 </div>
               </div>
-              <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+              <div
+                className={tw(
+                  'bg-gray-50 px-4 py-3',
+                  'sm:flex sm:flex-row-reverse sm:px-6',
+                )}
+              >
                 <button
                   type="button"
                   onClick={handleSignOut}
-                  className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto"
+                  className={tw(
+                    'inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm',
+                    'hover:bg-red-500 sm:ml-3 sm:w-auto',
+                  )}
                 >
                   Sim
                 </button>
@@ -100,7 +102,10 @@ const Profile = () => {
                   type="button"
                   data-autofocus
                   onClick={() => setOpen(false)}
-                  className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                  className={tw(
+                    'mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm',
+                    'ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto',
+                  )}
                 >
                   Não
                 </button>

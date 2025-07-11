@@ -107,9 +107,23 @@ export const detectOperatingSystem = () => {
 }
 
 /**
+ * Aplica padding seguro para PWAs em iOS (safe-area-inset)
+ */
+export const applySafeAreaPadding = () => {
+  if (isInStandaloneMode()) {
+    document.body.style.paddingTop = 'env(safe-area-inset-top)'
+    document.body.style.paddingBottom = 'env(safe-area-inset-bottom)'
+  } else {
+    document.body.style.paddingTop = ''
+    document.body.style.paddingBottom = ''
+  }
+}
+
+/**
  * Inicializa todas as melhorias mobile
  */
 export const initMobileTweaks = () => {
   preventZoomOnFocus()
   detectOperatingSystem()
+  applySafeAreaPadding()
 }

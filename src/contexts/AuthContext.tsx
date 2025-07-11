@@ -1,9 +1,9 @@
 import { createContext, ReactNode, useCallback, useState } from 'react'
 import Cookies from 'js-cookie'
-import api from '../services'
 import { useLoading } from '../hooks/useLoading'
 import { useSnackbar } from 'notistack'
-import qs from 'qs'
+import { useLoginMutation } from '../redux/slices/usersSlice'
+
 interface User {
   username?: string
   password?: string
@@ -20,7 +20,9 @@ interface SignInCredentials {
 
 export interface AuthContextData {
   token: string
+
   signIn(credentials: SignInCredentials): Promise<void>
+
   signOut(): void
 }
 
@@ -32,7 +34,6 @@ const AuthContext = createContext<AuthContextData>({} as AuthContextData)
 
 const AuthProvider = ({ children }: AuthProviderProps) => {
   const { setLoading } = useLoading()
-  // const toast = useToast();
   const { enqueueSnackbar } = useSnackbar()
   const [data, setData] = useState<AuthState>(() => {
     const token = Cookies.get('GeoToken')
@@ -43,45 +44,39 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
 
     return {} as AuthState
   })
+  const [login] = useLoginMutation()
 
   const signIn = useCallback(
     async ({ username, password }: User) => {
       setLoading(true)
       try {
-        const response = await api.post(
-          'auth/login',
-          qs.stringify({ username, password }),
-          {
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded',
-            },
-          },
-        )
-
-        // eslint-disable-next-line camelcase
-        const { access_token } = response.data
-        Cookies.set('GeoToken', access_token, {
-          expires: 7,
-        })
-        // eslint-disable-next-line camelcase
-        setData({ token: access_token })
-      } catch (err) {
-        enqueueSnackbar({
-          message:
-            'Erro na autenticação! Ocorreu um erro ao fazer login, verifique as credenciais inseridas',
-          variant: 'error',
-        })
-
-        enqueueSnackbar({
-          message: `Erro: ${err.getMessage()}`,
-          variant: 'error',
-        })
-        setLoading(false)
+        const result = await login({ username, password }).unwrap()
+        if (result && result.access_token) {
+          Cookies.set('GeoToken', result.access_token, { expires: 7 })
+          setData({ token: result.access_token })
+          return true // Retorna true para indicar sucesso
+        }
+      } catch (err: any) {
+        // Só mostra erro se realmente não houver token
+        if (!err?.data?.access_token) {
+          enqueueSnackbar({
+            message:
+              'Erro na autenticação! Ocorreu um erro ao fazer login, verifique as credenciais inseridas',
+            variant: 'error',
+          })
+          if (err?.data?.message) {
+            enqueueSnackbar({
+              message: `Erro: ${err.data.message}`,
+              variant: 'error',
+            })
+          }
+        }
+        return false
       } finally {
         setLoading(false)
       }
     },
-    [enqueueSnackbar, setLoading],
+    [login, setLoading, enqueueSnackbar, setData],
   )
 
   const signOut = useCallback(() => {

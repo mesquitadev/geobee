@@ -1,10 +1,12 @@
-import { useCallback, useEffect, useState, memo } from 'react'
-import api from '../../services'
+import React, { useCallback, useState, memo } from 'react'
+import {
+  useGetApiariesQuery,
+  useDeleteApiaryMutation,
+} from '../../redux/slices/apiariesSlice'
 import { useLoading } from '../../hooks/useLoading.tsx'
 import Breadcumbs from '../../components/Breadcumbs'
 import 'leaflet/dist/leaflet.css'
 import { Link, useNavigate } from 'react-router-dom'
-import BackdropLoading from '../../components/BackdropLoading/index.tsx'
 import {
   Dialog,
   DialogBackdrop,
@@ -25,31 +27,28 @@ interface Apiary {
 
 const MyApiaries = () => {
   const navigate = useNavigate()
-  const { loading, setLoading } = useLoading()
-  const [apiaries, setApiaries] = useState<Apiary[]>([])
+  const { setLoading } = useLoading()
+  const { enqueueSnackbar } = useSnackbar()
+  const {
+    data: apiaries = [],
+    isLoading: apiariesLoading,
+    error: apiariesError,
+  } = useGetApiariesQuery()
+  // Adiciona controle de loading global
+  React.useEffect(() => {
+    setLoading(apiariesLoading)
+  }, [apiariesLoading, setLoading])
+
+  React.useEffect(() => {
+    if (apiariesError) {
+      enqueueSnackbar('Erro ao carregar apiários', { variant: 'error' })
+    }
+  }, [apiariesError, enqueueSnackbar])
+
+  const [deleteApiary] = useDeleteApiaryMutation()
   const [open, setOpen] = useState(false)
   const [selectedId, setSelectedId] = useState<number>()
   const [isDeleting, setIsDeleting] = useState(false)
-  const { enqueueSnackbar } = useSnackbar()
-
-  const fetchApiaries = useCallback(async () => {
-    try {
-      setLoading(true)
-      const { data } = await api.get('/apiaries/')
-      setApiaries(data)
-    } catch (err) {
-      console.error(err)
-      enqueueSnackbar('Erro ao carregar apiários. Tente novamente.', {
-        variant: 'error',
-      })
-    } finally {
-      setLoading(false)
-    }
-  }, [setLoading, enqueueSnackbar])
-
-  useEffect(() => {
-    fetchApiaries()
-  }, [fetchApiaries])
 
   const handleViewApiary = useCallback(
     (id: number) => {
@@ -64,11 +63,11 @@ const MyApiaries = () => {
   }, [])
 
   const handleDeleteApiary = useCallback(async () => {
+    if (!selectedId) return
+    setIsDeleting(true)
     try {
-      setIsDeleting(true)
-      await api.delete(`/apiaries/${selectedId}`)
+      await deleteApiary(selectedId)
       setOpen(false)
-      fetchApiaries()
       enqueueSnackbar('Apiário removido com sucesso!', { variant: 'success' })
     } catch (error) {
       console.error(error)
@@ -76,11 +75,11 @@ const MyApiaries = () => {
     } finally {
       setIsDeleting(false)
     }
-  }, [fetchApiaries, selectedId, enqueueSnackbar])
+  }, [deleteApiary, selectedId, enqueueSnackbar])
 
   return (
     <div className="h-full w-full p-4 md:p-6 lg:p-10">
-      <BackdropLoading isLoading={loading} />
+      {/* <BackdropLoading isLoading={loading} /> */}
       <Breadcumbs pageName="Meus Apiários" />
 
       <div className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
@@ -115,7 +114,7 @@ const MyApiaries = () => {
       ) : (
         <>
           {/* Versão para Desktop - Tabela */}
-          <div className="hidden overflow-hidden rounded-lg border border-gray-200 shadow-sm md:block dark:border-zinc-700">
+          <div className="hidden overflow-hidden rounded-lg border border-gray-200 shadow-sm dark:border-zinc-700 md:block">
             <table className="w-full text-left">
               <thead className="bg-gray-100 dark:bg-zinc-800">
                 <tr>

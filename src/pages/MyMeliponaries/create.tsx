@@ -62,7 +62,7 @@ interface ValidationNotification {
 
 const NewMeliponary = () => {
   const { enqueueSnackbar } = useSnackbar()
-  const { loading, setLoading } = useLoading()
+  const { setLoading } = useLoading()
   const navigate = useNavigate()
   const [disabled, setDisabled] = useState(false)
   const [latitude, setLatitude] = useState<number>(0)
@@ -321,7 +321,7 @@ const NewMeliponary = () => {
   return (
     <div className="h-full w-full p-10 pb-0">
       <Breadcumbs pageName="Cadastrar Meliponário" />
-      <BackdropLoading isLoading={loading} />
+      {/* <BackdropLoading isLoading={loading} /> */}
       <div className="grid grid-cols-1 md:grid-cols-2">
         <div className="mb-5">
           <p className="mb-2 block text-xs font-bold uppercase tracking-wide text-gray-700">

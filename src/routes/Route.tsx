@@ -1,10 +1,10 @@
 import React from 'react'
 import { Navigate, Outlet } from 'react-router-dom'
 import Layout from '../components/Layout'
-import { useAuth } from '../hooks/useAuth'
+import { getToken } from '../utils/auth' // Adjust the import based on where you place the getToken function
 
 const PrivateRoute: React.FC = () => {
-  const { token } = useAuth()
+  const token = getToken()
 
   return token ? (
     <Layout>
@@ -16,7 +16,7 @@ const PrivateRoute: React.FC = () => {
 }
 
 const PublicRoute: React.FC = () => {
-  const { token } = useAuth()
+  const token = getToken()
   return token ? <Navigate to="/home" /> : <Outlet />
 }
 

@@ -8,7 +8,6 @@ import { initMobileTweaks } from './utils/mobileTweaks'
 import InstallPWA from './components/InstallPWA'
 
 function App() {
-  // Inicializa ajustes para melhorar a experiência em dispositivos móveis
   useEffect(() => {
     initMobileTweaks()
   }, [])

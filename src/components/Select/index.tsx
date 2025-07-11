@@ -64,7 +64,7 @@ const Select = forwardRef(
       <Controller
         control={control}
         name={name}
-        defaultValue={null}
+        defaultValue={'' as any}
         render={({ field }) => (
           <div className="w-full">
             {label && (
@@ -82,6 +82,7 @@ const Select = forwardRef(
                 ref={inputElementRef}
                 {...rest}
                 {...field}
+                value={field.value || ''}
               >
                 <option value="">{placeholder}</option>
                 {options.map((option) => (

@@ -1,10 +1,8 @@
-import { useCallback, useEffect, useState } from 'react'
-import api from '../../services'
+import React, { useCallback, useState } from 'react'
 import { useLoading } from '../../hooks/useLoading.tsx'
 import Breadcumbs from '../../components/Breadcumbs'
 import 'leaflet/dist/leaflet.css'
 import { Link, useNavigate } from 'react-router-dom'
-import BackdropLoading from '../../components/BackdropLoading/index.tsx'
 import {
   Dialog,
   DialogBackdrop,
@@ -14,6 +12,10 @@ import {
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import { useSnackbar } from 'notistack'
 import { Eye, PlusCircle, Trash2 } from 'lucide-react'
+import {
+  useDeleteMeliponaryMutation,
+  useGetMeliponariesQuery,
+} from '../../redux/slices/meliponarySlice'
 
 // Definindo interface para tipagem dos meliponários
 interface Meliponary {
@@ -25,30 +27,28 @@ interface Meliponary {
 
 const MyMeliponaries = () => {
   const navigate = useNavigate()
-  const { loading, setLoading } = useLoading()
+  const { setLoading } = useLoading()
   const { enqueueSnackbar } = useSnackbar()
-  const [apiaries, setApiaries] = useState<Meliponary[]>([])
+  const {
+    data: meliponaries = [],
+    isLoading: meliponariesLoading,
+    error: meliponariesError,
+  } = useGetMeliponariesQuery()
+  // Adiciona controle de loading global
+  React.useEffect(() => {
+    setLoading(meliponariesLoading)
+  }, [meliponariesLoading, setLoading])
+
+  React.useEffect(() => {
+    if (meliponariesError) {
+      enqueueSnackbar('Erro ao carregar meliponários', { variant: 'error' })
+    }
+  }, [meliponariesError, enqueueSnackbar])
+
+  const [deleteMeliponary] = useDeleteMeliponaryMutation()
   const [open, setOpen] = useState(false)
   const [selectedId, setSelectedId] = useState<number>()
-  // Estado para controlar a exclusão em andamento
   const [isDeleting, setIsDeleting] = useState(false)
-
-  const fetchMeliponaries = useCallback(async () => {
-    try {
-      setLoading(true)
-      const { data } = await api.get('meliponary/')
-      setApiaries(data)
-    } catch (err) {
-      console.error(err)
-      enqueueSnackbar('Erro ao buscar meliponários', { variant: 'error' })
-    } finally {
-      setLoading(false)
-    }
-  }, [setLoading, enqueueSnackbar])
-
-  useEffect(() => {
-    fetchMeliponaries()
-  }, [fetchMeliponaries])
 
   const handleOpenCloseModal = useCallback((id: number) => {
     setOpen((state) => !state)
@@ -63,28 +63,25 @@ const MyMeliponaries = () => {
   )
 
   const handleDeleteMeliponary = useCallback(async () => {
+    if (!selectedId) return
+    setIsDeleting(true)
     try {
-      setIsDeleting(true) // Indica que a exclusão está em andamento
-      await api.delete(`/meliponary/${selectedId}`)
+      await deleteMeliponary(selectedId)
       setOpen(false)
-      fetchMeliponaries()
       enqueueSnackbar('Meliponário removido com sucesso!', {
         variant: 'success',
       })
     } catch (error) {
       console.error(error)
-      const errorMessage =
-        error.response?.data?.message ||
-        'Ocorreu um erro ao remover o meliponário'
-      enqueueSnackbar(errorMessage, { variant: 'error' })
+      enqueueSnackbar('Erro ao remover meliponário', { variant: 'error' })
     } finally {
-      setIsDeleting(false) // Reseta o estado após a conclusão
+      setIsDeleting(false)
     }
-  }, [fetchMeliponaries, selectedId, enqueueSnackbar])
+  }, [deleteMeliponary, selectedId, enqueueSnackbar])
 
   return (
     <div className="h-full w-full p-4 md:p-6 lg:p-10">
-      <BackdropLoading isLoading={loading} />
+      {/* <BackdropLoading isLoading={loading} /> */}
       <Breadcumbs pageName="Meus Meliponários" />
 
       <div className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
@@ -101,7 +98,7 @@ const MyMeliponaries = () => {
         </Link>
       </div>
 
-      {apiaries.length === 0 ? (
+      {meliponaries.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-lg border border-gray-100 bg-white p-10 shadow-sm dark:border-zinc-700 dark:bg-zinc-800">
           <div className="text-center">
             <p className="mt-2 text-gray-500 dark:text-gray-400">
@@ -119,7 +116,7 @@ const MyMeliponaries = () => {
       ) : (
         <>
           {/* Versão para Desktop - Tabela */}
-          <div className="hidden overflow-hidden rounded-lg border border-gray-200 shadow-sm md:block dark:border-zinc-700">
+          <div className="hidden overflow-hidden rounded-lg border border-gray-200 shadow-sm dark:border-zinc-700 md:block">
             <table className="w-full text-left">
               <thead className="bg-gray-100 dark:bg-zinc-800">
                 <tr>
@@ -141,7 +138,7 @@ const MyMeliponaries = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white dark:divide-zinc-700 dark:bg-zinc-900">
-                {apiaries.map((apiary) => (
+                {meliponaries.map((apiary) => (
                   <tr
                     key={apiary.id}
                     className="transition-colors hover:bg-gray-50 dark:hover:bg-zinc-800"
@@ -184,7 +181,7 @@ const MyMeliponaries = () => {
 
           {/* Versão para Mobile - Cards */}
           <div className="grid grid-cols-1 gap-4 md:hidden">
-            {apiaries.map((apiary) => (
+            {meliponaries.map((apiary) => (
               <div
                 key={apiary.id}
                 className="overflow-hidden rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-zinc-700 dark:bg-zinc-800"

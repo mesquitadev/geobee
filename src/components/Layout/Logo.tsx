@@ -26,8 +26,8 @@ const Logo = () => {
           />
         </g>
       </svg>
-      <span className="sr-only text-white   lg:not-sr-only">
-        GeoBEE | BeeMAPP
+      <span className="sr-only text-zinc-900 dark:text-zinc-100 lg:not-sr-only">
+        BeeMAPP
       </span>
     </strong>
   )

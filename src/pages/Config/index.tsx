@@ -8,31 +8,76 @@ import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import 'leaflet/dist/leaflet.css'
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import BackdropLoading from '../../components/BackdropLoading/index.tsx'
 import Breadcumbs from '../../components/Breadcumbs'
 import { useLoading } from '../../hooks/useLoading.tsx'
-import api from '../../services/index.tsx'
+import {
+  useDeleteMapMutation,
+  useGetMapsQuery,
+} from '../../redux/slices/mapsSlice'
 import { Eye, PlusCircle, Trash2 } from 'lucide-react'
+import { useSnackbar } from 'notistack'
+
+function AppearanceSettings() {
+  // Tema: claro, escuro, sistema
+  const THEME_KEY = 'theme-preference'
+  const getSystemTheme = () =>
+    window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+
+  function getInitialTheme() {
+    const saved = localStorage.getItem(THEME_KEY)
+    if (saved === 'system' || !saved) return 'system'
+    return saved
+  }
+
+  const [theme, setTheme] = useState(getInitialTheme())
+
+  // Aplica tema
+  useEffect(() => {
+    if (theme === 'system') {
+      const systemTheme = getSystemTheme()
+      document.documentElement.classList.toggle('dark', systemTheme === 'dark')
+      localStorage.setItem(THEME_KEY, 'system')
+    } else {
+      document.documentElement.classList.toggle('dark', theme === 'dark')
+      localStorage.setItem(THEME_KEY, theme)
+    }
+  }, [theme])
+
+  return (
+    <div className="mb-6">
+      <label className="mb-2 block font-medium">Tema</label>
+      <select
+        className="rounded border px-3 py-2"
+        value={theme}
+        onChange={(e) => setTheme(e.target.value)}
+      >
+        <option value="system">Acompanhar sistema</option>
+        <option value="light">Claro</option>
+        <option value="dark">Escuro</option>
+      </select>
+    </div>
+  )
+}
 
 export default function MyMaps() {
-  const { loading, setLoading } = useLoading()
-  const [maps, setMaps] = useState<any[]>([])
-
-  const fetchApiaries = useCallback(async () => {
-    try {
-      setLoading(true)
-      const response = await api.get('maps/')
-      setMaps(response.data)
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setLoading(false)
-    }
-  }, [setLoading])
+  const {
+    data: maps = [],
+    isLoading: mapsLoading,
+    error: mapsError,
+  } = useGetMapsQuery()
+  const [deleteMap] = useDeleteMapMutation()
+  const { setLoading } = useLoading()
+  const { enqueueSnackbar } = useSnackbar()
 
   useEffect(() => {
-    fetchApiaries()
-  }, [fetchApiaries])
+    setLoading(mapsLoading)
+  }, [mapsLoading, setLoading])
+
+  useEffect(() => {
+    if (mapsError) {
+      enqueueSnackbar('Erro ao carregar mapas', { variant: 'error' })
+    }
+  }, [mapsError, enqueueSnackbar])
 
   const [open, setOpen] = useState(false)
   const [selectedId, setSelectedId] = useState<string>()
@@ -41,32 +86,55 @@ export default function MyMaps() {
     setOpen((state) => !state)
     setSelectedId(id)
   }, [])
-  const handleDeleteApiary = useCallback(() => {
-    api
-      .delete(`maps/${selectedId}`)
-      .then(() => {
-        setOpen(false)
-        fetchApiaries()
-      })
-      .catch((e) => console.error(e))
-  }, [fetchApiaries, selectedId])
+  const handleDeleteApiary = useCallback(async () => {
+    if (!selectedId) return
+    setLoading(true)
+    try {
+      await deleteMap(selectedId)
+      setOpen(false)
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setLoading(false)
+    }
+  }, [deleteMap, selectedId, setLoading])
+
+  const [submenu, setSubmenu] = useState<'main' | 'appearance'>('main')
 
   return (
     <div className="h-full w-full p-4 md:p-6 lg:p-10">
-      <BackdropLoading isLoading={loading} />
-      <Breadcumbs pageName="Meus Mapas" />
+      <Breadcumbs pageName="Configurações" />
       <div className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-          Meus Mapas
+          Configurações
         </h1>
-        <Link
-          to="/meus-mapas/novo"
-          className="flex items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-        >
-          <PlusCircle className="h-5 w-5" />
-          <span>Adicionar Mapa</span>
-        </Link>
       </div>
+      <div className="mb-6 flex gap-2 border-b pb-2">
+        <button
+          className={`rounded px-3 py-1 ${
+            submenu === 'main'
+              ? 'bg-indigo-600 text-white'
+              : 'bg-gray-100 text-gray-800 dark:bg-zinc-800 dark:text-gray-200'
+          }`}
+          onClick={() => setSubmenu('main')}
+        >
+          Geral
+        </button>
+        <button
+          className={`rounded px-3 py-1 ${
+            submenu === 'appearance'
+              ? 'bg-indigo-600 text-white'
+              : 'bg-gray-100 text-gray-800 dark:bg-zinc-800 dark:text-gray-200'
+          }`}
+          onClick={() => setSubmenu('appearance')}
+        >
+          Aparência
+        </button>
+      </div>
+      {submenu === 'main' && (
+        <>{/* ...aqui ficam as configurações gerais existentes... */}</>
+      )}
+      {submenu === 'appearance' && <AppearanceSettings />}
       {maps.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-lg border border-gray-100 bg-white p-10 shadow-sm dark:border-zinc-700 dark:bg-zinc-800">
           <div className="text-center">

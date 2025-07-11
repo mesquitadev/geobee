@@ -4,7 +4,6 @@ import 'leaflet/dist/leaflet.css'
 import { useSnackbar } from 'notistack'
 import { useForm } from 'react-hook-form'
 import * as yup from 'yup'
-import BackdropLoading from '../../components/BackdropLoading'
 import Breadcumbs from '../../components/Breadcumbs'
 import InputContainer from '../../components/Input/Container.tsx'
 import InputLabel from '../../components/Input/Label.tsx'
@@ -19,8 +18,8 @@ interface Inputs {
 
 export default function AddMap() {
   const { enqueueSnackbar } = useSnackbar()
-  const { loading, setLoading } = useLoading()
-  const navigate = useNavigate();
+  const { setLoading } = useLoading()
+  const navigate = useNavigate()
 
   const apiarioFormSchema = yup.object().shape({
     files: yup.mixed().required('Este campo é obrigatório'),
@@ -67,7 +66,6 @@ export default function AddMap() {
   return (
     <div className="h-full w-full p-10">
       <Breadcumbs pageName="Cadastrar Mapa" />
-      <BackdropLoading isLoading={loading} />
       <div className="grid grid-cols-2">
         <div className="mb-5">
           <form onSubmit={handleSubmit(handleSignUp)} className="w-full">

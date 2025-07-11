@@ -1,5 +1,5 @@
 import L from 'leaflet'
-import { enqueueSnackbar } from 'notistack'
+import { useSnackbar } from 'notistack'
 import React, { useEffect, useState } from 'react'
 import {
   CircleMarker,
@@ -14,8 +14,10 @@ import beebox from '../../assets/bee-hive.png'
 import BackdropLoading from '../../components/BackdropLoading'
 import Legend from '../../components/Legend'
 import { useLoading } from '../../hooks/useLoading.tsx'
-import api from '../../services'
 import { getColor } from '../../utils'
+import { useGetDashboardDataQuery } from '../../redux/slices/apiariesAllSlice'
+import { useGetMapsQuery } from '../../redux/slices/mapsSlice'
+import { useGetGeoJsonQuery } from '../../redux/slices/geoJsonSlice'
 
 // Ícones para o mapa
 const myIcon = new L.Icon({
@@ -50,126 +52,78 @@ interface ApiaryData {
 }
 
 export default function Home() {
-  const { loading, setLoading } = useLoading()
-  const [meliponaryData, setMeliponaryData] = useState(null)
-  const [apiaryData, setApiaryData] = useState(null)
+  const { setLoading } = useLoading()
   const [userLocation, setUserLocation] = useState<[number, number] | null>(
     null,
   )
-  const [geoJson, setGeoJson] = useState<any>('')
-  const [maps, setMaps] = useState<any>([])
   const [selectedMap, setSelectedMap] = useState<string>('')
-  const [geoJsonLoading, setGeoJsonLoading] = useState(false)
+  const { enqueueSnackbar } = useSnackbar()
+  const {
+    data: dashboardData = [],
+    isLoading: dashboardLoading,
+    error: dashboardError,
+  } = useGetDashboardDataQuery()
+  const {
+    data: maps = [],
+    isLoading: mapsLoading,
+    error: mapsError,
+  } = useGetMapsQuery()
+  const {
+    data: geoJson,
+    isLoading: geoJsonLoading,
+    error: geoJsonError,
+    refetch: refetchGeoJson,
+  } = useGetGeoJsonQuery(selectedMap || 'sao_luis.geojson', {
+    skip: !selectedMap && !maps.length,
+  })
 
-  // Carregar dados dos apiários e meliponários
   useEffect(() => {
-    const getMyData = async () => {
-      setLoading(true)
-      try {
-        const [meliponaryResponse, apiaryResponse] = await Promise.all([
-          api.get('/meliponary/all'),
-          api.get('/apiaries/all'),
-        ])
-        setMeliponaryData(meliponaryResponse.data)
-        setApiaryData(apiaryResponse.data)
-      } catch (err) {
-        enqueueSnackbar(
-          'Erro ao carregar dados de apiários ou meliponários existentes',
-          { variant: 'error' },
-        )
-      } finally {
-        setLoading(false)
-      }
-    }
+    setLoading(dashboardLoading || geoJsonLoading || mapsLoading)
+  }, [dashboardLoading, geoJsonLoading, mapsLoading, setLoading])
 
-    // Obter localização do usuário
-    const getUserLocation = () => {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            setUserLocation([
-              position.coords.latitude,
-              position.coords.longitude,
-            ])
-          },
-          (error) => {
-            console.error(error)
-          },
-        )
-      }
-    }
-
-    getMyData()
-    getUserLocation()
-  }, [setLoading])
-
-  // Carregar lista de mapas disponíveis
   useEffect(() => {
-    const fetchMaps = async () => {
-      setLoading(true)
-      try {
-        const response = await api.get('maps/')
-        const data = response.data
-        setMaps(data)
-      } catch (error) {
-        enqueueSnackbar('Erro ao carregar mapas', { variant: 'error' })
-      } finally {
-        setLoading(false)
-      }
-    }
+    if (dashboardError)
+      enqueueSnackbar('Erro ao carregar dados do dashboard', {
+        variant: 'error',
+      })
+    if (mapsError)
+      enqueueSnackbar('Erro ao carregar mapas', { variant: 'error' })
+    if (geoJsonError)
+      enqueueSnackbar('Erro ao carregar geojson', { variant: 'error' })
+  }, [dashboardError, mapsError, geoJsonError, enqueueSnackbar])
 
-    fetchMaps()
-  }, [setLoading])
-
-  // Carregar mapa padrão
   useEffect(() => {
-    const fetchGeoJSON = async () => {
-      setLoading(true)
-      setGeoJsonLoading(true)
-      try {
-        const response = await api.get('/maps/content/sao_luis.geojson')
-        setGeoJson(response.data)
-      } catch (error) {
-        enqueueSnackbar('Erro ao carregar o mapa padrão', {
-          variant: 'error',
-          preventDuplicate: true,
-          autoHideDuration: 3000,
-        })
-      } finally {
-        setLoading(false)
-        setGeoJsonLoading(false)
-      }
+    if (!selectedMap && maps.length > 0) {
+      setSelectedMap('sao_luis.geojson')
     }
+  }, [maps, selectedMap])
 
-    fetchGeoJSON()
-  }, [setLoading])
-
-  // Manipulador de mudança de mapa
-  const handleSelectMap = async (url: string) => {
-    setLoading(true)
-    setGeoJsonLoading(true)
-    try {
-      const [geoJsonResponse] = await Promise.all([api.get(`${url}`)])
-      setGeoJson(geoJsonResponse.data)
-    } catch (error) {
-      enqueueSnackbar('Erro ao carregar mapa!', { variant: 'error' })
-    } finally {
-      setLoading(false)
-      setGeoJsonLoading(false)
+  // Obter localização do usuário
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation([position.coords.latitude, position.coords.longitude])
+        },
+        (error) => {
+          console.error(error)
+        },
+      )
     }
-  }
+  }, [])
 
   const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedUrl = event.target.value
-    setGeoJson('')
     setSelectedMap(selectedUrl)
-    handleSelectMap(selectedUrl)
+    refetchGeoJson()
   }
 
   return (
     <div className="flex h-full w-full flex-col">
-      {/* Indicador de carregamento */}
-      {(loading || geoJsonLoading) && <BackdropLoading isLoading={true} />}
+      {/* /!* Loading acima de tudo, exceto o menu *!/ */}
+      {/* <BackdropLoading */}
+      {/*  isLoading={loading || geoJsonLoading || dashboardLoading || mapsLoading} */}
+      {/* /> */}
 
       {/* Seletor de mapas - visível em todos os dispositivos */}
       <div className="z-10 border-b border-gray-200 bg-white px-3 py-2 shadow-sm dark:border-zinc-700 dark:bg-zinc-800">
@@ -180,28 +134,28 @@ export default function Home() {
         >
           <option value="">Selecione um mapa</option>
           {maps.map((map: any) => (
-            <option key={map.id} value={map.url}>
+            <option key={map.id} value={map.url || map.name}>
               {map.name}
             </option>
           ))}
         </select>
+
+        <div className="mt-2 flex w-full">
+          <Legend />
+        </div>
       </div>
 
-      {/* Legenda do mapa - agora acima do mapa */}
-      <div className="px-3 py-2">
-        <Legend />
-      </div>
+      {/* Legenda do mapa - logo abaixo do select de mapas */}
 
       {/* Contêiner do mapa */}
       <div className="relative flex-1">
         <MapContainer
           center={[-2.5555334824608353, -44.208297729492195]}
           zoom={13}
-          className="h-full w-full"
+          className="relative h-full w-full"
         >
           {/* Camada base do mapa */}
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-
           {/* Dados GeoJSON */}
           {geoJson && (
             <GeoJSON
@@ -213,56 +167,36 @@ export default function Home() {
               }}
             />
           )}
-
-          {/* Marcadores de meliponários */}
-          {meliponaryData?.map((data: MeliponaryData) => (
+          {/* Marcadores de apiários e meliponários (dashboard) */}
+          {dashboardData?.map((data: any) => (
             <React.Fragment key={data.id}>
               <Marker
-                icon={meliponaryIcon}
+                icon={data.type === 'MELIPONARY' ? meliponaryIcon : myIcon}
                 position={[Number(data.latitude), Number(data.longitude)]}
               >
                 <Popup>
-                  Meliponário {data.name} - Capacidade de Suporte:{' '}
-                  {data.capacidadeDeSuporte || '0'}
+                  {data.type === 'MELIPONARY' ? 'Meliponário' : 'Apiário'}{' '}
+                  {data.name} - Capacidade de Suporte:{' '}
+                  {data.capacidadeDeSuporte || 'N/A'}
                 </Popup>
               </Marker>
               <CircleMarker
                 center={[Number(data.latitude), Number(data.longitude)]}
                 radius={20}
-                color="blue"
+                color={data.type === 'MELIPONARY' ? 'green' : 'orange'}
               />
             </React.Fragment>
           ))}
-
-          {/* Marcadores de apiários */}
-          {apiaryData?.map((data: ApiaryData) => (
-            <React.Fragment key={data.id}>
-              <Marker
-                icon={myIcon}
-                position={[Number(data.latitude), Number(data.longitude)]}
-              >
-                <Popup>
-                  Apiário {data.name} - Cap. de Suporte:{' '}
-                  {data.capacidadeDeSuporte || '0'}
-                </Popup>
-              </Marker>
-              <CircleMarker
-                center={[Number(data.latitude), Number(data.longitude)]}
-                radius={20}
-                color="blue"
-              />
-            </React.Fragment>
-          ))}
-
           {/* Marcador da localização do usuário */}
           {userLocation && (
             <React.Fragment>
               <Marker position={userLocation}>
-                <Popup>Você está aqui</Popup>
+                <Popup>Sua localização</Popup>
               </Marker>
               <CircleMarker center={userLocation} radius={20} color="blue" />
             </React.Fragment>
           )}
+          {/* Legenda dentro do mapa, canto inferior direito */}
         </MapContainer>
       </div>
     </div>

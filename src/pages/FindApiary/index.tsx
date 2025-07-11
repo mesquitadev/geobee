@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import api from '../../services'
 import { useLoading } from '../../hooks/useLoading.tsx'
 import BackdropLoading from '../../components/BackdropLoading'
 import {
@@ -15,6 +14,8 @@ import beebox from '../../assets/bee-hive.png'
 import { getColor } from '../../utils'
 import Legend from '../../components/Legend'
 import { useParams } from 'react-router-dom'
+import { useGetApiaryQuery } from '../../redux/slices/apiariesSlice'
+import { useSnackbar } from 'notistack'
 
 const meliponaryIcon = new L.Icon({
   iconUrl: beebox as string,
@@ -24,16 +25,32 @@ const meliponaryIcon = new L.Icon({
 })
 
 export default function FindApiary() {
-  const { loading, setLoading } = useLoading()
   const [geojson, setGeojson] = useState(null)
+  const { setLoading } = useLoading()
   const [userLocation, setUserLocation] = useState<[number, number] | null>(
     null,
   )
   const [selectedCoordinates, setSelectedCoordinates] = useState<
     [number, number] | null
   >(null)
-  const [apiary, setApiary] = useState<any>()
   const { id } = useParams<{ id: string }>()
+  const {
+    data: apiary,
+    isLoading: apiaryLoading,
+    error: apiaryError,
+  } = useGetApiaryQuery(id!, { skip: !id })
+  const { enqueueSnackbar } = useSnackbar()
+
+  // Adiciona controle de loading global
+  React.useEffect(() => {
+    setLoading(apiaryLoading)
+  }, [apiaryLoading, setLoading])
+
+  React.useEffect(() => {
+    if (apiaryError) {
+      enqueueSnackbar('Erro ao carregar apiário', { variant: 'error' })
+    }
+  }, [apiaryError, enqueueSnackbar])
 
   useEffect(() => {
     const getMaps = async () => {
@@ -47,20 +64,6 @@ export default function FindApiary() {
         console.error(err)
       }
     }
-
-    const getDataById = async (id: string) => {
-      try {
-        setLoading(true)
-        const { data } = await api.get(`/apiary/${id}`)
-        setApiary(data)
-        setSelectedCoordinates([data.latitude, data.longitude])
-      } catch (err) {
-        console.error(err)
-      } finally {
-        setLoading(false)
-      }
-    }
-
     const getUserLocation = () => {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
@@ -76,18 +79,24 @@ export default function FindApiary() {
         )
       }
     }
-
     if (id) {
-      getDataById(id)
       getMaps()
       getUserLocation()
     }
-  }, [id, setLoading])
+  }, [id])
+
+  useEffect(() => {
+    if (apiary && apiary.latitude && apiary.longitude) {
+      setSelectedCoordinates([apiary.latitude, apiary.longitude])
+    }
+  }, [apiary])
 
   return (
     <div className="flex h-full w-full flex-col">
-      {loading && <BackdropLoading isLoading={loading} />}
-
+      {/* {(loading || apiaryLoading) && <BackdropLoading isLoading={true} />} */}
+      {apiaryError && (
+        <div className="p-4 text-red-600">Erro ao carregar apiário.</div>
+      )}
       {apiary && apiary.latitude && apiary.longitude && (
         <>
           {/* Título e Legenda do mapa - agora acima do mapa */}
