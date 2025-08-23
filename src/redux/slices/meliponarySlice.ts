@@ -2,7 +2,11 @@ import { apiSlice } from '../../services/apiSlice'
 
 export interface Meliponary {
   id: string
+  latitude: number
+  longitude: number
+  capacidadeDeSuporte?: number // caso apareça nos erros relacionados a suporte
   name: string
+  tipoInstalacao?: string
   // adicione outros campos conforme necessário
 }
 

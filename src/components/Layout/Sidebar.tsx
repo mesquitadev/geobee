@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { ChevronDown, X, ElementType } from 'lucide-react'
+import { ChevronDown, X } from 'lucide-react'
 import { tw } from '../../utils/tw'
 import { Button } from '../Button'
 import Logo from './Logo'
 
 export type MenuItem = {
   label: string
-  icon?: ElementType
+  icon?: any
   to?: string
   startsWith?: string
   roles?: string[]
@@ -15,7 +15,7 @@ export type MenuItem = {
 }
 
 interface SidebarProps {
-  menuItems: MenuItem[]
+  menuItems: any
   userRoles: string[]
   isOpen: boolean
   onClose: () => void

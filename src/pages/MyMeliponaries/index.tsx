@@ -17,14 +17,6 @@ import {
   useGetMeliponariesQuery,
 } from '../../redux/slices/meliponarySlice'
 
-// Definindo interface para tipagem dos meliponários
-interface Meliponary {
-  id: number
-  name: string
-  tipoInstalacao: string
-  capacidadeDeSuporte: string
-}
-
 const MyMeliponaries = () => {
   const navigate = useNavigate()
   const { setLoading } = useLoading()
@@ -47,16 +39,16 @@ const MyMeliponaries = () => {
 
   const [deleteMeliponary] = useDeleteMeliponaryMutation()
   const [open, setOpen] = useState(false)
-  const [selectedId, setSelectedId] = useState<number>()
+  const [selectedId, setSelectedId] = useState<string>()
   const [isDeleting, setIsDeleting] = useState(false)
 
-  const handleOpenCloseModal = useCallback((id: number) => {
+  const handleOpenCloseModal = useCallback((id: string) => {
     setOpen((state) => !state)
     setSelectedId(id)
   }, [])
 
   const handleViewMeliponary = useCallback(
-    (id: number) => {
+    (id: string) => {
       navigate(`/meus-meliponarios/${id}`)
     },
     [navigate],

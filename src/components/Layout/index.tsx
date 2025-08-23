@@ -1,5 +1,5 @@
-import React, { ReactNode, useState, useMemo, useEffect } from 'react'
-import { Menu, Home, Folder, Plus, Users, Settings, LogOut } from 'lucide-react'
+import { ReactNode, useEffect, useMemo, useState } from 'react'
+import { Folder, Home, LogOut, Menu, Plus, Settings, Users } from 'lucide-react'
 import BackdropLoading from '../BackdropLoading'
 import { useLoading } from '../../hooks/useLoading'
 import { useGetMeQuery } from '../../redux/slices/usersSlice'
@@ -7,7 +7,9 @@ import { useAuth } from '../../hooks/useAuth'
 import { useNavigate } from 'react-router-dom'
 import Profile from './Profile'
 import UsedSpace from './UsedSpace'
-import Sidebar, { MenuItem } from './Sidebar'
+import Sidebar from './Sidebar'
+
+import useTheme from '../../hooks/useTheme'
 
 const getGreeting = () => {
   const hour = new Date().getHours()
@@ -18,35 +20,29 @@ const getGreeting = () => {
 
 const Layout = ({ children }: { children: ReactNode }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [darkMode, setDarkMode] = useState(() => {
-    const savedTheme = localStorage.getItem('theme')
-    return (
-      savedTheme === 'dark' ||
-      (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)
-    )
-  })
+  const { darkMode } = useTheme()
 
   const { loading } = useLoading()
-  const { logout } = useAuth()
+  const { signOut } = useAuth()
   const navigate = useNavigate()
 
   const { data: userData, isLoading: userLoading } = useGetMeQuery()
 
   const userRoles = userData?.role || []
-  const userName = userData?.name || 'Usuário'
+  const userName = userData?.fullName || 'Usuário'
 
-  const menuItems: MenuItem[] = useMemo(
+  const menuItems = useMemo(
     () => [
       {
         label: 'Início',
-        icon: Home,
+        icon: Home, // Corrigido para referência ao componente
         to: '/home',
         startsWith: '/home',
         roles: [], // Disponível para todos
       },
       {
         label: 'Apiários',
-        icon: Folder,
+        icon: Folder, // Corrigido para referência ao componente
         startsWith: '/apiarios',
         roles: ['ADMIN', 'APICULTOR'],
         submenu: [
@@ -58,7 +54,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
           },
           {
             label: 'Novo Apiário',
-            icon: Plus,
+            icon: Plus, // Corrigido para referência ao componente
             to: '/meus-apiarios/novo',
             roles: ['ADMIN', 'APICULTOR'],
           },
@@ -66,7 +62,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
       },
       {
         label: 'Meliponários',
-        icon: Users,
+        icon: Users, // Mantido como referência ao componente
         startsWith: '/meliponarios',
         roles: ['ADMIN', 'MELIPONICULTOR'],
         submenu: [
@@ -78,7 +74,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
           },
           {
             label: 'Novo Meliponário',
-            icon: Plus,
+            icon: Plus, // Mantido como referência ao componente
             to: '/meus-meliponarios/novo',
             roles: ['ADMIN', 'MELIPONICULTOR'],
           },
@@ -113,7 +109,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
   }, [darkMode])
 
   const handleLogout = () => {
-    logout()
+    signOut()
     navigate('/')
   }
 

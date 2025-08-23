@@ -1,13 +1,5 @@
-import React, { useState } from 'react'
-import {
-  Plus,
-  Search,
-  MoreHorizontal,
-  Edit,
-  Trash2,
-  UserCheck,
-  UserX,
-} from 'lucide-react'
+import { useState } from 'react'
+import { Edit, Plus, Search, Trash2, UserCheck, UserX } from 'lucide-react'
 import { Button } from '../../components/Button'
 import Input from '../../components/Input/SimpleInput'
 import Dialog from '../../components/Dialog/Dialog'
@@ -17,8 +9,8 @@ import { Link } from 'react-router-dom'
 interface User {
   id: string
   name: string
+  role?: string
   email: string
-  role: string
   status: 'active' | 'inactive'
   createdAt: string
   lastLogin?: string

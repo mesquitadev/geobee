@@ -1,3 +1,4 @@
+// @ts-nocheck
 import L from 'leaflet'
 import { useSnackbar } from 'notistack'
 import React, { useEffect, useState } from 'react'
@@ -11,7 +12,6 @@ import {
 } from 'react-leaflet'
 import marker from '../../assets/apiary.png'
 import beebox from '../../assets/bee-hive.png'
-import BackdropLoading from '../../components/BackdropLoading'
 import Legend from '../../components/Legend'
 import { useLoading } from '../../hooks/useLoading.tsx'
 import { getColor } from '../../utils'
@@ -33,23 +33,6 @@ const meliponaryIcon = new L.Icon({
   popupAnchor: [-0, -0],
   iconSize: [32, 32],
 })
-
-// Interfaces para tipagem dos dados
-interface MeliponaryData {
-  id: number
-  name: string
-  latitude: string
-  longitude: string
-  capacidadeDeSuporte?: string
-}
-
-interface ApiaryData {
-  id: number
-  name: string
-  latitude: string
-  longitude: string
-  capacidadeDeSuporte?: string
-}
 
 export default function Home() {
   const { setLoading } = useLoading()

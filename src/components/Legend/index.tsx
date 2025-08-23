@@ -1,4 +1,3 @@
-import React from 'react'
 import { tw } from '../../utils/tw'
 
 const Legend = () => {

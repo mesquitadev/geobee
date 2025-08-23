@@ -1,10 +1,12 @@
 import { apiSlice } from '../../services/apiSlice'
 
 export interface Apiary {
-  capacidadeDeSuporte: ReactNode
+  capacidadeDeSuporte: number
+  tipoInstalacao: string
   id: string
+  latitude: number
+  longitude: number
   name: string
-  // adicione outros campos conforme necessário
 }
 
 export const apiariesApiSlice = apiSlice.injectEndpoints({

@@ -4,6 +4,7 @@ import './styles.css'
 
 interface BackdropLoadingProps {
   isLoading: boolean
+  children?: React.ReactNode
 }
 
 const BackdropLoading: React.FC<BackdropLoadingProps> = ({

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react'
 import { useLoading } from '../../hooks/useLoading.tsx'
-import BackdropLoading from '../../components/BackdropLoading'
 import {
   CircleMarker,
   GeoJSON,

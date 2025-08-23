@@ -2,18 +2,21 @@ import { apiSlice } from '../../services/apiSlice'
 
 export interface User {
   id: string
-  name: string
+  fullName: string
   email: string
+  role: string[]
 }
 
 export const usersApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getMe: builder.query<User, void>({
       query: () => '/users/me',
-      providesTags: ['User'],
+      providesTags: ['Users'],
     }),
     login: builder.mutation<
-      { token: string },
+      {
+        access_token: string
+      },
       { username: string; password: string }
     >({
       query: (body) => ({

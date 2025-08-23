@@ -4,11 +4,6 @@ import { useLoading } from '../hooks/useLoading'
 import { useSnackbar } from 'notistack'
 import { useLoginMutation } from '../redux/slices/usersSlice'
 
-interface User {
-  username?: string
-  password?: string
-}
-
 interface AuthState {
   token: string
 }
@@ -47,14 +42,13 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
   const [login] = useLoginMutation()
 
   const signIn = useCallback(
-    async ({ username, password }: User) => {
+    async ({ username, password }: SignInCredentials): Promise<void> => {
       setLoading(true)
       try {
         const result = await login({ username, password }).unwrap()
         if (result && result.access_token) {
-          Cookies.set('GeoToken', result.access_token, { expires: 7 })
-          setData({ token: result.access_token })
-          return true // Retorna true para indicar sucesso
+          Cookies.set('GeoToken', String(result.access_token), { expires: 7 })
+          setData({ token: String(result.access_token) })
         }
       } catch (err: any) {
         // Só mostra erro se realmente não houver token
@@ -71,7 +65,6 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
             })
           }
         }
-        return false
       } finally {
         setLoading(false)
       }

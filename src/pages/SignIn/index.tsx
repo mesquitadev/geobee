@@ -8,7 +8,6 @@ import InputLabel from '../../components/Input/Label.tsx'
 import * as yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { Link, useNavigate } from 'react-router-dom'
-import { setToken } from '../../utils/auth'
 import { useSnackbar } from 'notistack'
 
 type Inputs = {
@@ -36,16 +35,15 @@ const SignIn = () => {
   const { errors } = formState
 
   const handleSignIn: SubmitHandler<Inputs> = async (values) => {
-    if (!loading) {
-      const result = await signIn(values)
-      if (result) {
-        enqueueSnackbar('Login realizado com sucesso!', { variant: 'success' })
-        navigate('/home', { replace: true })
-      } else {
-        enqueueSnackbar('Erro ao fazer login. Verifique suas credenciais.', {
-          variant: 'error',
-        })
-      }
+    if (loading) return // Impede requisições simultâneas enquanto o estado de loading está ativo
+
+    try {
+      await signIn(values) // Apenas executa e lidar com erros dentro de signIn
+      enqueueSnackbar('Login realizado com sucesso!', { variant: 'success' })
+      navigate('/home', { replace: true })
+    } catch (error: any) {
+      const message = error?.message || 'Erro inesperado. Tente novamente.'
+      enqueueSnackbar(message, { variant: 'error' })
     }
   }
 

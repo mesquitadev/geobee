@@ -17,14 +17,6 @@ import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import { useSnackbar } from 'notistack'
 import { PlusCircle, Eye, Trash2 } from 'lucide-react'
 
-// Definindo interface para tipagem dos apiários
-interface Apiary {
-  id: number
-  name: string
-  tipoInstalacao: string
-  capacidadeDeSuporte: string
-}
-
 const MyApiaries = () => {
   const navigate = useNavigate()
   const { setLoading } = useLoading()
@@ -34,7 +26,6 @@ const MyApiaries = () => {
     isLoading: apiariesLoading,
     error: apiariesError,
   } = useGetApiariesQuery()
-  // Adiciona controle de loading global
   React.useEffect(() => {
     setLoading(apiariesLoading)
   }, [apiariesLoading, setLoading])
@@ -47,17 +38,17 @@ const MyApiaries = () => {
 
   const [deleteApiary] = useDeleteApiaryMutation()
   const [open, setOpen] = useState(false)
-  const [selectedId, setSelectedId] = useState<number>()
+  const [selectedId, setSelectedId] = useState<string>()
   const [isDeleting, setIsDeleting] = useState(false)
 
   const handleViewApiary = useCallback(
-    (id: number) => {
+    (id: string) => {
       navigate(`/meus-apiarios/${id}`)
     },
     [navigate],
   )
 
-  const handleOpenCloseModal = useCallback((id: number) => {
+  const handleOpenCloseModal = useCallback((id: string) => {
     setOpen((state) => !state)
     setSelectedId(id)
   }, [])

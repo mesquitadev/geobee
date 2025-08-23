@@ -15,6 +15,15 @@ export const apiSlice = createApi({
       return headers
     },
   }),
-  tagTypes: ['Maps', 'Apiaries', 'Meliponary', 'Users', 'GeoJson'],
+  tagTypes: [
+    'Meliponaries',
+    'Maps',
+    'Apiaries',
+    'Meliponary',
+    'Users',
+    'GeoJson',
+    'Dashboard',
+    'MeliponaryAll',
+  ],
   endpoints: () => ({}),
 })
