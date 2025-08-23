@@ -2,7 +2,7 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import 'leaflet/dist/leaflet.css'
 import { useSnackbar } from 'notistack'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Resolver, SubmitHandler, useForm } from 'react-hook-form'
+import { Resolver, useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 import {
   MapContainer,
@@ -20,7 +20,7 @@ import InputLabel from '../../components/Input/Label.tsx'
 import Select from '../../components/Select'
 import SelectContainer from '../../components/Select/Container.tsx'
 import { useLoading } from '../../hooks/useLoading.tsx'
-import api from '../../services'
+import { useCreateApiaryMutation } from '../../redux/slices/apiariesSlice'
 
 import L from 'leaflet'
 import {
@@ -71,6 +71,7 @@ export default function NewApiary() {
   const [userLocation, setUserLocation] = useState<[number, number] | null>(
     null,
   )
+  const [createApiary, { isLoading }] = useCreateApiaryMutation()
 
   const apiarioFormSchema = yup.object().shape({
     name: yup.string().required('Este campo é obrigatório'),
@@ -234,35 +235,23 @@ export default function NewApiary() {
     })
   }, [validateFormFields, enqueueSnackbar])
 
-  const handleSignUp: SubmitHandler<Inputs> = useCallback(
-    async (data: Inputs) => {
-      setLoading(true)
-      try {
-        const updatedData = {
-          ...data,
-          latitude: String(latitude),
-          longitude: String(longitude),
-        }
-
-        await api.post('apiaries/', updatedData)
-
-        enqueueSnackbar('Cadastro realizado com sucesso!', {
-          variant: 'success',
-        })
-
-        // Redireciona para a lista de apiários após o sucesso
-        navigate('/meus-apiarios')
-      } catch (err) {
-        const errorMessage = err.response?.data?.message || 'Erro desconhecido'
-        enqueueSnackbar(`Erro no cadastro! ${errorMessage}`, {
-          variant: 'error',
-        })
-      } finally {
-        setLoading(false)
+  const handleSignUp = async (data: Inputs) => {
+    setLoading(true)
+    try {
+      const updatedData = {
+        ...data,
+        latitude: String(latitude),
+        longitude: String(longitude),
       }
-    },
-    [enqueueSnackbar, latitude, longitude, setLoading, navigate],
-  )
+      await createApiary(updatedData).unwrap()
+      enqueueSnackbar('Cadastro realizado com sucesso!', { variant: 'success' })
+      navigate('/meus-apiarios')
+    } catch (err) {
+      enqueueSnackbar('Erro no cadastro!', { variant: 'error' })
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleLocationSelect = useCallback((lat: number, lng: number) => {
     setLatitude(lat)
@@ -566,11 +555,11 @@ export default function NewApiary() {
             </div>
 
             <button
-              disabled={disabled}
+              disabled={isLoading || disabled}
               type="submit"
-              className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:cursor-not-allowed disabled:bg-gray-400"
+              className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
             >
-              {position ? 'Cadastrar' : 'Selecione as coordenadas no mapa'}
+              Cadastrar
             </button>
           </form>
         </div>

@@ -22,7 +22,6 @@ import InputLabel from '../../components/Input/Label.tsx'
 import Select from '../../components/Select'
 import SelectContainer from '../../components/Select/Container.tsx'
 import { useLoading } from '../../hooks/useLoading.tsx'
-import api from '../../services'
 import {
   especiesAbelhasOptions,
   outrosApiariosRaio3kmOptions,
@@ -159,7 +158,6 @@ const NewMeliponary = () => {
     }
   }
 
-  // Função para validar os campos do formulário e exibir notificações apropriadas
   const validateFormFields = useCallback(() => {
     const notifications: ValidationNotification[] = []
 
@@ -295,7 +293,6 @@ const NewMeliponary = () => {
   return (
     <div className="h-full w-full p-10 pb-0">
       <Breadcumbs pageName="Cadastrar Meliponário" />
-      {/* <BackdropLoading isLoading={loading} /> */}
       <div className="grid grid-cols-1 md:grid-cols-2">
         <div className="mb-5">
           <p className="mb-2 block text-xs font-bold uppercase tracking-wide text-gray-700">
@@ -322,7 +319,10 @@ const NewMeliponary = () => {
           </MapContainer>
         </div>
         <div className="mb-0">
-          <form className="mb-0 w-full pb-24 md:pb-20">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="mb-0 w-full pb-24 md:pb-20"
+          >
             <div className="mx-3 mb-6 flex flex-wrap">
               <InputContainer className="mb-6  w-full px-3 md:mb-0">
                 <InputLabel label="Nome" name="name" />
@@ -544,7 +544,7 @@ const NewMeliponary = () => {
             </div>
 
             <button
-              disabled={disabled}
+              disabled={isLoading || disabled}
               type="submit"
               className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
             >

@@ -12,7 +12,7 @@ export interface Meliponary {
 export const meliponaryApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getMeliponaries: builder.query<Meliponary[], void>({
-      query: () => '/meliponary/',
+      query: () => '/meliponary',
       providesTags: (result) =>
         result
           ? result.map(({ id }) => ({ type: 'Meliponaries' as const, id }))
