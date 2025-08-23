@@ -217,33 +217,31 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   // Desktop Sidebar
   return (
-    <div className="hidden h-full w-64 flex-shrink-0 lg:block">
-      <aside
-        className={tw(
-          'flex h-full flex-col overflow-hidden border-r border-zinc-200 bg-white shadow-lg dark:border-zinc-700 dark:bg-zinc-900',
-          className,
-        )}
-      >
-        {/* Logo Section */}
-        <div className="flex items-center justify-center border-b border-zinc-100 px-6 py-6 dark:border-zinc-800">
-          <Logo />
-        </div>
+    <aside
+      className={tw(
+        'flex h-full w-64 flex-shrink-0 flex-col overflow-hidden border-r border-zinc-200 bg-white shadow-lg dark:border-zinc-700 dark:bg-zinc-900',
+        className,
+      )}
+    >
+      {/* Logo Section */}
+      <div className="flex items-center justify-center border-b border-zinc-100 px-6 py-6 dark:border-zinc-800">
+        <Logo />
+      </div>
 
-        {/* Navigation Section */}
-        <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-300 dark:scrollbar-thumb-zinc-600">
-          <nav className="space-y-2 px-4 py-6">
-            {filteredMenuItems.map((item) => renderMenuItem(item))}
-          </nav>
-        </div>
+      {/* Navigation Section */}
+      <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-300 dark:scrollbar-thumb-zinc-600">
+        <nav className="space-y-2 px-4 py-6">
+          {filteredMenuItems.map((item) => renderMenuItem(item))}
+        </nav>
+      </div>
 
-        {/* Footer Section */}
-        {children && (
-          <div className="space-y-4 border-t border-zinc-100 p-4 dark:border-zinc-800">
-            {children}
-          </div>
-        )}
-      </aside>
-    </div>
+      {/* Footer Section */}
+      {children && (
+        <div className="space-y-4 border-t border-zinc-100 p-4 dark:border-zinc-800">
+          {children}
+        </div>
+      )}
+    </aside>
   )
 }
 
