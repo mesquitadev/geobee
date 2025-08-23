@@ -7,7 +7,7 @@ import Logo from './Logo'
 
 export type MenuItem = {
   label: string
-  icon?: any
+  icon?: React.ComponentType<{ className?: string }>
   to?: string
   startsWith?: string
   roles?: string[]
@@ -15,7 +15,7 @@ export type MenuItem = {
 }
 
 interface SidebarProps {
-  menuItems: any
+  menuItems: MenuItem[]
   userRoles: string[]
   isOpen: boolean
   onClose: () => void

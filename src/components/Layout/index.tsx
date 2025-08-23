@@ -28,7 +28,16 @@ const Layout = ({ children }: { children: ReactNode }) => {
 
   const { data: userData, isLoading: userLoading } = useGetMeQuery()
 
-  const userRoles = userData?.role || []
+  // Mapeamento dos perfis técnicos
+  const profileMap = {
+    1: 'ADMIN',
+    2: 'APICULTOR',
+    3: 'MELIPONICULTOR',
+    4: 'USER',
+  }
+  const userRoles = Array.isArray(userData?.profiles)
+    ? userData.profiles.map((p) => profileMap[p]).filter(Boolean)
+    : []
   const userName = userData?.fullName || 'Usuário'
 
   const menuItems = useMemo(

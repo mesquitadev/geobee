@@ -5,6 +5,8 @@ export interface User {
   fullName: string
   email: string
   role: string[]
+  perfis: string[]
+  profiles: string[]
 }
 
 export const usersApiSlice = apiSlice.injectEndpoints({

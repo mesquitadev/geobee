@@ -15,7 +15,6 @@ import {
 } from 'react-leaflet'
 import * as yup from 'yup'
 import marker from '../../assets/apiary.png'
-import BackdropLoading from '../../components/BackdropLoading'
 import Breadcumbs from '../../components/Breadcumbs'
 import Input from '../../components/Input'
 import InputContainer from '../../components/Input/Container.tsx'
@@ -32,6 +31,7 @@ import {
   simNaoOptions,
   tipoInstalacaoApiarioOptions,
 } from '../../utils/options.ts'
+import { useCreateMeliponaryMutation } from '../../redux/slices/meliponarySlice'
 
 interface Inputs {
   name: string
@@ -73,6 +73,7 @@ const NewMeliponary = () => {
   const [userLocation, setUserLocation] = useState<[number, number] | null>(
     null,
   )
+  const [createMeliponary, { isLoading }] = useCreateMeliponaryMutation()
 
   const meliponarioFormSchema = yup.object().shape({
     name: yup.string().required('Este campo é obrigatório'),
@@ -145,45 +146,18 @@ const NewMeliponary = () => {
     [],
   )
 
-  const handleSignUp: SubmitHandler<Inputs> = useCallback(
-    async (data: Inputs) => {
-      setLoading(true)
-      try {
-        const updatedData = {
-          ...data,
-          latitude: String(latitude),
-          longitude: String(longitude),
-        }
-
-        await api.post('meliponary/', updatedData)
-
-        enqueueSnackbar('Cadastro realizado com sucesso!', {
-          variant: 'success',
-        })
-
-        navigate('/meus-meliponarios')
-      } catch (err: any) {
-        console.error('Erro ao salvar meliponário:', err)
-
-        let errorMessage = 'Erro desconhecido ao cadastrar meliponário'
-        if (
-          err &&
-          err.response &&
-          err.response.data &&
-          err.response.data.message
-        ) {
-          errorMessage = err.response.data.message
-        }
-
-        enqueueSnackbar(`Erro no cadastro! ${errorMessage}`, {
-          variant: 'error',
-        })
-      } finally {
-        setLoading(false)
-      }
-    },
-    [enqueueSnackbar, latitude, longitude, setLoading, navigate],
-  )
+  const onSubmit = async (data: Inputs) => {
+    setLoading(true)
+    try {
+      await createMeliponary(data).unwrap()
+      enqueueSnackbar('Meliponário criado com sucesso!', { variant: 'success' })
+      navigate('/meus-meliponarios')
+    } catch (err) {
+      enqueueSnackbar('Erro ao criar meliponário', { variant: 'error' })
+    } finally {
+      setLoading(false)
+    }
+  }
 
   // Função para validar os campos do formulário e exibir notificações apropriadas
   const validateFormFields = useCallback(() => {
@@ -348,10 +322,7 @@ const NewMeliponary = () => {
           </MapContainer>
         </div>
         <div className="mb-0">
-          <form
-            onSubmit={handleSubmit(handleSignUp)}
-            className="mb-0 w-full pb-24 md:pb-20"
-          >
+          <form className="mb-0 w-full pb-24 md:pb-20">
             <div className="mx-3 mb-6 flex flex-wrap">
               <InputContainer className="mb-6  w-full px-3 md:mb-0">
                 <InputLabel label="Nome" name="name" />

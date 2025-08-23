@@ -11,7 +11,7 @@ export const dashboardApiSlice = apiSlice.injectEndpoints({
     getDashboardData: builder.query<Apiary[], void>({
       query: () => '/dashboard',
       providesTags: (result) =>
-        result
+        Array.isArray(result)
           ? result.map(({ id }) => ({ type: 'Dashboard' as const, id }))
           : ['Dashboard'],
     }),

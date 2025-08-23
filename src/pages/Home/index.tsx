@@ -42,7 +42,7 @@ export default function Home() {
   const [selectedMap, setSelectedMap] = useState<string>('')
   const { enqueueSnackbar } = useSnackbar()
   const {
-    data: dashboardData = [],
+    data: dashboardData = { apiarios: [], meliponarios: [] },
     isLoading: dashboardLoading,
     error: dashboardError,
   } = useGetDashboardDataQuery()
@@ -101,6 +101,15 @@ export default function Home() {
     refetchGeoJson()
   }
 
+  // Unifica apiários e meliponários para renderização
+  const dashboardMarkers = [
+    ...(dashboardData.apiarios || []).map((a) => ({ ...a, type: 'APIARY' })),
+    ...(dashboardData.meliponarios || []).map((m) => ({
+      ...m,
+      type: 'MELIPONARY',
+    })),
+  ]
+
   return (
     <div className="flex h-full w-full flex-col">
       {/* /!* Loading acima de tudo, exceto o menu *!/ */}
@@ -151,7 +160,7 @@ export default function Home() {
             />
           )}
           {/* Marcadores de apiários e meliponários (dashboard) */}
-          {dashboardData?.map((data: any) => (
+          {dashboardMarkers.map((data: any) => (
             <React.Fragment key={data.id}>
               <Marker
                 icon={data.type === 'MELIPONARY' ? meliponaryIcon : myIcon}
@@ -179,7 +188,6 @@ export default function Home() {
               <CircleMarker center={userLocation} radius={20} color="blue" />
             </React.Fragment>
           )}
-          {/* Legenda dentro do mapa, canto inferior direito */}
         </MapContainer>
       </div>
     </div>

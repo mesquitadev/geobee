@@ -25,6 +25,11 @@ const Profile = () => {
 
   const handleSignOut = () => signOut()
 
+  // Perfis do usuário vindos da API
+  const perfis = Array.isArray(userData?.perfis)
+    ? userData.perfis
+    : [userData?.perfis].filter(Boolean)
+
   return (
     <div className="flex items-center gap-3">
       <div className="flex flex-col truncate">
@@ -34,6 +39,11 @@ const Profile = () => {
         <span className="truncate text-sm text-zinc-500">
           {userData?.email}
         </span>
+        {perfis.length > 0 && (
+          <span className="truncate text-xs font-medium text-violet-600">
+            {perfis.join(', ')}
+          </span>
+        )}
       </div>
       <button
         type="button"

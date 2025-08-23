@@ -7,13 +7,12 @@ export interface Meliponary {
   capacidadeDeSuporte?: number // caso apareça nos erros relacionados a suporte
   name: string
   tipoInstalacao?: string
-  // adicione outros campos conforme necessário
 }
 
 export const meliponaryApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getMeliponaries: builder.query<Meliponary[], void>({
-      query: () => 'meliponary/',
+      query: () => '/meliponary/',
       providesTags: (result) =>
         result
           ? result.map(({ id }) => ({ type: 'Meliponaries' as const, id }))
@@ -25,7 +24,7 @@ export const meliponaryApiSlice = apiSlice.injectEndpoints({
     }),
     createMeliponary: builder.mutation<void, Partial<Meliponary>>({
       query: (data) => ({
-        url: 'meliponary/',
+        url: 'meliponary',
         method: 'POST',
         body: data,
       }),
