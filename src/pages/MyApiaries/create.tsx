@@ -240,8 +240,8 @@ export default function NewApiary() {
     try {
       const updatedData = {
         ...data,
-        latitude: String(latitude),
-        longitude: String(longitude),
+        latitude: Number(latitude),
+        longitude: Number(longitude),
       }
       await createApiary(updatedData).unwrap()
       enqueueSnackbar('Cadastro realizado com sucesso!', { variant: 'success' })
