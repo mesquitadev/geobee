@@ -5,8 +5,6 @@ import AppProvider from './providers/AppProvider.tsx'
 import { SnackbarProvider } from 'notistack'
 
 function App() {
-
-
   return (
     <SnackbarProvider
       maxSnack={3}
