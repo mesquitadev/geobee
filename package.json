@@ -37,7 +37,6 @@
     "react-leaflet": "^4.2.1",
     "react-redux": "^9.2.0",
     "react-router-dom": "^6.21.1",
-    "react-spring": "^9.7.3",
     "react-tailwindcss-select": "^1.8.5",
     "styled-components": "^6.1.11",
     "tailwind-merge": "1.13.2",
@@ -64,7 +63,6 @@
     "terser": "^5.43.1",
     "typescript": "^5.2.2",
     "vite": "^6.2.1",
-    "vite-plugin-compression": "^0.5.1",
-    "vite-plugin-pwa": "^1.0.0"
+    "vite-plugin-compression": "^0.5.1"
   }
 }
