@@ -86,7 +86,10 @@ export default function FindApiary() {
 
   useEffect(() => {
     if (apiary && apiary.latitude && apiary.longitude) {
-      setSelectedCoordinates([apiary.latitude, apiary.longitude])
+      setSelectedCoordinates([
+        Number(apiary.latitude),
+        Number(apiary.longitude),
+      ])
     }
   }, [apiary])
 

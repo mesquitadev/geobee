@@ -34,8 +34,8 @@ import { useCreateMeliponaryMutation } from '../../redux/slices/meliponarySlice'
 
 interface Inputs {
   name: string
-  latitude: number
-  longitude: number
+  latitude: string
+  longitude: string
   tipoInstalacao: string
   especieAbelha?: string
   quantidadeColmeias: string
@@ -76,8 +76,8 @@ const NewMeliponary = () => {
 
   const meliponarioFormSchema = yup.object().shape({
     name: yup.string().required('Este campo é obrigatório'),
-    latitude: yup.number().optional(),
-    longitude: yup.number().optional(),
+    latitude: yup.string().optional(),
+    longitude: yup.string().optional(),
     tipoInstalacao: yup.string().required('Este campo é obrigatório'),
     especieAbelha: yup.string().required('Este campo é obrigatório'),
     quantidadeColmeias: yup.string().required('Este campo é obrigatório'),

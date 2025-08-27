@@ -34,8 +34,8 @@ import {
 
 interface Inputs {
   name: string
-  latitude: number
-  longitude: number
+  latitude: string
+  longitude: string
   tipoInstalacao: string
   tempoItinerante?: string | null
   quantidadeColmeias: string
@@ -75,8 +75,8 @@ export default function NewApiary() {
 
   const apiarioFormSchema = yup.object().shape({
     name: yup.string().required('Este campo é obrigatório'),
-    latitude: yup.number().optional(),
-    longitude: yup.number().optional(),
+    latitude: yup.string().optional(),
+    longitude: yup.string().optional(),
     tipoInstalacao: yup.string().required('Este campo é obrigatório'),
     tempoItinerante: yup.string().nullable().optional(),
     quantidadeColmeias: yup.string().required('Este campo é obrigatório'),
