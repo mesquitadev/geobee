@@ -10,7 +10,7 @@ import InputLabel from '../../components/Input/Label.tsx'
 import { useLoading } from '../../hooks/useLoading.tsx'
 
 import { useNavigate } from 'react-router-dom'
-import api from '../../services'
+import { useUploadMapsMutation } from '../../redux/slices/mapsSlice'
 
 interface Inputs {
   files: FileList
@@ -20,6 +20,7 @@ export default function AddMap() {
   const { enqueueSnackbar } = useSnackbar()
   const { setLoading } = useLoading()
   const navigate = useNavigate()
+  const [uploadMaps] = useUploadMapsMutation()
 
   const apiarioFormSchema = yup.object().shape({
     files: yup.mixed().required('Este campo é obrigatório'),
@@ -39,24 +40,16 @@ export default function AddMap() {
         formData.append('files', file)
       })
 
-      await Promise.all([
-        api.post('/maps/upload/', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        }),
-      ])
+      await uploadMaps(formData).unwrap()
       enqueueSnackbar('Cadastro realizado com sucesso!', {
         variant: 'success',
       })
       navigate.goBack()
-    } catch (err) {
-      enqueueSnackbar(
-        `Erro no cadastro! Ocorreu um erro ao cadastrar, ${err.response.data.message}`,
-        {
-          variant: 'error',
-        },
-      )
+    } catch (err: any) {
+      const message = err?.data?.message || 'Ocorreu um erro ao cadastrar.'
+      enqueueSnackbar(`Erro no cadastro! ${message}`, {
+        variant: 'error',
+      })
       setLoading(false)
     } finally {
       setLoading(false)

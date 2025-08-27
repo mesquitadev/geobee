@@ -27,6 +27,14 @@ export const mapsApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['Maps'],
     }),
+    uploadMaps: builder.mutation<void, FormData>({
+      query: (formData) => ({
+        url: 'maps/upload/',
+        method: 'POST',
+        body: formData,
+      }),
+      invalidatesTags: ['Maps'],
+    }),
     updateMap: builder.mutation<void, Map>({
       query: (data) => ({
         url: `maps/${data.id}`,
@@ -49,6 +57,7 @@ export const {
   useGetMapsQuery,
   useGetMapQuery,
   useCreateMapMutation,
+  useUploadMapsMutation,
   useUpdateMapMutation,
   useDeleteMapMutation,
 } = mapsApiSlice

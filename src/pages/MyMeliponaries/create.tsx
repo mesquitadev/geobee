@@ -146,9 +146,23 @@ const NewMeliponary = () => {
   )
 
   const onSubmit = async (data: Inputs) => {
+    // Garantir que as coordenadas foram selecionadas
+    if (!latitude || !longitude) {
+      enqueueSnackbar('Selecione as coordenadas no mapa ou use sua localização.', {
+        variant: 'warning',
+      })
+      return
+    }
+
+    const payload = {
+      ...data,
+      latitude: String(latitude),
+      longitude: String(longitude),
+    }
+
     setLoading(true)
     try {
-      await createMeliponary(data).unwrap()
+      await createMeliponary(payload).unwrap()
       enqueueSnackbar('Meliponário criado com sucesso!', { variant: 'success' })
       navigate('/meus-meliponarios')
     } catch (err) {

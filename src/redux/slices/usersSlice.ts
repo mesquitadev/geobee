@@ -30,7 +30,24 @@ export const usersApiSlice = apiSlice.injectEndpoints({
         },
       }),
     }),
+    register: builder.mutation<
+      void,
+      {
+        fullName: string
+        cpf: string
+        email: string
+        phone: string
+        role?: string
+        password: string
+      }
+    >({
+      query: (body) => ({
+        url: '/auth/register',
+        method: 'POST',
+        body,
+      }),
+    }),
   }),
 })
 
-export const { useGetMeQuery, useLoginMutation } = usersApiSlice
+export const { useGetMeQuery, useLoginMutation, useRegisterMutation } = usersApiSlice

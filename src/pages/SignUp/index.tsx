@@ -10,7 +10,7 @@ import SelectContainer from '../../components/Select/Container.tsx'
 import Select from '../../components/Select'
 import { removeMask, validarCPF } from '../../utils'
 import { useCallback } from 'react'
-import api from '../../services'
+import { useRegisterMutation } from '../../redux/slices/usersSlice'
 import { enqueueSnackbar } from 'notistack'
 import { useNavigate } from 'react-router-dom'
 
@@ -26,6 +26,7 @@ type Inputs = {
 const SignIn = () => {
   const { setLoading } = useLoading()
   const navigate = useNavigate()
+  const [registerUser] = useRegisterMutation()
   const signInFormSchema = yup.object().shape({
     fullName: yup.string().required('Este campo é obrigatório'),
     cpf: yup
@@ -63,14 +64,14 @@ const SignIn = () => {
       try {
         const { fullName, cpf, phone, role, password, email } = data
         data.cpf = removeMask(data.cpf)
-        await api.post('auth/register', {
+        await registerUser({
           fullName,
           cpf,
           phone,
           role,
           password,
           email,
-        })
+        }).unwrap()
         // @ts-ignore
         enqueueSnackbar({
           message:
