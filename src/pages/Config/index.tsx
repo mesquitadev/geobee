@@ -108,6 +108,13 @@ export default function MyMaps() {
         <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
           Configurações
         </h1>
+        <Link
+          to="/meus-mapas/novo"
+          className="inline-flex items-center gap-2 rounded bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-700"
+        >
+          <PlusCircle className="h-5 w-5" />
+          <span>Adicionar mapa</span>
+        </Link>
       </div>
       <div className="mb-6 flex gap-2 border-b pb-2">
         <button
