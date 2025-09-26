@@ -5,14 +5,4 @@ export interface GeoJson {
   type: string
   features: any[]
 }
-
-export const geoJsonApiSlice = apiSlice.injectEndpoints({
-  endpoints: (builder) => ({
-    getGeoJson: builder.query<GeoJson, string>({
-      query: (url) => `/maps/content/${url}`,
-      providesTags: (_result, _error, url) => [{ type: 'GeoJson', url }],
-    }),
-  }),
-})
-
-export const { useGetGeoJsonQuery } = geoJsonApiSlice
+// Removido o endpoint getGeoJson, pois a busca será feita por função utilitária fetchGeoJsonByUrl

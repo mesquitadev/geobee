@@ -3,7 +3,6 @@ import { apiSlice } from '../services/apiSlice'
 import { apiariesApiSlice } from './slices/apiariesSlice'
 import { meliponaryApiSlice } from './slices/meliponarySlice'
 import { usersApiSlice } from './slices/usersSlice'
-import { geoJsonApiSlice } from './slices/geoJsonSlice'
 import {
   type Action,
   combineReducers,
@@ -17,7 +16,6 @@ const rootReducer = combineReducers({
   apiaries: apiariesApiSlice.reducer,
   meliponary: meliponaryApiSlice.reducer,
   users: usersApiSlice.reducer,
-  geoJson: geoJsonApiSlice.reducer,
 })
 
 export const setupStore = (preloadedState?: any) => {
@@ -43,7 +41,6 @@ export const setupStore = (preloadedState?: any) => {
           ignoredPaths: [
             'api.queries',
             'api.mutations',
-            'geoJson.data',
             'maps.data',
           ],
           // Reduz o threshold de tempo para desenvolvimento mais ágil
@@ -54,7 +51,6 @@ export const setupStore = (preloadedState?: any) => {
           ignoredPaths: [
             'api.queries',
             'api.mutations',
-            'geoJson.data',
             'maps.data',
           ],
           warnAfter: 128,

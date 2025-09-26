@@ -1,7 +1,7 @@
 // @ts-nocheck
 import L from 'leaflet'
 import { useSnackbar } from 'notistack'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   CircleMarker,
   GeoJSON,
@@ -15,11 +15,11 @@ import beebox from '../../assets/bee-hive.png'
 import Legend from '../../components/Legend'
 import { useLoading } from '../../hooks/useLoading.tsx'
 import { getColor } from '../../utils'
+import { fetchGeoJsonByUrl } from '../../utils/fetchGeoJsonByUrl'
 import { useGetDashboardDataQuery } from '../../redux/slices/apiariesAllSlice'
 import { useGetMapsQuery } from '../../redux/slices/mapsSlice'
-import { useGetGeoJsonQuery } from '../../redux/slices/geoJsonSlice'
 
-// Ícones para o mapa
+// Ícones para o mapa (definidos fora do componente para evitar recriação)
 const myIcon = new L.Icon({
   iconUrl: marker as string,
   iconRetinaUrl: marker as string,
@@ -40,6 +40,9 @@ export default function Home() {
     null,
   )
   const [selectedMap, setSelectedMap] = useState<string>('')
+  const [geoJson, setGeoJson] = useState<any>(null)
+  const [geoJsonLoading, setGeoJsonLoading] = useState(false)
+  const [geoJsonError, setGeoJsonError] = useState<any>(null)
   const { enqueueSnackbar } = useSnackbar()
   const {
     data: dashboardData = { apiarios: [], meliponarios: [] },
@@ -51,19 +54,37 @@ export default function Home() {
     isLoading: mapsLoading,
     error: mapsError,
   } = useGetMapsQuery()
-  const {
-    data: geoJson,
-    isLoading: geoJsonLoading,
-    error: geoJsonError,
-    refetch: refetchGeoJson,
-  } = useGetGeoJsonQuery(selectedMap || 'sao_luis.geojson', {
-    skip: !selectedMap && !maps.length,
-  })
 
+  // Buscar geojson sempre que selectedMap mudar (evita race e limpa estado)
+  useEffect(() => {
+    if (!selectedMap) {
+      setGeoJson(null)
+      return
+    }
+
+    const current = selectedMap
+    setGeoJson(null)
+    setGeoJsonLoading(true)
+    setGeoJsonError(null)
+
+    fetchGeoJsonByUrl(selectedMap)
+      .then((data) => {
+        if (current === selectedMap) setGeoJson(data)
+      })
+      .catch((err) => {
+        if (current === selectedMap) setGeoJsonError(err)
+      })
+      .finally(() => {
+        if (current === selectedMap) setGeoJsonLoading(false)
+      })
+  }, [selectedMap])
+
+  // Loading global
   useEffect(() => {
     setLoading(dashboardLoading || geoJsonLoading || mapsLoading)
   }, [dashboardLoading, geoJsonLoading, mapsLoading, setLoading])
 
+  // Notificações de erro
   useEffect(() => {
     if (dashboardError)
       enqueueSnackbar('Erro ao carregar dados do dashboard', {
@@ -75,9 +96,18 @@ export default function Home() {
       enqueueSnackbar('Erro ao carregar geojson', { variant: 'error' })
   }, [dashboardError, mapsError, geoJsonError, enqueueSnackbar])
 
+  // Garantir selectedMap válido quando maps carregar/alterar
   useEffect(() => {
-    if (!selectedMap && maps.length > 0) {
-      setSelectedMap('sao_luis.geojson')
+    if (!maps?.length) return
+
+    if (!selectedMap) {
+      setSelectedMap(maps[0].url)
+      return
+    }
+
+    const exists = maps.some((m: any) => m.url === selectedMap)
+    if (!exists) {
+      setSelectedMap(maps[0].url)
     }
   }, [maps, selectedMap])
 
@@ -88,35 +118,41 @@ export default function Home() {
         (position) => {
           setUserLocation([position.coords.latitude, position.coords.longitude])
         },
-        (error) => {
-          console.error(error)
+        () => {
+          // silencioso
         },
       )
     }
   }, [])
 
-  const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleChange = useCallback((event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedUrl = event.target.value
     setSelectedMap(selectedUrl)
-    refetchGeoJson()
-  }
+  }, [])
 
-  // Unifica apiários e meliponários para renderização
-  const dashboardMarkers = [
-    ...(dashboardData.apiarios || []).map((a) => ({ ...a, type: 'APIARY' })),
-    ...(dashboardData.meliponarios || []).map((m) => ({
-      ...m,
-      type: 'MELIPONARY',
-    })),
-  ]
+  // Unifica apiários e meliponários para renderização (memoizado)
+  const dashboardMarkers = useMemo(
+    () => [
+      ...(dashboardData.apiarios || []).map((a: any) => ({
+        ...a,
+        type: 'APIARY',
+      })),
+      ...(dashboardData.meliponarios || []).map((m: any) => ({
+        ...m,
+        type: 'MELIPONARY',
+      })),
+    ],
+    [dashboardData.apiarios, dashboardData.meliponarios],
+  )
+
+  // Centro padrão do mapa
+  const defaultCenter = useMemo<[number, number]>(
+    () => [-2.5555334824608353, -44.208297729492195],
+    [],
+  )
 
   return (
     <div className="flex h-full w-full flex-col">
-      {/* /!* Loading acima de tudo, exceto o menu *!/ */}
-      {/* <BackdropLoading */}
-      {/*  isLoading={loading || geoJsonLoading || dashboardLoading || mapsLoading} */}
-      {/* /> */}
-
       {/* Seletor de mapas - visível em todos os dispositivos */}
       <div className="z-10 border-b border-gray-200 bg-white px-3 py-2 shadow-sm dark:border-zinc-700 dark:bg-zinc-800">
         <select
@@ -126,7 +162,7 @@ export default function Home() {
         >
           <option value="">Selecione um mapa</option>
           {maps.map((map: any) => (
-            <option key={map.id} value={map.url || map.name}>
+            <option key={map.id} value={map.url}>
               {map.name}
             </option>
           ))}
@@ -137,12 +173,10 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Legenda do mapa - logo abaixo do select de mapas */}
-
       {/* Contêiner do mapa */}
       <div className="relative flex-1">
         <MapContainer
-          center={[-2.5555334824608353, -44.208297729492195]}
+          center={defaultCenter}
           zoom={13}
           className="relative h-full w-full"
         >
@@ -154,7 +188,10 @@ export default function Home() {
               data={geoJson}
               style={(feature) => {
                 const type =
-                  feature.properties.VEGETAÇÃ || feature.properties.CLASSE
+                  feature?.properties?.['VEGETAÇÃ'] ||
+                  feature?.properties?.['CLASSE'] ||
+                  feature?.properties?.VEGETAÇÃ ||
+                  feature?.properties?.CLASSE
                 return { color: getColor(type) }
               }}
             />
