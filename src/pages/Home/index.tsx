@@ -1,14 +1,15 @@
 // @ts-nocheck
 import L from 'leaflet'
+import 'leaflet.vectorgrid'
 import { useSnackbar } from 'notistack'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   CircleMarker,
-  GeoJSON,
   MapContainer,
   Marker,
   Popup,
   TileLayer,
+  useMap,
 } from 'react-leaflet'
 import marker from '../../assets/apiary.png'
 import beebox from '../../assets/bee-hive.png'
@@ -151,6 +152,67 @@ export default function Home() {
     [],
   )
 
+  // Reposiciona o mapa quando a localização do usuário estiver disponível
+  const RecenterOnUserLocation: React.FC<{ center: [number, number] | null }> = ({ center }) => {
+    const map = useMap()
+    useEffect(() => {
+      if (center) {
+        map.setView(center)
+      }
+    }, [center, map])
+    return null
+  }
+
+  // Renderiza GeoJSON como vector tiles no cliente (melhor performance)
+  const VectorGeoJsonLayer: React.FC<{ data: any }> = ({ data }) => {
+    const map = useMap()
+    const layerRef = useRef<any>(null)
+
+    useEffect(() => {
+      if (!map || !data) return
+
+      // Remove camada anterior se existir
+      if (layerRef.current) {
+        map.removeLayer(layerRef.current)
+        layerRef.current = null
+      }
+
+      const vectorLayer = (L as any).vectorGrid.slicer(data, {
+        rendererFactory: (L as any).canvas.tile,
+        interactive: false,
+        vectorTileLayerStyles: {
+          // "sliced" é o nome padrão da camada criada pelo slicer
+          sliced: (properties: any) => {
+            const type =
+              properties?.['VEGETAÇÃ'] ||
+              properties?.['CLASSE'] ||
+              properties?.VEGETAÇÃ ||
+              properties?.CLASSE
+            const color = getColor(type)
+            return {
+              weight: 1,
+              color,
+              fillColor: color,
+              fillOpacity: 0.4,
+            }
+          },
+        },
+      })
+
+      vectorLayer.addTo(map)
+      layerRef.current = vectorLayer
+
+      return () => {
+        if (layerRef.current) {
+          map.removeLayer(layerRef.current)
+          layerRef.current = null
+        }
+      }
+    }, [map, data])
+
+    return null
+  }
+
   return (
     <div className="flex h-full w-full flex-col">
       {/* Seletor de mapas - visível em todos os dispositivos */}
@@ -176,26 +238,16 @@ export default function Home() {
       {/* Contêiner do mapa */}
       <div className="relative flex-1">
         <MapContainer
-          center={defaultCenter}
+          center={userLocation ?? defaultCenter}
           zoom={13}
           className="relative h-full w-full"
         >
           {/* Camada base do mapa */}
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-          {/* Dados GeoJSON */}
-          {geoJson && (
-            <GeoJSON
-              data={geoJson}
-              style={(feature) => {
-                const type =
-                  feature?.properties?.['VEGETAÇÃ'] ||
-                  feature?.properties?.['CLASSE'] ||
-                  feature?.properties?.VEGETAÇÃ ||
-                  feature?.properties?.CLASSE
-                return { color: getColor(type) }
-              }}
-            />
-          )}
+          {/* Recentrar quando a posição do usuário existir */}
+          <RecenterOnUserLocation center={userLocation} />
+          {/* Dados GeoJSON como Vector Tiles */}
+          {geoJson && <VectorGeoJsonLayer data={geoJson} />}
           {/* Marcadores de apiários e meliponários (dashboard) */}
           {dashboardMarkers.map((data: any) => (
             <React.Fragment key={data.id}>

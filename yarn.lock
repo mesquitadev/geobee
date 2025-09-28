@@ -2400,7 +2400,7 @@ combined-stream@^1.0.8:
   dependencies:
     delayed-stream "~1.0.0"
 
-commander@^2.20.0:
+commander@2, commander@^2.20.0:
   version "2.20.3"
   resolved "https://registry.yarnpkg.com/commander/-/commander-2.20.3.tgz#fd485e84c03eb4881c20722ba48035e8531aeb33"
   integrity sha512-GpVkmM8vF2vQUkj2LvZmD35JxeJOLCwJ9cUkugyk2nuhbv3+mJvpLYYt+0+USMxE+oj+ey/lJEnhZw75x/OMcQ==
@@ -3595,6 +3595,11 @@ iconv-lite@0.2:
   resolved "https://registry.yarnpkg.com/iconv-lite/-/iconv-lite-0.2.11.tgz#1ce60a3a57864a292d1321ff4609ca4bb965adc8"
   integrity sha512-KhmFWgaQZY83Cbhi+ADInoUQ8Etn6BG5fikM9syeOjQltvR45h7cRKJ/9uvQEuD61I3Uju77yYce0/LhKVClQw==
 
+ieee754@^1.1.12:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/ieee754/-/ieee754-1.2.1.tgz#8eb7a10a63fff25d15a57b001586d177d1b0d352"
+  integrity sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==
+
 ignore@^5.1.1, ignore@^5.2.0:
   version "5.3.2"
   resolved "https://registry.yarnpkg.com/ignore/-/ignore-5.3.2.tgz#3cd40e729f3643fd87cb04e50bf0eb722bc596f5"
@@ -3984,6 +3989,16 @@ leaflet-omnivore@^0.3.0:
     togeojson "0.13.0"
     topojson "1.6.26"
     wellknown "0.4.2"
+
+leaflet.vectorgrid@^1.3.0:
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/leaflet.vectorgrid/-/leaflet.vectorgrid-1.3.0.tgz#ff2deea17d06a9c6cc5e65d8c7287093950e219a"
+  integrity sha512-kWmj1pKM+MVdo/7Mg5zsB3YrGZvo/uIuiANV9MvWUFOG+Y2xAJzrteDhoIcCgTjHSSRJ36xdeGdIQVhuWjnCZw==
+  dependencies:
+    pbf "^3.0.2"
+    topojson-client "^2.1.0"
+    vector-tile "^1.3.0"
+    whatwg-fetch "^2.0.3"
 
 leaflet@^1.9.4:
   version "1.9.4"
@@ -4397,6 +4412,14 @@ path-type@^4.0.0:
   resolved "https://registry.yarnpkg.com/path-type/-/path-type-4.0.0.tgz#84ed01c0a7ba380afe09d90a8c180dcd9d03043b"
   integrity sha512-gDKb8aZMDeD/tZWs9P6+q0J9Mwkdl6xMV8TjnGP3qJVJ06bdMgkbBlLU8IdfOsIsFz2BW1rNVT3XuNEl8zPAvw==
 
+pbf@^3.0.2:
+  version "3.3.0"
+  resolved "https://registry.yarnpkg.com/pbf/-/pbf-3.3.0.tgz#1790f3d99118333cc7f498de816028a346ef367f"
+  integrity sha512-XDF38WCH3z5OV/OVa8GKUNtLAyneuzbCisx7QUCF8Q6Nutx0WnJrQe5O+kOtBlLfRNUws98Y58Lblp+NJG5T4Q==
+  dependencies:
+    ieee754 "^1.1.12"
+    resolve-protobuf-schema "^2.1.0"
+
 picocolors@^1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/picocolors/-/picocolors-1.1.1.tgz#3d321af3eab939b083c8f929a1d12cda81c26b6b"
@@ -4421,6 +4444,11 @@ pirates@^4.0.1:
   version "4.0.7"
   resolved "https://registry.yarnpkg.com/pirates/-/pirates-4.0.7.tgz#643b4a18c4257c8a65104b73f3049ce9a0a15e22"
   integrity sha512-TfySrs/5nm8fQJDcBDuUng3VOUKsd7S+zqvbOTiGXHfxX4wK31ard+hoNuvkicM/2YFzlpDgABOevKSsB4G/FA==
+
+point-geometry@0.0.0:
+  version "0.0.0"
+  resolved "https://registry.yarnpkg.com/point-geometry/-/point-geometry-0.0.0.tgz#6fcbcad7a803b6418247dd6e49c2853c584daff7"
+  integrity sha512-tXK8bY2l3/CPkyO7+UbOWbVjCpKoYY4t6uY3AYYy4Bagd4Z942gLeQOgtHICwBwgPf8dI6fw4VqKwzSNgvlw4A==
 
 polyline@0.2.0:
   version "0.2.0"
@@ -4552,6 +4580,11 @@ property-expr@^2.0.5:
   version "2.0.6"
   resolved "https://registry.yarnpkg.com/property-expr/-/property-expr-2.0.6.tgz#f77bc00d5928a6c748414ad12882e83f24aec1e8"
   integrity sha512-SVtmxhRE/CGkn3eZY1T6pC8Nln6Fr/lu1mKSgRud0eC73whjGfoAogbn78LkD8aFL0zz3bAFerKSnOl7NlErBA==
+
+protocol-buffers-schema@^3.3.1:
+  version "3.6.0"
+  resolved "https://registry.yarnpkg.com/protocol-buffers-schema/-/protocol-buffers-schema-3.6.0.tgz#77bc75a48b2ff142c1ad5b5b90c94cd0fa2efd03"
+  integrity sha512-TdDRD+/QNdrCGCE7v8340QyuXd4kIWIgapsE2+n/SaGiSSbomYl4TjHlvIoCWRpE7wFt02EpB35VVA2ImcBVqw==
 
 proxy-from-env@^1.1.0:
   version "1.1.0"
@@ -4870,6 +4903,13 @@ resolve-from@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/resolve-from/-/resolve-from-4.0.0.tgz#4abcd852ad32dd7baabfe9b40e00a36db5f392e6"
   integrity sha512-pb/MYmXstAkysRFx8piNI1tGFNQIFA3vkE3Gq4EuA1dF6gHp/+vgZqsCGJapvy8N3Q+4o7FwvquPJcnZ7RYy4g==
+
+resolve-protobuf-schema@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/resolve-protobuf-schema/-/resolve-protobuf-schema-2.1.0.tgz#9ca9a9e69cf192bbdaf1006ec1973948aa4a3758"
+  integrity sha512-kI5ffTiZWmJaS/huM8wZfEMer1eRd7oJQhDuxeCLe3t7N7mX3z94CN0xPxBQxFYQTSNz9T0i+v6inKqSdK8xrQ==
+  dependencies:
+    protocol-buffers-schema "^3.3.1"
 
 resolve@^1.1.5, resolve@^1.1.7, resolve@^1.22.1, resolve@^1.22.4, resolve@^1.22.8:
   version "1.22.10"
@@ -5515,6 +5555,13 @@ togeojson@0.13.0:
     minimist "0.0.8"
     xmldom "~0.1.19"
 
+topojson-client@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/topojson-client/-/topojson-client-2.1.0.tgz#ff9f7bf38991185e0b4284c2b06ae834f0eac6c8"
+  integrity sha512-mxXNa6imbsrWXqUKF7iwGl2TkrshZ7dwQF+KuAB4hX9wTmfecNzqSjMmQZNhP2Ztvfwx8rKt0BfQfHF+ki6hQw==
+  dependencies:
+    commander "2"
+
 topojson@1.6.26:
   version "1.6.26"
   resolved "https://registry.yarnpkg.com/topojson/-/topojson-1.6.26.tgz#365f88a5e1858ab064872d9b968496fa923857ad"
@@ -5708,6 +5755,13 @@ util-deprecate@^1.0.2, util-deprecate@~1.0.1:
   resolved "https://registry.yarnpkg.com/util-deprecate/-/util-deprecate-1.0.2.tgz#450d4dc9fa70de732762fbd2d4a28981419a0ccf"
   integrity sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==
 
+vector-tile@^1.3.0:
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/vector-tile/-/vector-tile-1.3.0.tgz#06d516a83b063f04c82ef539cf1bb1aebeb696b4"
+  integrity sha512-ECpYpDhbgTSGIRwaf4bLbiDHcUHDM+LGrBOmV1tdG+Lde8vajJtywP5vGFmMj0Z3cApTV0+9sLWgBCVsRuoAKQ==
+  dependencies:
+    point-geometry "0.0.0"
+
 vite-plugin-compression@^0.5.1:
   version "0.5.1"
   resolved "https://registry.yarnpkg.com/vite-plugin-compression/-/vite-plugin-compression-0.5.1.tgz#a75b0d8f48357ebb377b65016da9f20885ef39b6"
@@ -5743,6 +5797,11 @@ wellknown@0.4.2:
   dependencies:
     concat-stream "~1.5.0"
     minimist "~1.1.2"
+
+whatwg-fetch@^2.0.3:
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/whatwg-fetch/-/whatwg-fetch-2.0.4.tgz#dde6a5df315f9d39991aa17621853d720b85566f"
+  integrity sha512-dcQ1GWpOD/eEQ97k66aiEVpNnapVj90/+R+SXTPYGHpYBBypfKJEQjLrvMZ7YXbKm21gXd4NcuxUTjiv1YtLng==
 
 which-boxed-primitive@^1.1.0, which-boxed-primitive@^1.1.1:
   version "1.1.1"
