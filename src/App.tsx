@@ -1,23 +1,15 @@
 import './App.css'
 import 'leaflet/dist/leaflet.css'
-import Routes from './routes'
+import { Toaster } from '@/components/ui/sonner'
 import AppProvider from './providers/AppProvider.tsx'
-import { SnackbarProvider } from 'notistack'
+import Routes from './routes'
 
 function App() {
   return (
-    <SnackbarProvider
-      maxSnack={3}
-      autoHideDuration={3000}
-      anchorOrigin={{
-        vertical: 'bottom',
-        horizontal: 'center', // Melhor posição para notificações em dispositivos móveis
-      }}
-    >
-      <AppProvider>
-        <Routes />
-      </AppProvider>
-    </SnackbarProvider>
+    <AppProvider>
+      <Routes />
+      <Toaster richColors position="top-right" />
+    </AppProvider>
   )
 }
 

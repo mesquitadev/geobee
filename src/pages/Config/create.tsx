@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { yupResolver } from '@hookform/resolvers/yup'
 import 'leaflet/dist/leaflet.css'
-import { useSnackbar } from 'notistack'
+import { toast } from 'sonner'
 import { useForm } from 'react-hook-form'
 import * as yup from 'yup'
 import Breadcumbs from '../../components/Breadcumbs'
@@ -17,7 +17,6 @@ interface Inputs {
 }
 
 export default function AddMap() {
-  const { enqueueSnackbar } = useSnackbar()
   const { setLoading } = useLoading()
   const navigate = useNavigate()
   const [uploadMaps] = useUploadMapsMutation()
@@ -41,15 +40,11 @@ export default function AddMap() {
       })
 
       await uploadMaps(formData).unwrap()
-      enqueueSnackbar('Cadastro realizado com sucesso!', {
-        variant: 'success',
-      })
+      toast.success('Cadastro realizado com sucesso!')
       navigate(-1)
     } catch (err: any) {
       const message = err?.data?.message || 'Ocorreu um erro ao cadastrar.'
-      enqueueSnackbar(`Erro no cadastro! ${message}`, {
-        variant: 'error',
-      })
+      toast.error(`Erro no cadastro! ${message}`)
       setLoading(false)
     } finally {
       setLoading(false)

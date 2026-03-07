@@ -14,13 +14,12 @@ import {
   DialogTitle,
 } from '@headlessui/react'
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
-import { useSnackbar } from 'notistack'
+import { toast } from 'sonner'
 import { PlusCircle, Eye, Trash2 } from 'lucide-react'
 
 const MyApiaries = () => {
   const navigate = useNavigate()
   const { setLoading } = useLoading()
-  const { enqueueSnackbar } = useSnackbar()
   const {
     data: apiaries = [],
     isLoading: apiariesLoading,
@@ -32,9 +31,9 @@ const MyApiaries = () => {
 
   React.useEffect(() => {
     if (apiariesError) {
-      enqueueSnackbar('Erro ao carregar apiários', { variant: 'error' })
+      toast.error('Erro ao carregar apiários')
     }
-  }, [apiariesError, enqueueSnackbar])
+  }, [apiariesError])
 
   const [deleteApiary] = useDeleteApiaryMutation()
   const [open, setOpen] = useState(false)
@@ -59,14 +58,14 @@ const MyApiaries = () => {
     try {
       await deleteApiary(selectedId)
       setOpen(false)
-      enqueueSnackbar('Apiário removido com sucesso!', { variant: 'success' })
+      toast.success('Apiário removido com sucesso!')
     } catch (error) {
       console.error(error)
-      enqueueSnackbar('Erro ao remover apiário', { variant: 'error' })
+      toast.error('Erro ao remover apiário')
     } finally {
       setIsDeleting(false)
     }
-  }, [deleteApiary, selectedId, enqueueSnackbar])
+  }, [deleteApiary, selectedId])
 
   return (
     <div className="h-full w-full p-4 md:p-6 lg:p-10">

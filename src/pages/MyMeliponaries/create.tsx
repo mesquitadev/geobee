@@ -2,7 +2,7 @@
 import { yupResolver } from '@hookform/resolvers/yup'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import { useSnackbar } from 'notistack'
+import { toast } from 'sonner'
 import { useCallback, useEffect, useState, useMemo, memo } from 'react'
 import { SubmitHandler, useForm, Resolver } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
@@ -60,7 +60,6 @@ interface ValidationNotification {
 }
 
 const NewMeliponary = () => {
-  const { enqueueSnackbar } = useSnackbar()
   const { setLoading } = useLoading()
   const navigate = useNavigate()
   const [disabled, setDisabled] = useState(false)
@@ -148,9 +147,7 @@ const NewMeliponary = () => {
   const onSubmit = async (data: Inputs) => {
     // Garantir que as coordenadas foram selecionadas
     if (!latitude || !longitude) {
-      enqueueSnackbar('Selecione as coordenadas no mapa ou use sua localização.', {
-        variant: 'warning',
-      })
+      toast.warning('Selecione as coordenadas no mapa ou use sua localização.')
       return
     }
 
@@ -163,10 +160,10 @@ const NewMeliponary = () => {
     setLoading(true)
     try {
       await createMeliponary(payload).unwrap()
-      enqueueSnackbar('Meliponário criado com sucesso!', { variant: 'success' })
+      toast.success('Meliponário criado com sucesso!')
       navigate('/meus-meliponarios')
     } catch (err) {
-      enqueueSnackbar('Erro ao criar meliponário', { variant: 'error' })
+      toast.error('Erro ao criar meliponário')
     } finally {
       setLoading(false)
     }
@@ -260,10 +257,10 @@ const NewMeliponary = () => {
   useEffect(() => {
     const { notifications, shouldDisableForm } = validateFormFields()
     notifications.forEach(({ message, variant }) => {
-      enqueueSnackbar(message, { variant })
+      toast[variant](message)
     })
     setDisabled(shouldDisableForm)
-  }, [validateFormFields, enqueueSnackbar])
+  }, [validateFormFields])
 
   const handleLocationSelect = (lat: number, lng: number) => {
     setLatitude(lat)

@@ -1,7 +1,7 @@
 import { createContext, ReactNode, useCallback, useState } from 'react'
 import Cookies from 'js-cookie'
 import { useLoading } from '../hooks/useLoading'
-import { useSnackbar } from 'notistack'
+import { toast } from 'sonner'
 import { useLoginMutation } from '../redux/slices/usersSlice'
 
 interface AuthState {
@@ -29,7 +29,6 @@ const AuthContext = createContext<AuthContextData>({} as AuthContextData)
 
 const AuthProvider = ({ children }: AuthProviderProps) => {
   const { setLoading } = useLoading()
-  const { enqueueSnackbar } = useSnackbar()
   const [data, setData] = useState<AuthState>(() => {
     const token = Cookies.get('GeoToken')
 
@@ -53,23 +52,18 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
       } catch (err: any) {
         // Só mostra erro se realmente não houver token
         if (!err?.data?.access_token) {
-          enqueueSnackbar({
-            message:
-              'Erro na autenticação! Ocorreu um erro ao fazer login, verifique as credenciais inseridas',
-            variant: 'error',
-          })
+          toast.error(
+            'Erro na autenticação! Ocorreu um erro ao fazer login, verifique as credenciais inseridas',
+          )
           if (err?.data?.message) {
-            enqueueSnackbar({
-              message: `Erro: ${err.data.message}`,
-              variant: 'error',
-            })
+            toast.error(`Erro: ${err.data.message}`)
           }
         }
       } finally {
         setLoading(false)
       }
     },
-    [login, setLoading, enqueueSnackbar, setData],
+    [login, setLoading, setData],
   )
 
   const signOut = useCallback(() => {

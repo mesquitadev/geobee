@@ -1,66 +1,74 @@
 import logo from '../../assets/logo-geobee.svg'
-import { SubmitHandler, useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import { useLoading } from '../../hooks/useLoading.tsx'
-import Input from '../../components/Input'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
-import InputLabel from '../../components/Input/Label.tsx'
-import InputContainer from '../../components/Input/Container.tsx'
-import SelectContainer from '../../components/Select/Container.tsx'
-import Select from '../../components/Select'
 import { removeMask, validarCPF } from '../../utils'
 import { useCallback } from 'react'
 import { useRegisterMutation } from '../../redux/slices/usersSlice'
-import { enqueueSnackbar } from 'notistack'
+import { toast } from 'sonner'
 import { Link, useNavigate } from 'react-router-dom'
 import { UserPlus } from 'lucide-react'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
-type Inputs = {
-  fullName: string
-  cpf: string
-  email: string
-  phone: string
-  role: string
-  password: string
-}
+const signUpFormSchema = yup.object().shape({
+  fullName: yup.string().required('Este campo é obrigatório'),
+  cpf: yup
+    .string()
+    .required('Este campo é obrigatório')
+    .test('test-invalid-cpf', 'CPF Inválido', (cpf: string | undefined) =>
+      validarCPF(cpf),
+    ),
+  email: yup
+    .string()
+    .required('Este campo é obrigatório')
+    .email('E-mail inválido'),
+  phone: yup.string().required('Este campo é obrigatório'),
+  role: yup.string().optional(),
+  password: yup
+    .string()
+    .required('Este campo é obrigatório')
+    .min(8, 'A senha deve ter pelo menos 8 caracteres'),
+  confirmPassword: yup
+    .string()
+    .required('Confirmação de senha é obrigatória')
+    .min(8, 'A senha deve ter pelo menos 8 caracteres')
+    .oneOf([yup.ref('password'), null], 'As senhas devem corresponder'),
+})
 
 const SignUp = () => {
   const { setLoading } = useLoading()
   const navigate = useNavigate()
   const [registerUser] = useRegisterMutation()
-  const signUpFormSchema = yup.object().shape({
-    fullName: yup.string().required('Este campo é obrigatório'),
-    cpf: yup
-      .string()
-      .required('Este campo é obrigatório')
-      .test('test-invalid-cpf', 'CPF Inválido', (cpf: string | undefined) =>
-        validarCPF(cpf),
-      ),
-    email: yup
-      .string()
-      .required('Este campo é obrigatório')
-      .email('E-mail inválido'),
-    phone: yup.string().required('Este campo é obrigatório'),
-    role: yup.string().optional(),
-    password: yup
-      .string()
-      .required('Este campo é obrigatório')
-      .min(8, 'A senha deve ter pelo menos 8 caracteres'),
-    confirmPassword: yup
-      .string()
-      .required('Confirmação de senha é obrigatória')
-      .min(8, 'A senha deve ter pelo menos 8 caracteres')
-      .oneOf([yup.ref('password'), null], 'As senhas devem corresponder'),
-  })
-  const { handleSubmit, formState, control } = useForm({
+  const {
+    handleSubmit,
+    register,
+    control,
+    formState: { errors },
+  } = useForm({
     mode: 'onBlur',
     reValidateMode: 'onBlur',
     resolver: yupResolver(signUpFormSchema),
   })
-  const { errors } = formState
 
-  const handleSignUp: SubmitHandler<Inputs> = useCallback(
-    async (data: Inputs) => {
+  const handleSignUp = useCallback(
+    async (data: Record<string, any>) => {
       setLoading(true)
       try {
         const { fullName, cpf, phone, role, password, email } = data
@@ -73,14 +81,10 @@ const SignUp = () => {
           password,
           email,
         }).unwrap()
-        enqueueSnackbar('Cadastro realizado com sucesso!', {
-          variant: 'success',
-        })
+        toast.success('Cadastro realizado com sucesso!')
         navigate('/')
       } catch (err) {
-        enqueueSnackbar('Erro no cadastro! Verifique os dados inseridos.', {
-          variant: 'error',
-        })
+        toast.error('Erro no cadastro! Verifique os dados inseridos.')
         setLoading(false)
       } finally {
         setLoading(false)
@@ -89,146 +93,211 @@ const SignUp = () => {
     [navigate, setLoading, registerUser],
   )
 
-  const options = [
+  const profileOptions = [
     { label: 'Apicultor', value: 'Apicultor' },
     { label: 'Meliponicultor', value: 'Meliponicultor' },
   ]
 
   return (
-    <div className="flex min-h-screen bg-zinc-50 dark:bg-zinc-900">
-      {/* Left panel - Brand */}
-      <div className="hidden flex-col justify-between bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-800 p-12 lg:flex lg:w-5/12">
-        <div>
-          <img className="h-16 w-auto brightness-0 invert" src={logo} alt="GeoBEE" />
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-emerald-50 via-background to-green-50 px-4 py-12 dark:from-emerald-950/20 dark:via-background dark:to-green-950/20">
+      <div className="w-full max-w-2xl">
+        {/* Logo */}
+        <div className="mb-8 flex flex-col items-center">
+          <img className="h-20 w-auto" src={logo} alt="GeoBEE" />
         </div>
-        <div>
-          <h1 className="text-4xl font-bold leading-tight text-white">
-            Faça parte da plataforma de gestão apícola mais inteligente do Brasil.
-          </h1>
-          <p className="mt-4 text-lg text-indigo-200">
-            Cadastre-se e comece a gerenciar seus apiários com tecnologia geoespacial.
-          </p>
-        </div>
-        <p className="text-sm text-indigo-300">
-          GeoBEE &copy; {new Date().getFullYear()} - Todos os direitos reservados
-        </p>
-      </div>
 
-      {/* Right panel - Form */}
-      <div className="flex w-full flex-col items-center justify-center px-6 py-12 lg:w-7/12">
-        <div className="w-full max-w-lg">
-          {/* Mobile logo */}
-          <div className="mb-8 flex flex-col items-center lg:hidden">
-            <img className="h-20 w-auto" src={logo} alt="GeoBEE" />
-          </div>
-
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+        <Card className="border-border/50 shadow-lg">
+          <CardHeader className="space-y-1 pb-4">
+            <CardTitle className="text-2xl font-bold">
               Crie sua conta
-            </h2>
-            <p className="mt-2 text-zinc-600 dark:text-zinc-400">
+            </CardTitle>
+            <CardDescription>
               Preencha os dados abaixo para se cadastrar na plataforma
-            </p>
-          </div>
-
-          <div className="rounded-xl border border-zinc-200 bg-white p-8 shadow-sm dark:border-zinc-700 dark:bg-zinc-800">
-            <form onSubmit={handleSubmit(handleSignUp)} className="space-y-5">
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form
+              onSubmit={handleSubmit(handleSignUp)}
+              className="space-y-5"
+            >
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                <InputContainer className="w-full">
-                  <InputLabel label="Nome Completo" name="fullName" />
+                <div className="space-y-2">
+                  <Label htmlFor="fullName">Nome Completo</Label>
                   <Input
-                    control={control}
-                    name="fullName"
+                    id="fullName"
                     placeholder="Seu nome completo"
-                    errors={errors?.fullName?.message}
+                    className={
+                      errors.fullName
+                        ? 'border-destructive focus-visible:ring-destructive'
+                        : ''
+                    }
+                    {...register('fullName')}
                   />
-                </InputContainer>
+                  {errors.fullName && (
+                    <p className="text-sm text-destructive">
+                      {errors.fullName.message}
+                    </p>
+                  )}
+                </div>
 
-                <InputContainer className="w-full">
-                  <InputLabel label="CPF" name="cpf" />
+                <div className="space-y-2">
+                  <Label htmlFor="cpf">CPF</Label>
                   <Input
-                    control={control}
-                    name="cpf"
+                    id="cpf"
                     placeholder="000.000.000-00"
-                    errors={errors?.cpf?.message}
+                    className={
+                      errors.cpf
+                        ? 'border-destructive focus-visible:ring-destructive'
+                        : ''
+                    }
+                    {...register('cpf')}
                   />
-                </InputContainer>
+                  {errors.cpf && (
+                    <p className="text-sm text-destructive">
+                      {errors.cpf.message}
+                    </p>
+                  )}
+                </div>
 
-                <InputContainer className="w-full">
-                  <InputLabel label="Email" name="email" />
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
                   <Input
-                    control={control}
-                    name="email"
+                    id="email"
+                    type="email"
                     placeholder="seu@email.com"
-                    errors={errors?.email?.message}
+                    className={
+                      errors.email
+                        ? 'border-destructive focus-visible:ring-destructive'
+                        : ''
+                    }
+                    {...register('email')}
                   />
-                </InputContainer>
+                  {errors.email && (
+                    <p className="text-sm text-destructive">
+                      {errors.email.message}
+                    </p>
+                  )}
+                </div>
 
-                <InputContainer className="w-full">
-                  <InputLabel label="Telefone" name="phone" />
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Telefone</Label>
                   <Input
-                    control={control}
-                    name="phone"
+                    id="phone"
                     placeholder="(00) 00000-0000"
-                    errors={errors?.phone?.message}
+                    className={
+                      errors.phone
+                        ? 'border-destructive focus-visible:ring-destructive'
+                        : ''
+                    }
+                    {...register('phone')}
                   />
-                </InputContainer>
+                  {errors.phone && (
+                    <p className="text-sm text-destructive">
+                      {errors.phone.message}
+                    </p>
+                  )}
+                </div>
               </div>
 
-              <SelectContainer className="w-full">
-                <InputLabel label="Eu sou um:" name="role" />
-                <Select
-                  options={options}
-                  control={control}
+              <div className="space-y-2">
+                <Label htmlFor="role">Eu sou um:</Label>
+                <Controller
                   name="role"
-                  errors={errors?.role?.message}
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                    >
+                      <SelectTrigger
+                        className={
+                          errors.role
+                            ? 'border-destructive focus:ring-destructive'
+                            : ''
+                        }
+                      >
+                        <SelectValue placeholder="Selecione um perfil" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {profileOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                 />
-              </SelectContainer>
+                {errors.role && (
+                  <p className="text-sm text-destructive">
+                    {errors.role.message}
+                  </p>
+                )}
+              </div>
 
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                <InputContainer className="w-full">
-                  <InputLabel label="Senha" name="password" />
+                <div className="space-y-2">
+                  <Label htmlFor="password">Senha</Label>
                   <Input
-                    control={control}
-                    name="password"
+                    id="password"
                     type="password"
                     placeholder="Mínimo 8 caracteres"
-                    errors={errors?.password?.message}
+                    className={
+                      errors.password
+                        ? 'border-destructive focus-visible:ring-destructive'
+                        : ''
+                    }
+                    {...register('password')}
                   />
-                </InputContainer>
+                  {errors.password && (
+                    <p className="text-sm text-destructive">
+                      {errors.password.message}
+                    </p>
+                  )}
+                </div>
 
-                <InputContainer className="w-full">
-                  <InputLabel label="Confirmar Senha" name="confirmPassword" />
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Confirmar Senha</Label>
                   <Input
-                    control={control}
-                    name="confirmPassword"
+                    id="confirmPassword"
                     type="password"
                     placeholder="Confirme sua senha"
-                    errors={errors?.confirmPassword?.message}
+                    className={
+                      errors.confirmPassword
+                        ? 'border-destructive focus-visible:ring-destructive'
+                        : ''
+                    }
+                    {...register('confirmPassword')}
                   />
-                </InputContainer>
+                  {errors.confirmPassword && (
+                    <p className="text-sm text-destructive">
+                      {errors.confirmPassword.message}
+                    </p>
+                  )}
+                </div>
               </div>
 
-              <button
+              <Button
                 type="submit"
-                className="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                className="w-full bg-emerald-700 hover:bg-emerald-800"
+                size="lg"
               >
                 <UserPlus className="h-4 w-4" />
                 Cadastrar
-              </button>
+              </Button>
             </form>
-          </div>
+          </CardContent>
+        </Card>
 
-          <p className="mt-6 text-center text-sm text-zinc-600 dark:text-zinc-400">
-            Já tem uma conta?{' '}
-            <Link
-              className="font-semibold text-indigo-600 transition-colors hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
-              to="/"
-            >
-              Faça login
-            </Link>
-          </p>
-        </div>
+        <p className="mt-6 text-center text-sm text-muted-foreground">
+          Já tem uma conta?{' '}
+          <Link
+            className="font-semibold text-emerald-700 transition-colors hover:text-emerald-600 dark:text-emerald-400 dark:hover:text-emerald-300"
+            to="/"
+          >
+            Faça login
+          </Link>
+        </p>
       </div>
     </div>
   )

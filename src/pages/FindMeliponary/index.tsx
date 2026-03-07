@@ -14,7 +14,7 @@ import { getColor } from '../../utils'
 import Legend from '../../components/Legend'
 import { useParams } from 'react-router-dom'
 import { useGetMeliponaryQuery } from '../../redux/slices/meliponarySlice'
-import { useSnackbar } from 'notistack'
+import { toast } from 'sonner'
 
 const meliponaryIcon = new L.Icon({
   iconUrl: beebox as string,
@@ -38,7 +38,6 @@ export default function FindMeliponary() {
     isLoading: meliponaryLoading,
     error: meliponaryError,
   } = useGetMeliponaryQuery(id!, { skip: !id })
-  const { enqueueSnackbar } = useSnackbar()
 
   // Adiciona controle de loading global
   React.useEffect(() => {
@@ -47,9 +46,9 @@ export default function FindMeliponary() {
 
   React.useEffect(() => {
     if (meliponaryError) {
-      enqueueSnackbar('Erro ao carregar meliponário', { variant: 'error' })
+      toast.error('Erro ao carregar meliponário')
     }
-  }, [meliponaryError, enqueueSnackbar])
+  }, [meliponaryError])
 
   useEffect(() => {
     const getMaps = async () => {

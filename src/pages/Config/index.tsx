@@ -15,7 +15,7 @@ import {
   useGetMapsQuery,
 } from '../../redux/slices/mapsSlice'
 import { Eye, PlusCircle, Trash2 } from 'lucide-react'
-import { useSnackbar } from 'notistack'
+import { toast } from 'sonner'
 
 function AppearanceSettings() {
   // Tema: claro, escuro, sistema
@@ -67,7 +67,6 @@ export default function MyMaps() {
   } = useGetMapsQuery()
   const [deleteMap] = useDeleteMapMutation()
   const { setLoading } = useLoading()
-  const { enqueueSnackbar } = useSnackbar()
 
   useEffect(() => {
     setLoading(mapsLoading)
@@ -75,9 +74,9 @@ export default function MyMaps() {
 
   useEffect(() => {
     if (mapsError) {
-      enqueueSnackbar('Erro ao carregar mapas', { variant: 'error' })
+      toast.error('Erro ao carregar mapas')
     }
-  }, [mapsError, enqueueSnackbar])
+  }, [mapsError])
 
   const [open, setOpen] = useState(false)
   const [selectedId, setSelectedId] = useState<string>()

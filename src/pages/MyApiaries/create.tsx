@@ -1,6 +1,6 @@
 import { yupResolver } from '@hookform/resolvers/yup'
 import 'leaflet/dist/leaflet.css'
-import { useSnackbar } from 'notistack'
+import { toast } from 'sonner'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Resolver, useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
@@ -59,7 +59,6 @@ interface ValidationNotification {
 }
 
 export default function NewApiary() {
-  const { enqueueSnackbar } = useSnackbar()
   const { setLoading } = useLoading()
   const navigate = useNavigate()
   const [disabled, setDisabled] = useState(false)
@@ -231,9 +230,9 @@ export default function NewApiary() {
 
     // Exibe as notificações
     notifications.forEach((notification) => {
-      enqueueSnackbar(notification.message, { variant: notification.variant })
+      toast[notification.variant](notification.message)
     })
-  }, [validateFormFields, enqueueSnackbar])
+  }, [validateFormFields])
 
   const handleSignUp = async (data: Inputs) => {
     setLoading(true)
@@ -244,10 +243,10 @@ export default function NewApiary() {
         longitude: String(longitude),
       }
       await createApiary(updatedData).unwrap()
-      enqueueSnackbar('Cadastro realizado com sucesso!', { variant: 'success' })
+      toast.success('Cadastro realizado com sucesso!')
       navigate('/meus-apiarios')
     } catch (err) {
-      enqueueSnackbar('Erro no cadastro!', { variant: 'error' })
+      toast.error('Erro no cadastro!')
     } finally {
       setLoading(false)
     }
@@ -294,17 +293,13 @@ export default function NewApiary() {
         },
         (error) => {
           console.error(error)
-          enqueueSnackbar('Não foi possível obter sua localização', {
-            variant: 'error',
-          })
+          toast.error('Não foi possível obter sua localização')
         },
       )
     } else {
-      enqueueSnackbar('Seu navegador não suporta geolocalização', {
-        variant: 'warning',
-      })
+      toast.warning('Seu navegador não suporta geolocalização')
     }
-  }, [handleLocationSelect, enqueueSnackbar])
+  }, [handleLocationSelect])
 
   return (
     <div className="h-full w-full p-4 pb-0 md:p-6 lg:p-10">

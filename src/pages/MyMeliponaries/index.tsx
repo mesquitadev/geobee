@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from '@headlessui/react'
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
-import { useSnackbar } from 'notistack'
+import { toast } from 'sonner'
 import { Eye, PlusCircle, Trash2 } from 'lucide-react'
 import {
   useDeleteMeliponaryMutation,
@@ -20,7 +20,6 @@ import {
 const MyMeliponaries = () => {
   const navigate = useNavigate()
   const { setLoading } = useLoading()
-  const { enqueueSnackbar } = useSnackbar()
   const {
     data: meliponaries = [],
     isLoading: meliponariesLoading,
@@ -33,9 +32,9 @@ const MyMeliponaries = () => {
 
   React.useEffect(() => {
     if (meliponariesError) {
-      enqueueSnackbar('Erro ao carregar meliponários', { variant: 'error' })
+      toast.error('Erro ao carregar meliponários')
     }
-  }, [meliponariesError, enqueueSnackbar])
+  }, [meliponariesError])
 
   const [deleteMeliponary] = useDeleteMeliponaryMutation()
   const [open, setOpen] = useState(false)
@@ -60,16 +59,14 @@ const MyMeliponaries = () => {
     try {
       await deleteMeliponary(selectedId)
       setOpen(false)
-      enqueueSnackbar('Meliponário removido com sucesso!', {
-        variant: 'success',
-      })
+      toast.success('Meliponário removido com sucesso!')
     } catch (error) {
       console.error(error)
-      enqueueSnackbar('Erro ao remover meliponário', { variant: 'error' })
+      toast.error('Erro ao remover meliponário')
     } finally {
       setIsDeleting(false)
     }
-  }, [deleteMeliponary, selectedId, enqueueSnackbar])
+  }, [deleteMeliponary, selectedId])
 
   return (
     <div className="h-full w-full p-4 md:p-6 lg:p-10">

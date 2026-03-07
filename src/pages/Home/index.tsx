@@ -1,6 +1,6 @@
 // @ts-nocheck
 import L, { initVectorGrid } from '../../utils/leaflet-setup'
-import { useSnackbar } from 'notistack'
+import { toast } from 'sonner'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   CircleMarker,
@@ -70,7 +70,6 @@ export default function Home() {
   useEffect(() => {
     vectorGridReady.then(() => setVectorGridLoaded(true))
   }, [])
-  const { enqueueSnackbar } = useSnackbar()
   const {
     data: dashboardData = { apiarios: [], meliponarios: [] },
     isLoading: dashboardLoading,
@@ -114,14 +113,12 @@ export default function Home() {
   // Notificações de erro
   useEffect(() => {
     if (dashboardError)
-      enqueueSnackbar('Erro ao carregar dados do dashboard', {
-        variant: 'error',
-      })
+      toast.error('Erro ao carregar dados do dashboard')
     if (mapsError)
-      enqueueSnackbar('Erro ao carregar mapas', { variant: 'error' })
+      toast.error('Erro ao carregar mapas')
     if (geoJsonError)
-      enqueueSnackbar('Erro ao carregar geojson', { variant: 'error' })
-  }, [dashboardError, mapsError, geoJsonError, enqueueSnackbar])
+      toast.error('Erro ao carregar geojson')
+  }, [dashboardError, mapsError, geoJsonError])
 
   // Garantir selectedMapId válido quando maps carregar/alterar
   useEffect(() => {
