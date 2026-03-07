@@ -263,7 +263,7 @@ export default function FindMeliponary() {
                   <p className="mb-2 text-sm font-medium">Condições</p>
                   <div className="flex flex-wrap gap-2">
                     {conditionFields.map(({ key, label }) => {
-                      const value = (meliponary as Record<string, unknown>)[key] as string | undefined
+                      const value = (meliponary as unknown as Record<string, unknown>)[key] as string | undefined
                       const met = isConditionMet(value)
                       return (
                         <Badge
