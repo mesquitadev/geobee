@@ -256,7 +256,7 @@ export default function CreateMeliponary() {
         acessoVeiculos: data.acessoVeiculos,
       } as any).unwrap()
       toast.success('Meliponario criado com sucesso!')
-      navigate('/meus-meliponarios')
+      navigate('/meus-locais')
     } catch {
       toast.error('Erro ao criar meliponario')
     }
@@ -562,7 +562,7 @@ export default function CreateMeliponary() {
       <Wizard
         steps={steps}
         onComplete={handleComplete}
-        onCancel={() => navigate('/meus-meliponarios')}
+        onCancel={() => navigate('/meus-locais')}
         submitLabel="Cadastrar Meliponario"
         isSubmitting={isLoading}
       />

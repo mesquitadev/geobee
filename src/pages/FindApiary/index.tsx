@@ -175,7 +175,7 @@ export default function FindApiary() {
               variant="ghost"
               size="sm"
               className="mb-4"
-              onClick={() => navigate('/meus-apiarios')}
+              onClick={() => navigate('/meus-locais')}
             >
               <ArrowLeft className="mr-1 h-4 w-4" />
               Voltar

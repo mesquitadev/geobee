@@ -1,7 +1,6 @@
 import {
   MapPin,
-  Warehouse,
-  Bug,
+  MapPinned,
   Layers,
   Users,
   PanelLeftClose,
@@ -29,8 +28,7 @@ export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
 
   const navItems = [
     { to: '/home', icon: MapPin, label: 'Mapa' },
-    { to: '/meus-apiarios', icon: Warehouse, label: 'Apiarios' },
-    { to: '/meus-meliponarios', icon: Bug, label: 'Meliponarios' },
+    { to: '/meus-locais', icon: MapPinned, label: 'Meus Locais' },
   ]
 
   return (
@@ -61,7 +59,7 @@ export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
         )}
       </div>
 
-      <nav className="flex-1 space-y-1 overflow-y-auto p-2">
+      <nav className={cn('flex-1 overflow-y-auto', collapsed ? 'flex flex-col items-center gap-3 px-2 pt-6' : 'space-y-1 p-2')}>
         {navItems.map((item) => (
           <NavItem key={item.to} {...item} collapsed={collapsed} />
         ))}
@@ -83,7 +81,7 @@ export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
         )}
       </nav>
 
-      <div className="space-y-3 border-t p-2">
+      <div className={cn('border-t', collapsed ? 'flex flex-col items-center gap-3 py-4' : 'space-y-3 p-2')}>
         <SpaceIndicator
           used={apiaries.length + meliponaries.length}
           max={user?.maxLocations ?? 5}
@@ -91,15 +89,15 @@ export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
           meliponariesCount={meliponaries.length}
           collapsed={collapsed}
         />
-        <Separator />
+        {!collapsed && <Separator />}
         <UserMenu collapsed={collapsed} user={user} />
         <Button
           variant="ghost"
           size="sm"
           onClick={onToggle}
           className={cn(
-            'w-full',
-            collapsed ? 'justify-center' : 'justify-start'
+            'rounded-xl transition-all duration-200 hover:bg-primary/10 hover:text-primary',
+            collapsed ? 'h-11 w-11 justify-center' : 'w-full justify-start'
           )}
         >
           {collapsed ? (

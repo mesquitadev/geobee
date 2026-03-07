@@ -161,7 +161,7 @@ export default function NewApiary() {
       }
       await createApiary(payload).unwrap()
       toast.success('Cadastro realizado com sucesso!')
-      navigate('/meus-apiarios')
+      navigate('/meus-locais')
     } catch {
       toast.error('Erro no cadastro!')
     }
@@ -647,7 +647,7 @@ export default function NewApiary() {
       <Wizard
         steps={steps}
         onComplete={handleSubmit(onSubmit)}
-        onCancel={() => navigate('/meus-apiarios')}
+        onCancel={() => navigate('/meus-locais')}
         submitLabel="Cadastrar Apiário"
         isSubmitting={isLoading}
       />

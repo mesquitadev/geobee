@@ -101,7 +101,7 @@ export function MapPanel({
           </div>
           <div className="border-t p-3">
             <Button asChild className="w-full" size="sm">
-              <Link to="/meus-apiarios/novo">
+              <Link to="/meus-locais/novo-apiario">
                 <Plus className="mr-2 h-4 w-4" />
                 Novo Apiario
               </Link>
@@ -145,7 +145,7 @@ export function MapPanel({
           </div>
           <div className="border-t p-3">
             <Button asChild className="w-full" size="sm">
-              <Link to="/meus-meliponarios/novo">
+              <Link to="/meus-locais/novo-meliponario">
                 <Plus className="mr-2 h-4 w-4" />
                 Novo Meliponario
               </Link>

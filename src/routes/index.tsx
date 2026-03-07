@@ -5,8 +5,7 @@ import {
   FindMeliponary,
   FindOne,
   Home,
-  MyApiaries,
-  MyMeliponaries,
+  Locais,
   NewApiary,
   NewMeliponary,
   SignIn,
@@ -41,16 +40,12 @@ function AppRoutes() {
           <Route path="novo" element={<AdminRoute><AddFile /></AdminRoute>} />
         </Route>
 
-        <Route path="/meus-apiarios" element={<PrivateRoute />}>
-          <Route index element={<MyApiaries />} />
-          <Route path="novo" element={<NewApiary />} />
-          <Route path=":id" element={<FindOne />} />
-        </Route>
-
-        <Route path="/meus-meliponarios" element={<PrivateRoute />}>
-          <Route index element={<MyMeliponaries />} />
-          <Route path="novo" element={<NewMeliponary />} />
-          <Route path=":id" element={<FindMeliponary />} />
+        <Route path="/meus-locais" element={<PrivateRoute />}>
+          <Route index element={<Locais />} />
+          <Route path="novo-apiario" element={<NewApiary />} />
+          <Route path="novo-meliponario" element={<NewMeliponary />} />
+          <Route path="apiario/:id" element={<FindOne />} />
+          <Route path="meliponario/:id" element={<FindMeliponary />} />
         </Route>
 
         <Route path="/usuarios" element={<PrivateRoute />}>
