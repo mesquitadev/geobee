@@ -12,9 +12,19 @@ import L from 'leaflet'
 import beebox from '../../assets/bee-hive.png'
 import { getColor } from '../../utils'
 import Legend from '../../components/Legend'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useGetApiaryQuery } from '../../redux/slices/apiariesSlice'
 import { toast } from 'sonner'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
+import { ArrowLeft, MapPin } from 'lucide-react'
 
 const meliponaryIcon = new L.Icon({
   iconUrl: beebox as string,
@@ -26,6 +36,7 @@ const meliponaryIcon = new L.Icon({
 export default function FindApiary() {
   const [geojson, setGeojson] = useState(null)
   const { setLoading } = useLoading()
+  const navigate = useNavigate()
   const [userLocation, setUserLocation] = useState<[number, number] | null>(
     null,
   )
@@ -39,7 +50,6 @@ export default function FindApiary() {
     error: apiaryError,
   } = useGetApiaryQuery(id!, { skip: !id })
 
-  // Adiciona controle de loading global
   React.useEffect(() => {
     setLoading(apiaryLoading)
   }, [apiaryLoading, setLoading])
@@ -93,23 +103,14 @@ export default function FindApiary() {
   }, [apiary])
 
   return (
-    <div className="flex h-full w-full flex-col">
-      {/* {(loading || apiaryLoading) && <BackdropLoading isLoading={true} />} */}
+    <div className="flex h-full flex-col lg:flex-row">
       {apiaryError && (
         <div className="p-4 text-red-600">Erro ao carregar apiário.</div>
       )}
       {apiary && apiary.latitude && apiary.longitude && (
         <>
-          {/* Título e Legenda do mapa - agora acima do mapa */}
-          <div className="px-3 py-2">
-            <h2 className="mb-2 text-lg font-semibold">
-              Apiário: {apiary.name}
-            </h2>
-            <Legend />
-          </div>
-
-          {/* Contêiner do mapa */}
-          <div className="relative flex-1">
+          {/* Map */}
+          <div className="relative h-64 flex-1 lg:h-full">
             <MapContainer
               center={
                 selectedCoordinates || [
@@ -119,10 +120,8 @@ export default function FindApiary() {
               zoom={13}
               className="h-full w-full"
             >
-              {/* Camada base do mapa */}
               <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
-              {/* Dados GeoJSON */}
               {geojson && (
                 <GeoJSON
                   data={geojson}
@@ -133,7 +132,6 @@ export default function FindApiary() {
                 />
               )}
 
-              {/* Marcador do apiário */}
               {apiary && (
                 <React.Fragment>
                   <Marker
@@ -156,7 +154,6 @@ export default function FindApiary() {
                 </React.Fragment>
               )}
 
-              {/* Marcador da localização do usuário */}
               {userLocation && (
                 <React.Fragment>
                   <Marker position={userLocation}>
@@ -170,6 +167,57 @@ export default function FindApiary() {
                 </React.Fragment>
               )}
             </MapContainer>
+          </div>
+
+          {/* Info Card */}
+          <div className="w-full shrink-0 overflow-y-auto p-4 lg:w-96">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="mb-4"
+              onClick={() => navigate('/meus-apiarios')}
+            >
+              <ArrowLeft className="mr-1 h-4 w-4" />
+              Voltar
+            </Button>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xl">{apiary.name}</CardTitle>
+                {apiary.tipoInstalacao && (
+                  <Badge variant="secondary" className="w-fit">
+                    {apiary.tipoInstalacao}
+                  </Badge>
+                )}
+              </CardHeader>
+
+              <CardContent className="space-y-4">
+                {/* Coordinates */}
+                <div className="flex items-start gap-2 text-sm text-muted-foreground">
+                  <MapPin className="mt-0.5 h-4 w-4 shrink-0" />
+                  <span>
+                    {apiary.latitude}, {apiary.longitude}
+                  </span>
+                </div>
+
+                <Separator />
+
+                {/* Capacidade de Suporte */}
+                <div className="rounded-lg bg-amber-50 p-3 dark:bg-amber-950/30">
+                  <p className="text-xs font-medium text-amber-700 dark:text-amber-400">
+                    Capacidade de Suporte
+                  </p>
+                  <p className="text-2xl font-bold text-amber-900 dark:text-amber-200">
+                    {apiary.capacidadeDeSuporte ?? 'N/A'}
+                  </p>
+                </div>
+
+                <Separator />
+
+                {/* Legend */}
+                <Legend />
+              </CardContent>
+            </Card>
           </div>
         </>
       )}

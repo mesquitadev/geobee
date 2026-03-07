@@ -12,9 +12,19 @@ import L from 'leaflet'
 import beebox from '../../assets/bee-hive.png'
 import { getColor } from '../../utils'
 import Legend from '../../components/Legend'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useGetMeliponaryQuery } from '../../redux/slices/meliponarySlice'
 import { toast } from 'sonner'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
+import { ArrowLeft, Check, MapPin, X } from 'lucide-react'
 
 const meliponaryIcon = new L.Icon({
   iconUrl: beebox as string,
@@ -23,8 +33,26 @@ const meliponaryIcon = new L.Icon({
   iconSize: [32, 32],
 })
 
+const conditionFields: { key: string; label: string }[] = [
+  { key: 'fontesNectarPolen', label: 'Fontes de Néctar/Pólen' },
+  { key: 'disponibilidadeAgua', label: 'Disponibilidade de Água' },
+  { key: 'sombreamentoNatural', label: 'Sombreamento Natural' },
+  { key: 'protecaoVentosFortes', label: 'Proteção contra Ventos Fortes' },
+  { key: 'distanciaSeguraContaminacao', label: 'Distância Segura de Contaminação' },
+  { key: 'distanciaMinimaConstrucoes', label: 'Distância Mínima de Construções' },
+  { key: 'distanciaSeguraLavouras', label: 'Distância Segura de Lavouras' },
+  { key: 'acessoVeiculos', label: 'Acesso a Veículos' },
+]
+
+function isConditionMet(value: string | undefined): boolean {
+  if (!value) return false
+  const v = value.toLowerCase()
+  return v === 'sim' || v === 'yes' || v === 'true' || v === '1'
+}
+
 export default function FindMeliponary() {
   const { setLoading } = useLoading()
+  const navigate = useNavigate()
   const [geojson, setGeojson] = useState(null)
   const [userLocation, setUserLocation] = useState<[number, number] | null>(
     null,
@@ -39,7 +67,6 @@ export default function FindMeliponary() {
     error: meliponaryError,
   } = useGetMeliponaryQuery(id!, { skip: !id })
 
-  // Adiciona controle de loading global
   React.useEffect(() => {
     setLoading(meliponaryLoading)
   }, [meliponaryLoading, setLoading])
@@ -85,28 +112,22 @@ export default function FindMeliponary() {
 
   useEffect(() => {
     if (meliponary && meliponary.latitude && meliponary.longitude) {
-      setSelectedCoordinates([meliponary.latitude, meliponary.longitude])
+      setSelectedCoordinates([
+        Number(meliponary.latitude),
+        Number(meliponary.longitude),
+      ])
     }
   }, [meliponary])
 
   return (
-    <div className="flex h-full w-full flex-col">
-      {/* {(loading || meliponaryLoading) && <BackdropLoading isLoading={true} />} */}
+    <div className="flex h-full flex-col lg:flex-row">
       {meliponaryError && (
         <div className="p-4 text-red-600">Erro ao carregar meliponário.</div>
       )}
       {meliponary && meliponary.latitude && meliponary.longitude && (
         <>
-          {/* Título e Legenda do mapa - agora acima do mapa */}
-          <div className="px-3 py-2">
-            <h2 className="mb-2 text-lg font-semibold">
-              Meliponário: {meliponary.name}
-            </h2>
-            <Legend />
-          </div>
-
-          {/* Contêiner do mapa */}
-          <div className="relative flex-1">
+          {/* Map */}
+          <div className="relative h-64 flex-1 lg:h-full">
             <MapContainer
               center={
                 selectedCoordinates || [
@@ -116,10 +137,8 @@ export default function FindMeliponary() {
               zoom={13}
               className="h-full w-full"
             >
-              {/* Camada base do mapa */}
               <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
-              {/* Dados GeoJSON */}
               {geojson && (
                 <GeoJSON
                   data={geojson}
@@ -130,7 +149,6 @@ export default function FindMeliponary() {
                 />
               )}
 
-              {/* Marcador do meliponário */}
               {meliponary && (
                 <React.Fragment>
                   <Marker
@@ -156,7 +174,6 @@ export default function FindMeliponary() {
                 </React.Fragment>
               )}
 
-              {/* Marcador da localização do usuário */}
               {userLocation && (
                 <React.Fragment>
                   <Marker position={userLocation}>
@@ -170,6 +187,112 @@ export default function FindMeliponary() {
                 </React.Fragment>
               )}
             </MapContainer>
+          </div>
+
+          {/* Info Card */}
+          <div className="w-full shrink-0 overflow-y-auto p-4 lg:w-96">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="mb-4"
+              onClick={() => navigate('/meus-meliponarios')}
+            >
+              <ArrowLeft className="mr-1 h-4 w-4" />
+              Voltar
+            </Button>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xl">{meliponary.name}</CardTitle>
+                <div className="flex flex-wrap gap-2">
+                  {meliponary.tipoInstalacao && (
+                    <Badge variant="secondary">{meliponary.tipoInstalacao}</Badge>
+                  )}
+                  {meliponary.especieAbelha && (
+                    <Badge variant="outline">{meliponary.especieAbelha}</Badge>
+                  )}
+                </div>
+              </CardHeader>
+
+              <CardContent className="space-y-4">
+                {/* Coordinates */}
+                <div className="flex items-start gap-2 text-sm text-muted-foreground">
+                  <MapPin className="mt-0.5 h-4 w-4 shrink-0" />
+                  <span>
+                    {meliponary.latitude}, {meliponary.longitude}
+                  </span>
+                </div>
+
+                {meliponary.quantidadeColmeias && (
+                  <div className="text-sm">
+                    <span className="text-muted-foreground">Qtd. Colmeias: </span>
+                    <span className="font-medium">{meliponary.quantidadeColmeias}</span>
+                  </div>
+                )}
+
+                {meliponary.outrosMeliponariosRaio1km && (
+                  <div className="text-sm">
+                    <span className="text-muted-foreground">Outros meliponários (raio 1km): </span>
+                    <span className="font-medium">{meliponary.outrosMeliponariosRaio1km}</span>
+                  </div>
+                )}
+
+                {meliponary.qtdColmeiasOutrosMeliponarios && (
+                  <div className="text-sm">
+                    <span className="text-muted-foreground">Colmeias outros meliponários: </span>
+                    <span className="font-medium">{meliponary.qtdColmeiasOutrosMeliponarios}</span>
+                  </div>
+                )}
+
+                <Separator />
+
+                {/* Capacidade de Suporte */}
+                <div className="rounded-lg bg-amber-50 p-3 dark:bg-amber-950/30">
+                  <p className="text-xs font-medium text-amber-700 dark:text-amber-400">
+                    Capacidade de Suporte
+                  </p>
+                  <p className="text-2xl font-bold text-amber-900 dark:text-amber-200">
+                    {meliponary.capacidadeDeSuporte ?? 'N/A'}
+                  </p>
+                </div>
+
+                <Separator />
+
+                {/* Condition fields */}
+                <div>
+                  <p className="mb-2 text-sm font-medium">Condições</p>
+                  <div className="flex flex-wrap gap-2">
+                    {conditionFields.map(({ key, label }) => {
+                      const value = (meliponary as Record<string, unknown>)[key] as string | undefined
+                      const met = isConditionMet(value)
+                      return (
+                        <Badge
+                          key={key}
+                          variant="outline"
+                          className={
+                            met
+                              ? 'border-green-300 bg-green-50 text-green-700 dark:border-green-700 dark:bg-green-950/30 dark:text-green-400'
+                              : 'border-gray-200 bg-gray-50 text-gray-400 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-500'
+                          }
+                        >
+                          {met ? (
+                            <Check className="mr-1 h-3 w-3" />
+                          ) : (
+                            <X className="mr-1 h-3 w-3" />
+                          )}
+                          {label}
+                        </Badge>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Legend */}
+                <Legend />
+              </CardContent>
+            </Card>
           </div>
         </>
       )}
