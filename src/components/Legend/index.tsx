@@ -1,4 +1,4 @@
-import { tw } from '../../utils/tw'
+import { cn } from '@/lib/utils'
 
 const Legend = () => {
   const legendItems = [
@@ -12,18 +12,13 @@ const Legend = () => {
 
   return (
     <div
-      className={tw(
-        'mb-2 rounded-lg border border-gray-300 bg-white p-3 shadow-lg',
-        'dark:border-zinc-700 dark:bg-zinc-900 dark:shadow-zinc-900/30',
+      className={cn(
+        'mb-2 rounded-lg border border-border bg-card p-3 shadow-lg',
         'w-full',
       )}
     >
       <h4
-        className={tw(
-          'mb-2 text-sm font-bold',
-          'text-zinc-800 dark:text-zinc-100',
-        )}
-        style={{ cursor: 'default' }}
+        className="mb-2 cursor-default text-sm font-bold text-card-foreground"
       >
         Legenda
       </h4>
@@ -31,10 +26,7 @@ const Legend = () => {
         {legendItems.map((item) => (
           <li
             key={item.label}
-            className={tw(
-              'flex items-center text-xs',
-              'text-zinc-700 dark:text-zinc-200',
-            )}
+            className="flex items-center text-xs text-muted-foreground"
           >
             <span
               className="mr-2 inline-block h-4 w-4 rounded"
