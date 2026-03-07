@@ -1,15 +1,15 @@
 import React from 'react'
 import { Navigate, Outlet } from 'react-router-dom'
-import Layout from '../components/Layout'
-import { getToken } from '../utils/auth' // Adjust the import based on where you place the getToken function
+import { AppLayout } from '@/components/Layout/app-layout'
+import { getToken } from '../utils/auth'
 
 const PrivateRoute: React.FC = () => {
   const token = getToken()
 
   return token ? (
-    <Layout>
+    <AppLayout>
       <Outlet />
-    </Layout>
+    </AppLayout>
   ) : (
     <Navigate to="/" />
   )
