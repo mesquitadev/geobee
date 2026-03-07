@@ -1,271 +1,171 @@
-import React, { useCallback, useState } from 'react'
-import { useLoading } from '../../hooks/useLoading.tsx'
-import Breadcumbs from '../../components/Breadcumbs'
-import 'leaflet/dist/leaflet.css'
-import { Link, useNavigate } from 'react-router-dom'
-import {
-  Dialog,
-  DialogBackdrop,
-  DialogPanel,
-  DialogTitle,
-} from '@headlessui/react'
-import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
+import { useState, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { ColumnDef } from '@tanstack/react-table'
+import { MoreHorizontal, ArrowUpDown, Plus } from 'lucide-react'
 import { toast } from 'sonner'
-import { Eye, PlusCircle, Trash2 } from 'lucide-react'
+
+import { DataTable } from '@/components/data-table/data-table'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import {
-  useDeleteMeliponaryMutation,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import {
   useGetMeliponariesQuery,
-} from '../../redux/slices/meliponarySlice'
+  useDeleteMeliponaryMutation,
+  type Meliponary,
+} from '@/redux/slices/meliponarySlice'
+import { especiesAbelhasOptions } from '@/utils/options'
 
-const MyMeliponaries = () => {
+const speciesFilterOptions = especiesAbelhasOptions.map((opt) => ({
+  label: opt.label.split(' (')[0],
+  value: opt.value,
+}))
+
+export default function MyMeliponaries() {
   const navigate = useNavigate()
-  const { setLoading } = useLoading()
-  const {
-    data: meliponaries = [],
-    isLoading: meliponariesLoading,
-    error: meliponariesError,
-  } = useGetMeliponariesQuery()
-  // Adiciona controle de loading global
-  React.useEffect(() => {
-    setLoading(meliponariesLoading)
-  }, [meliponariesLoading, setLoading])
-
-  React.useEffect(() => {
-    if (meliponariesError) {
-      toast.error('Erro ao carregar meliponários')
-    }
-  }, [meliponariesError])
-
+  const { data: meliponaries = [] } = useGetMeliponariesQuery()
   const [deleteMeliponary] = useDeleteMeliponaryMutation()
-  const [open, setOpen] = useState(false)
-  const [selectedId, setSelectedId] = useState<string>()
+
+  const [deleteId, setDeleteId] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
-  const handleOpenCloseModal = useCallback((id: string) => {
-    setOpen((state) => !state)
-    setSelectedId(id)
-  }, [])
-
-  const handleViewMeliponary = useCallback(
-    (id: string) => {
-      navigate(`/meus-meliponarios/${id}`)
-    },
-    [navigate],
-  )
-
-  const handleDeleteMeliponary = useCallback(async () => {
-    if (!selectedId) return
+  const handleDelete = useCallback(async () => {
+    if (!deleteId) return
     setIsDeleting(true)
     try {
-      await deleteMeliponary(selectedId)
-      setOpen(false)
-      toast.success('Meliponário removido com sucesso!')
-    } catch (error) {
-      console.error(error)
-      toast.error('Erro ao remover meliponário')
+      await deleteMeliponary(deleteId).unwrap()
+      toast.success('Meliponario removido com sucesso!')
+    } catch {
+      toast.error('Erro ao remover meliponario')
     } finally {
       setIsDeleting(false)
+      setDeleteId(null)
     }
-  }, [deleteMeliponary, selectedId])
+  }, [deleteMeliponary, deleteId])
+
+  const columns: ColumnDef<Meliponary>[] = [
+    {
+      accessorKey: 'name',
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          Nome
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+    },
+    {
+      accessorKey: 'especieAbelha',
+      header: 'Especie',
+      cell: ({ row }) => {
+        const species = row.getValue('especieAbelha') as string | undefined
+        return species ? (
+          <Badge variant="secondary">{species}</Badge>
+        ) : (
+          <span className="text-muted-foreground">--</span>
+        )
+      },
+    },
+    {
+      accessorKey: 'quantidadeColmeias',
+      header: 'Colmeias',
+      cell: ({ row }) => {
+        const val = row.getValue('quantidadeColmeias') as string | number | undefined
+        return val ?? '--'
+      },
+    },
+    {
+      accessorKey: 'capacidadeDeSuporte',
+      header: 'Capacidade',
+      cell: ({ row }) => {
+        const val = row.getValue('capacidadeDeSuporte') as string | number | undefined
+        return val ?? '--'
+      },
+    },
+    {
+      id: 'actions',
+      cell: ({ row }) => {
+        const meliponary = row.original
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => navigate(`/meus-meliponarios/${meliponary.id}`)}>
+                Ver
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="text-destructive"
+                onClick={() => setDeleteId(meliponary.id)}
+              >
+                Excluir
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )
+      },
+    },
+  ]
 
   return (
-    <div className="h-full w-full p-4 md:p-6 lg:p-10">
-      {/* <BackdropLoading isLoading={loading} /> */}
-      <Breadcumbs pageName="Meus Meliponários" />
-
-      <div className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-          Meus Meliponários
-        </h1>
-
-        <Link
-          to="/meus-meliponarios/novo"
-          className="flex items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-        >
-          <PlusCircle className="h-5 w-5" />
-          <span>Adicionar Meliponário</span>
-        </Link>
+    <div className="p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold tracking-tight">Meus Meliponarios</h1>
+        <Button onClick={() => navigate('/meus-meliponarios/novo')}>
+          <Plus className="mr-2 h-4 w-4" />
+          Novo Meliponario
+        </Button>
       </div>
 
-      {meliponaries.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-gray-100 bg-white p-10 shadow-sm dark:border-zinc-700 dark:bg-zinc-800">
-          <div className="text-center">
-            <p className="mt-2 text-gray-500 dark:text-gray-400">
-              Nenhum meliponário encontrado.
-            </p>
-            <Link
-              to="/meus-meliponarios/novo"
-              className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-indigo-600 hover:text-indigo-500"
-            >
-              <PlusCircle className="h-4 w-4" />
-              <span>Adicionar seu primeiro meliponário</span>
-            </Link>
-          </div>
-        </div>
-      ) : (
-        <>
-          {/* Versão para Desktop - Tabela */}
-          <div className="hidden overflow-hidden rounded-lg border border-gray-200 shadow-sm dark:border-zinc-700 md:block">
-            <table className="w-full text-left">
-              <thead className="bg-gray-100 dark:bg-zinc-800">
-                <tr>
-                  <th className="px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-300">
-                    Nome
-                  </th>
-                  <th className="px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-300">
-                    Tipo Instalação
-                  </th>
-                  <th className="px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-300">
-                    Tipo
-                  </th>
-                  <th className="px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-300">
-                    Capacidade Suporte
-                  </th>
-                  <th className="px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-300">
-                    Ações
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 bg-white dark:divide-zinc-700 dark:bg-zinc-900">
-                {meliponaries.map((apiary) => (
-                  <tr
-                    key={apiary.id}
-                    className="transition-colors hover:bg-gray-50 dark:hover:bg-zinc-800"
-                  >
-                    <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-200">
-                      {apiary.name}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-200">
-                      {apiary.tipoInstalacao}
-                    </td>
-                    <td className="px-4 py-3 text-sm font-medium text-green-600 dark:text-green-400">
-                      MELIPONÁRIO
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-200">
-                      {apiary.capacidadeDeSuporte}
-                    </td>
-                    <td className="px-4 py-2">
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => handleViewMeliponary(apiary.id)}
-                          className="rounded-md bg-indigo-100 p-1.5 text-indigo-700 transition-colors hover:bg-indigo-200"
-                          title="Visualizar"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => handleOpenCloseModal(apiary.id)}
-                          className="rounded-md bg-red-100 p-1.5 text-red-700 transition-colors hover:bg-red-200"
-                          title="Remover"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+      <DataTable
+        columns={columns}
+        data={meliponaries}
+        searchKey="name"
+        searchPlaceholder="Buscar por nome..."
+        filterOptions={[
+          {
+            key: 'especieAbelha',
+            label: 'Especie',
+            options: speciesFilterOptions,
+          },
+        ]}
+      />
 
-          {/* Versão para Mobile - Cards */}
-          <div className="grid grid-cols-1 gap-4 md:hidden">
-            {meliponaries.map((apiary) => (
-              <div
-                key={apiary.id}
-                className="overflow-hidden rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-zinc-700 dark:bg-zinc-800"
-              >
-                <div className="mb-3 flex items-center justify-between">
-                  <h3 className="font-medium text-gray-900 dark:text-gray-100">
-                    {apiary.name}
-                  </h3>
-                  <span className="rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900 dark:text-green-100">
-                    MELIPONÁRIO
-                  </span>
-                </div>
-
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">
-                      Tipo Instalação:
-                    </span>
-                    <span className="text-gray-800 dark:text-gray-200">
-                      {apiary.tipoInstalacao}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">
-                      Capacidade de Suporte:
-                    </span>
-                    <span className="text-gray-800 dark:text-gray-200">
-                      {apiary.capacidadeDeSuporte}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="mt-4 flex justify-end space-x-3">
-                  <button
-                    onClick={() => handleViewMeliponary(apiary.id)}
-                    className="flex items-center justify-center gap-1 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-indigo-700"
-                  >
-                    <Eye className="h-3 w-3" />
-                    <span>Visualizar</span>
-                  </button>
-                  <button
-                    onClick={() => handleOpenCloseModal(apiary.id)}
-                    className="flex items-center justify-center gap-1 rounded-md bg-red-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-red-700"
-                  >
-                    <Trash2 className="h-3 w-3" />
-                    <span>Remover</span>
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-
-      <Dialog
-        open={open}
-        onClose={() => !isDeleting && setOpen(false)}
-        className="relative z-50"
-      >
-        <DialogBackdrop className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity" />
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <DialogPanel className="w-full max-w-md transform overflow-hidden rounded-xl bg-white p-6 shadow-xl transition-all dark:bg-zinc-800">
-            <DialogTitle
-              as="h3"
-              className="flex items-center gap-2 text-lg font-semibold text-zinc-900 dark:text-zinc-100"
-            >
-              <ExclamationTriangleIcon className="h-6 w-6 text-red-600 dark:text-red-400" />
-              Remover Meliponário
-            </DialogTitle>
-            <p className="mt-3 text-sm text-zinc-500 dark:text-zinc-400">
-              Você tem certeza que deseja remover este meliponário? Esta ação não pode ser desfeita.
-            </p>
-            <div className="mt-6 flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                disabled={isDeleting}
-                className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-700 shadow-sm transition-colors hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-600"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={handleDeleteMeliponary}
-                disabled={isDeleting}
-                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-red-500 dark:hover:bg-red-600"
-              >
-                {isDeleting ? 'Removendo...' : 'Remover'}
-              </button>
-            </div>
-          </DialogPanel>
-        </div>
-      </Dialog>
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remover Meliponario</AlertDialogTitle>
+            <AlertDialogDescription>
+              Voce tem certeza que deseja remover este meliponario? Esta acao nao pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} disabled={isDeleting}>
+              {isDeleting ? 'Removendo...' : 'Remover'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
-
-export default MyMeliponaries

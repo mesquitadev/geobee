@@ -1,11 +1,9 @@
-// @ts-nocheck
-import { yupResolver } from '@hookform/resolvers/yup'
+import { useCallback, useMemo, useState } from 'react'
+import { useForm, Controller } from 'react-hook-form'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import { toast } from 'sonner'
-import { useCallback, useEffect, useState, useMemo, memo } from 'react'
-import { SubmitHandler, useForm, Resolver } from 'react-hook-form'
-import { useNavigate } from 'react-router-dom'
 import {
   MapContainer,
   Marker,
@@ -13,34 +11,41 @@ import {
   TileLayer,
   useMapEvents,
 } from 'react-leaflet'
-import * as yup from 'yup'
-import marker from '../../assets/apiary.png'
-import Breadcumbs from '../../components/Breadcumbs'
-import Input from '../../components/Input'
-import InputContainer from '../../components/Input/Container.tsx'
-import InputLabel from '../../components/Input/Label.tsx'
-import Select from '../../components/Select'
-import SelectContainer from '../../components/Select/Container.tsx'
-import { useLoading } from '../../hooks/useLoading.tsx'
+
+import { Wizard } from '@/components/wizard/wizard'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Card, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Button } from '@/components/ui/button'
+
+import { useCreateMeliponaryMutation } from '@/redux/slices/meliponarySlice'
 import {
   especiesAbelhasOptions,
-  outrosApiariosRaio3kmOptions,
+  tipoInstalacaoApiarioOptions,
   qtdColmeiasOptions,
+  outrosApiariosRaio3kmOptions,
   qtdColmeiasOutrosApiariosOptions,
   simNaoOptions,
-  tipoInstalacaoApiarioOptions,
-} from '../../utils/options.ts'
-import { useCreateMeliponaryMutation } from '../../redux/slices/meliponarySlice'
+} from '@/utils/options'
+import marker from '@/assets/apiary.png'
 
-interface Inputs {
-  name: string
+interface MeliponaryFormData {
+  nome: string
+  tipoInstalacao: string
+  especieAbelha: string
+  quantidadeColmeias: string
   latitude: string
   longitude: string
-  tipoInstalacao: string
-  especieAbelha?: string
-  quantidadeColmeias: string
   outrosMeliponariosRaio1km: string
-  qtdColmeiasOutrosMeliponarios?: string | null
+  qtdColmeiasOutrosMeliponarios: string
   fontesNectarPolen: string
   disponibilidadeAgua: string
   sombreamentoNatural: string
@@ -49,524 +54,529 @@ interface Inputs {
   distanciaMinimaConstrucoes: string
   distanciaSeguraLavouras: string
   acessoVeiculos: string
-  capacidadeDeSuporte?: string
 }
 
-// Tipo para as notificações de validação
-interface ValidationNotification {
-  message: string
-  variant: 'warning' | 'info' | 'error' | 'success'
-  disableForm?: boolean
+function LocationMarker({
+  onSelect,
+  position,
+  icon,
+}: {
+  onSelect: (lat: number, lng: number) => void
+  position: { lat: number; lng: number } | null
+  icon: L.Icon
+}) {
+  useMapEvents({
+    click(e) {
+      onSelect(e.latlng.lat, e.latlng.lng)
+    },
+  })
+  return position ? (
+    <Marker position={position} icon={icon}>
+      <Popup>Coordenadas selecionadas</Popup>
+    </Marker>
+  ) : null
 }
 
-const NewMeliponary = () => {
-  const { setLoading } = useLoading()
+export default function CreateMeliponary() {
   const navigate = useNavigate()
-  const [disabled, setDisabled] = useState(false)
-  const [latitude, setLatitude] = useState<number>(0)
-  const [longitude, setLongitude] = useState<number>(0)
-  const [position, setPosition] = useState<{ lat: number; lng: number } | null>(
-    null,
-  )
-  const [userLocation, setUserLocation] = useState<[number, number] | null>(
-    null,
-  )
   const [createMeliponary, { isLoading }] = useCreateMeliponaryMutation()
+  const [position, setPosition] = useState<{ lat: number; lng: number } | null>(null)
+  const [userLocation, setUserLocation] = useState<[number, number] | null>(null)
 
-  const meliponarioFormSchema = yup.object().shape({
-    name: yup.string().required('Este campo é obrigatório'),
-    latitude: yup.string().optional(),
-    longitude: yup.string().optional(),
-    tipoInstalacao: yup.string().required('Este campo é obrigatório'),
-    especieAbelha: yup.string().required('Este campo é obrigatório'),
-    quantidadeColmeias: yup.string().required('Este campo é obrigatório'),
-    outrosMeliponariosRaio1km: yup
-      .string()
-      .required('Este campo é obrigatório'),
-    qtdColmeiasOutrosMeliponarios: yup.string().nullable().optional(),
-    fontesNectarPolen: yup.string().required('Este campo é obrigatório'),
-    disponibilidadeAgua: yup.string().required('Este campo é obrigatório'),
-    sombreamentoNatural: yup.string().required('Este campo é obrigatório'),
-    protecaoVentosFortes: yup.string().required('Este campo é obrigatório'),
-    distanciaSeguraContaminacao: yup
-      .string()
-      .required('Este campo é obrigatório'),
-    distanciaMinimaConstrucoes: yup
-      .string()
-      .required('Este campo é obrigatório'),
-    distanciaSeguraLavouras: yup.string().required('Este campo é obrigatório'),
-    acessoVeiculos: yup.string().required('Este campo é obrigatório'),
-    capacidadeDeSuporte: yup.string().optional(),
+  const {
+    control,
+    watch,
+    trigger,
+    getValues,
+    setValue,
+  } = useForm<MeliponaryFormData>({
+    defaultValues: {
+      nome: '',
+      tipoInstalacao: '',
+      especieAbelha: '',
+      quantidadeColmeias: '',
+      latitude: '',
+      longitude: '',
+      outrosMeliponariosRaio1km: '',
+      qtdColmeiasOutrosMeliponarios: '',
+      fontesNectarPolen: '',
+      disponibilidadeAgua: '',
+      sombreamentoNatural: '',
+      protecaoVentosFortes: '',
+      distanciaSeguraContaminacao: '',
+      distanciaMinimaConstrucoes: '',
+      distanciaSeguraLavouras: '',
+      acessoVeiculos: '',
+    },
   })
 
-  const { handleSubmit, formState, control, watch } = useForm<Inputs>({
-    mode: 'onBlur',
-    reValidateMode: 'onBlur',
-    resolver: yupResolver<Inputs>(meliponarioFormSchema) as Resolver<Inputs>,
-  })
-  const { errors } = formState
-
-  // Observar todos os campos de uma vez para melhor performance
-  const watchedFields = watch([
-    'outrosMeliponariosRaio1km',
-    'fontesNectarPolen',
-    'disponibilidadeAgua',
-    'sombreamentoNatural',
-    'protecaoVentosFortes',
-    'distanciaSeguraContaminacao',
-    'distanciaMinimaConstrucoes',
-    'distanciaSeguraLavouras',
-    'acessoVeiculos',
-  ])
-
-  // Desestruturação dos valores observados
-  const [
-    outrosMeliponariosRaio1km,
-    fontesNectarPolen,
-    disponibilidadeAgua,
-    sombreamentoNatural,
-    protecaoVentosFortes,
-    distanciaSeguraContaminacao,
-    distanciaMinimaConstrucoes,
-    distanciaSeguraLavouras,
-    acessoVeiculos,
-  ] = watchedFields
-
-  // Memoização do ícone do mapa
   const myIcon = useMemo(
     () =>
       new L.Icon({
         iconUrl: marker as string,
         iconRetinaUrl: marker as string,
-        popupAnchor: [-0, -0],
+        popupAnchor: [0, 0],
         iconSize: [32, 32],
       }),
     [],
   )
 
-  const onSubmit = async (data: Inputs) => {
-    // Garantir que as coordenadas foram selecionadas
-    if (!latitude || !longitude) {
-      toast.warning('Selecione as coordenadas no mapa ou use sua localização.')
-      return
-    }
+  const handleLocationSelect = useCallback(
+    (lat: number, lng: number) => {
+      setPosition({ lat, lng })
+      setValue('latitude', String(lat))
+      setValue('longitude', String(lng))
+    },
+    [setValue],
+  )
 
-    const payload = {
-      ...data,
-      latitude: String(latitude),
-      longitude: String(longitude),
-    }
-
-    setLoading(true)
-    try {
-      await createMeliponary(payload).unwrap()
-      toast.success('Meliponário criado com sucesso!')
-      navigate('/meus-meliponarios')
-    } catch (err) {
-      toast.error('Erro ao criar meliponário')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const validateFormFields = useCallback(() => {
-    const notifications: ValidationNotification[] = []
-
-    if (fontesNectarPolen === 'false') {
-      notifications.push({
-        message:
-          'OOPS! Aqui não é um local adequado para colocar o meliponário!',
-        variant: 'warning',
-        disableForm: true,
-      })
-    }
-
-    if (disponibilidadeAgua === 'false') {
-      notifications.push({
-        message: 'OOPS! Será necessário adicionar água de qualidade no local!',
-        variant: 'info',
-      })
-    }
-
-    if (sombreamentoNatural === 'false') {
-      notifications.push({
-        message: 'OOPS! Será necessário colocar as caixas à sombra!',
-        variant: 'info',
-      })
-    }
-
-    if (protecaoVentosFortes === 'false') {
-      notifications.push({
-        message:
-          'OOPS! Aqui não é um local adequado para colocar o meliponário!',
-        variant: 'warning',
-        disableForm: true,
-      })
-    }
-
-    if (distanciaSeguraContaminacao === 'false') {
-      notifications.push({
-        message:
-          'OOPS! Aqui não é um local adequado para colocar o meliponário!',
-        variant: 'warning',
-        disableForm: true,
-      })
-    }
-
-    if (distanciaMinimaConstrucoes === 'false') {
-      notifications.push({
-        message:
-          'OOPS! Aqui não é um local adequado para colocar o meliponário!',
-        variant: 'warning',
-        disableForm: true,
-      })
-    }
-
-    if (distanciaSeguraLavouras === 'false') {
-      notifications.push({
-        message:
-          'OOPS! Aqui não é um local adequado para colocar o meliponário!',
-        variant: 'warning',
-        disableForm: true,
-      })
-    }
-
-    if (acessoVeiculos === 'false') {
-      notifications.push({
-        message:
-          'É necessário que haja acesso para entrada e saída do meliponário',
-        variant: 'warning',
-      })
-    }
-
-    return {
-      notifications,
-      shouldDisableForm: notifications.some((n) => n.disableForm),
-    }
-  }, [
-    fontesNectarPolen,
-    disponibilidadeAgua,
-    sombreamentoNatural,
-    protecaoVentosFortes,
-    distanciaSeguraContaminacao,
-    distanciaMinimaConstrucoes,
-    distanciaSeguraLavouras,
-    acessoVeiculos,
-  ])
-
-  useEffect(() => {
-    const { notifications, shouldDisableForm } = validateFormFields()
-    notifications.forEach(({ message, variant }) => {
-      toast[variant](message)
-    })
-    setDisabled(shouldDisableForm)
-  }, [validateFormFields])
-
-  const handleLocationSelect = (lat: number, lng: number) => {
-    setLatitude(lat)
-    setLongitude(lng)
-    setPosition({ lat, lng })
-  }
-
-  // Definindo o componente LocationMarker com displayName
-  const LocationMarker = memo(() => {
-    useMapEvents({
-      click(e) {
-        handleLocationSelect(e.latlng.lat, e.latlng.lng)
-      },
-    })
-    return position === null ? null : (
-      <Marker position={position} icon={myIcon}>
-        <Popup>Coordenadas selecionadas</Popup>
-      </Marker>
-    )
-  })
-  // Adicionando displayName explícito para o componente memoizado
-  LocationMarker.displayName = 'LocationMarker'
-
-  const getUserLocation = () => {
+  const getUserLocation = useCallback(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
-          handleLocationSelect(
-            position.coords.latitude,
-            position.coords.longitude,
-          )
-          setUserLocation([position.coords.latitude, position.coords.longitude])
+        (pos) => {
+          handleLocationSelect(pos.coords.latitude, pos.coords.longitude)
+          setUserLocation([pos.coords.latitude, pos.coords.longitude])
         },
-        (error) => {
-          console.error(error)
+        () => {
+          toast.error('Nao foi possivel obter sua localizacao')
         },
       )
+    } else {
+      toast.warning('Seu navegador nao suporta geolocalizacao')
+    }
+  }, [handleLocationSelect])
+
+  const watchedOutrosMeliponarios = watch('outrosMeliponariosRaio1km')
+
+  // Condition field labels
+  const conditionFields = [
+    { name: 'fontesNectarPolen' as const, label: 'Ha fontes de nectar e polen (flores) ate 2km do local que pretende instalar o meliponario?' },
+    { name: 'disponibilidadeAgua' as const, label: 'Ha disponibilidade de agua de qualidade ate 500m a partir do local escolhido?' },
+    { name: 'sombreamentoNatural' as const, label: 'Ha sombreamento natural para as colmeias?' },
+    { name: 'protecaoVentosFortes' as const, label: 'Ha protecao contra ventos fortes?' },
+    { name: 'distanciaSeguraContaminacao' as const, label: 'Ha uma distancia segura (minimo de 3km) de possiveis fontes de contaminacao?' },
+    { name: 'distanciaMinimaConstrucoes' as const, label: 'O local atende a uma distancia minima (400m) de estradas movimentadas, currais, aviarios e outras construcoes?' },
+    { name: 'distanciaSeguraLavouras' as const, label: 'O local possui uma distancia segura (3km) de lavouras (milho, soja, transgenicos, etc.)?' },
+    { name: 'acessoVeiculos' as const, label: 'O local e de facil acesso para entrada e saida de veiculos?' },
+  ]
+
+  const validateStep1 = async () => {
+    const result = await trigger(['nome', 'tipoInstalacao', 'especieAbelha', 'quantidadeColmeias'])
+    const values = getValues()
+    if (!values.nome || !values.tipoInstalacao || !values.especieAbelha || !values.quantidadeColmeias) {
+      toast.error('Preencha todos os campos obrigatorios')
+      return false
+    }
+    return result
+  }
+
+  const validateStep2 = async () => {
+    const values = getValues()
+    if (!values.latitude || !values.longitude) {
+      toast.error('Selecione as coordenadas no mapa ou use sua localizacao')
+      return false
+    }
+    return true
+  }
+
+  const validateStep3 = async () => {
+    const values = getValues()
+    const requiredConditions = [
+      'outrosMeliponariosRaio1km',
+      'fontesNectarPolen',
+      'disponibilidadeAgua',
+      'sombreamentoNatural',
+      'protecaoVentosFortes',
+      'distanciaSeguraContaminacao',
+      'distanciaMinimaConstrucoes',
+      'distanciaSeguraLavouras',
+      'acessoVeiculos',
+    ] as const
+    for (const field of requiredConditions) {
+      if (!values[field]) {
+        toast.error('Responda todas as perguntas sobre as condicoes do local')
+        return false
+      }
+    }
+
+    // Validation warnings
+    if (values.fontesNectarPolen === 'false') {
+      toast.warning('Aqui nao e um local adequado para colocar o meliponario!')
+      return false
+    }
+    if (values.protecaoVentosFortes === 'false') {
+      toast.warning('Aqui nao e um local adequado para colocar o meliponario!')
+      return false
+    }
+    if (values.distanciaSeguraContaminacao === 'false') {
+      toast.warning('Aqui nao e um local adequado para colocar o meliponario!')
+      return false
+    }
+    if (values.distanciaMinimaConstrucoes === 'false') {
+      toast.warning('Aqui nao e um local adequado para colocar o meliponario!')
+      return false
+    }
+    if (values.distanciaSeguraLavouras === 'false') {
+      toast.warning('Aqui nao e um local adequado para colocar o meliponario!')
+      return false
+    }
+
+    if (values.disponibilidadeAgua === 'false') {
+      toast.info('Sera necessario adicionar agua de qualidade no local!')
+    }
+    if (values.sombreamentoNatural === 'false') {
+      toast.info('Sera necessario colocar as caixas a sombra!')
+    }
+    if (values.acessoVeiculos === 'false') {
+      toast.warning('E necessario que haja acesso para entrada e saida do meliponario')
+    }
+
+    return true
+  }
+
+  const handleComplete = async () => {
+    const data = getValues()
+    try {
+      await createMeliponary({
+        name: data.nome,
+        latitude: Number(data.latitude),
+        longitude: Number(data.longitude),
+        tipoInstalacao: data.tipoInstalacao,
+        especieAbelha: data.especieAbelha,
+        quantidadeColmeias: data.quantidadeColmeias,
+        outrosMeliponariosRaio1km: data.outrosMeliponariosRaio1km,
+        qtdColmeiasOutrosMeliponarios: data.qtdColmeiasOutrosMeliponarios || undefined,
+        fontesNectarPolen: data.fontesNectarPolen,
+        disponibilidadeAgua: data.disponibilidadeAgua,
+        sombreamentoNatural: data.sombreamentoNatural,
+        protecaoVentosFortes: data.protecaoVentosFortes,
+        distanciaSeguraContaminacao: data.distanciaSeguraContaminacao,
+        distanciaMinimaConstrucoes: data.distanciaMinimaConstrucoes,
+        distanciaSeguraLavouras: data.distanciaSeguraLavouras,
+        acessoVeiculos: data.acessoVeiculos,
+      } as any).unwrap()
+      toast.success('Meliponario criado com sucesso!')
+      navigate('/meus-meliponarios')
+    } catch {
+      toast.error('Erro ao criar meliponario')
     }
   }
 
-  return (
-    <div className="h-full w-full p-4 pb-0 md:p-6 lg:p-10">
-      <Breadcumbs pageName="Cadastrar Meliponário" />
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <div className="mb-5">
-          <p className="mb-2 block text-xs font-bold uppercase tracking-wide text-zinc-700 dark:text-zinc-300">
-            Selecione as Coordenadas
-          </p>
-          <button
-            onClick={getUserLocation}
-            className="my-3 flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
-          >
-            Usar Minha Localização
-          </button>
-          <MapContainer
-            center={[-2.5555334824608353, -44.208297729492195]}
-            zoom={13}
-            style={{ height: '400px', width: '100%' }}
-          >
-            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-            {userLocation && (
-              <Marker icon={myIcon} position={userLocation}>
-                <Popup>Você está aqui</Popup>
-              </Marker>
-            )}
-            <LocationMarker />
-          </MapContainer>
-        </div>
-        <div className="mb-0">
-          <form
-            onSubmit={handleSubmit(onSubmit)}
-            className="mb-0 w-full pb-24 md:pb-20"
-          >
-            <div className="space-y-4 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-700 dark:bg-zinc-800">
-              <InputContainer className="mb-6  w-full px-3 md:mb-0">
-                <InputLabel label="Nome" name="name" />
+  const allValues = watch()
+
+  const steps = [
+    {
+      title: 'Dados Basicos',
+      description: 'Informacoes gerais do meliponario',
+      validate: validateStep1,
+      content: (
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="nome">Nome *</Label>
+            <Controller
+              name="nome"
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
                 <Input
-                  className=""
-                  control={control}
-                  name="name"
-                  placeholder="Nome para identificação do meliponário..."
-                  errors={errors?.name?.message}
+                  id="nome"
+                  placeholder="Nome para identificacao do meliponario..."
+                  {...field}
                 />
-              </InputContainer>
-
-              <InputContainer className="mb-6 w-full px-3 md:mb-0 md:w-1/2">
-                <InputLabel label="Latitude" name="latitude" />
-                <Input
-                  className=""
-                  control={control}
-                  name="latitude"
-                  placeholder="0"
-                  value={latitude}
-                  disabled
-                  errors={errors?.latitude?.message}
-                />
-              </InputContainer>
-              <InputContainer className="mb-6 w-full px-3 md:mb-0 md:w-1/2">
-                <InputLabel label="Longitude" name="longitude" />
-                <Input
-                  className=""
-                  control={control}
-                  name="longitude"
-                  placeholder="0"
-                  value={longitude}
-                  disabled
-                  errors={errors?.longitude?.message}
-                />
-              </InputContainer>
-
-              <SelectContainer className="w-full px-3 py-2">
-                <InputLabel
-                  label="O meliponário a ser instalado será?"
-                  name="tipoInstalacao"
-                />
-                <Select<Inputs>
-                  options={tipoInstalacaoApiarioOptions}
-                  control={control}
-                  name="tipoInstalacao"
-                  className=""
-                  errors={errors?.tipoInstalacao?.message}
-                />
-              </SelectContainer>
-
-              <SelectContainer className="w-full px-3 py-2">
-                <InputLabel
-                  label="Qual a espécie de abelha sem ferrão pretende criar?"
-                  name="role"
-                />
-                <Select<Inputs>
-                  options={especiesAbelhasOptions}
-                  control={control}
-                  name="especieAbelha"
-                  className=""
-                  errors={errors?.especieAbelha?.message}
-                />
-              </SelectContainer>
-
-              <SelectContainer className="w-full px-3 py-2">
-                <InputLabel
-                  label="Quantas Colméias pretende instalar nesse meliponário?"
-                  name="quantidadeColmeias"
-                />
-                <Select<Inputs>
-                  options={qtdColmeiasOptions}
-                  control={control}
-                  name="quantidadeColmeias"
-                  className=""
-                  errors={errors?.quantidadeColmeias?.message}
-                />
-              </SelectContainer>
-
-              <SelectContainer className="w-full px-3 py-2">
-                <InputLabel
-                  label="Há outros meliponários no raio de 1 KM?"
-                  name="outrosMeliponariosRaio1km"
-                />
-                <Select<Inputs>
-                  options={outrosApiariosRaio3kmOptions}
-                  control={control}
-                  name="outrosMeliponariosRaio1km"
-                  className=""
-                  errors={errors?.outrosMeliponariosRaio1km?.message}
-                />
-              </SelectContainer>
-
-              {/* @ts-ignore */}
-              {outrosMeliponariosRaio1km === 'true' && (
-                <SelectContainer className="w-full px-3 py-2">
-                  <InputLabel
-                    label="Caso haja outros meliponários no raio de 1 KM, qual a quantidade de colméias?"
-                    name="qtdColmeiasOutrosApiarios"
-                  />
-                  <Select<Inputs>
-                    options={qtdColmeiasOutrosApiariosOptions}
-                    control={control}
-                    name="qtdColmeiasOutrosMeliponarios"
-                    className=""
-                    errors={errors?.qtdColmeiasOutrosMeliponarios?.message}
-                  />
-                </SelectContainer>
               )}
+            />
+          </div>
 
-              <SelectContainer className="w-full px-3 py-2">
-                <InputLabel
-                  label="Há fontes de néctar e pólen (flores) até 2km do local que pretende instalar o meliponário?"
-                  name="fontesNectarPolen"
-                />
-                <Select<Inputs>
-                  options={simNaoOptions}
-                  control={control}
-                  name="fontesNectarPolen"
-                  className=""
-                  errors={errors?.fontesNectarPolen?.message}
-                />
-              </SelectContainer>
-              <SelectContainer className="w-full px-3 py-2">
-                <InputLabel
-                  label="Há disponibilidade de água de qualidade até 500m a partir do local escolhido?"
-                  name="disponibilidadeAgua"
-                />
-                <Select<Inputs>
-                  options={simNaoOptions}
-                  control={control}
-                  name="disponibilidadeAgua"
-                  className=""
-                  errors={errors?.disponibilidadeAgua?.message}
-                />
-              </SelectContainer>
-              <SelectContainer className="w-full px-3 py-2">
-                <InputLabel
-                  label="Há sombreamento natural para as colméias?"
-                  name="sombreamentoNatural"
-                />
-                <Select<Inputs>
-                  options={simNaoOptions}
-                  control={control}
-                  name="sombreamentoNatural"
-                  className=""
-                  errors={errors?.sombreamentoNatural?.message}
-                />
-              </SelectContainer>
+          <div className="space-y-2">
+            <Label>Tipo de Instalacao *</Label>
+            <Controller
+              name="tipoInstalacao"
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o tipo de instalacao" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {tipoInstalacaoApiarioOptions.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+          </div>
 
-              <SelectContainer className="w-full px-3 py-2">
-                <InputLabel
-                  label="Há proteção contra ventos fortes?"
-                  name="protecaoVentosFortes"
-                />
-                <Select<Inputs>
-                  options={simNaoOptions}
-                  control={control}
-                  name="protecaoVentosFortes"
-                  className=""
-                  errors={errors?.protecaoVentosFortes?.message}
-                />
-              </SelectContainer>
+          <div className="space-y-2">
+            <Label>Especie de Abelha *</Label>
+            <Controller
+              name="especieAbelha"
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione a especie" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {especiesAbelhasOptions.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+          </div>
 
-              <SelectContainer className="w-full px-3 py-2">
-                <InputLabel
-                  label="Há uma distancia segura (mínimo de 3km) de possíveis fontes de contaminação (lixões, matadouros, fábrica de doces, engenhos, dentre outros)?"
-                  name="distanciaSeguraContaminacao"
-                />
-                <Select<Inputs>
-                  options={simNaoOptions}
-                  control={control}
-                  name="distanciaSeguraContaminacao"
-                  className=""
-                  errors={errors?.distanciaSeguraContaminacao?.message}
-                />
-              </SelectContainer>
-              <SelectContainer className="w-full px-3 py-2">
-                <InputLabel
-                  label="O local onde pretende instalar seu meliponário atende a uma distância mínima (400m) de estradas movimentadas, currais, aviários, pocilgas e outras construções?"
-                  name="distanciaMinimaConstrucoes"
-                />
-                <Select<Inputs>
-                  options={simNaoOptions}
-                  control={control}
-                  name="distanciaMinimaConstrucoes"
-                  className=""
-                  errors={errors?.distanciaMinimaConstrucoes?.message}
-                />
-              </SelectContainer>
-
-              <SelectContainer className="w-full px-3 py-2">
-                <InputLabel
-                  label="O local possui uma distância segura (3km) de lavouras (milho, soja, transgênicos, dentre outros)?"
-                  name="distanciaSeguraLavouras"
-                />
-                <Select<Inputs>
-                  options={simNaoOptions}
-                  control={control}
-                  name="distanciaSeguraLavouras"
-                  className=""
-                  errors={errors?.distanciaSeguraLavouras?.message}
-                />
-              </SelectContainer>
-
-              <SelectContainer className="w-full px-3 py-2">
-                <InputLabel
-                  label="O local pretendido apiário é de fácil acesso para entrada e saída de veiculos automobilisticos?   "
-                  name="acessoVeiculos"
-                />
-                <Select
-                  options={simNaoOptions}
-                  control={control}
-                  name="acessoVeiculos"
-                  className=""
-                  errors={errors?.acessoVeiculos?.message}
-                />
-              </SelectContainer>
-            </div>
-
-            <button
-              disabled={isLoading || disabled}
-              type="submit"
-              className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-indigo-500 dark:hover:bg-indigo-600"
-            >
-              {isLoading ? 'Cadastrando...' : 'Cadastrar Meliponário'}
-            </button>
-          </form>
+          <div className="space-y-2">
+            <Label>Quantidade de Colmeias *</Label>
+            <Controller
+              name="quantidadeColmeias"
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione a quantidade" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {qtdColmeiasOptions.map((opt) => (
+                      <SelectItem key={opt.value} value={String(opt.value)}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+          </div>
         </div>
-      </div>
+      ),
+    },
+    {
+      title: 'Localizacao',
+      description: 'Selecione a localizacao do meliponario no mapa',
+      validate: validateStep2,
+      content: (
+        <div className="space-y-4">
+          <Button type="button" variant="outline" className="w-full" onClick={getUserLocation}>
+            Usar Minha Localizacao
+          </Button>
+
+          <div className="overflow-hidden rounded-lg border">
+            <MapContainer
+              center={[-2.5555334824608353, -44.208297729492195]}
+              zoom={13}
+              style={{ height: '350px', width: '100%' }}
+            >
+              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+              {userLocation && (
+                <Marker icon={myIcon} position={userLocation}>
+                  <Popup>Voce esta aqui</Popup>
+                </Marker>
+              )}
+              <LocationMarker
+                onSelect={handleLocationSelect}
+                position={position}
+                icon={myIcon}
+              />
+            </MapContainer>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Latitude</Label>
+              <Input value={allValues.latitude || ''} disabled placeholder="0" />
+            </div>
+            <div className="space-y-2">
+              <Label>Longitude</Label>
+              <Input value={allValues.longitude || ''} disabled placeholder="0" />
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: 'Condicoes',
+      description: 'Condicoes do local de instalacao',
+      validate: validateStep3,
+      content: (
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label>Ha outros meliponarios no raio de 1 KM?</Label>
+            <Controller
+              name="outrosMeliponariosRaio1km"
+              control={control}
+              render={({ field }) => (
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {outrosApiariosRaio3kmOptions.map((opt) => (
+                      <SelectItem key={String(opt.value)} value={String(opt.value)}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+          </div>
+
+          {watchedOutrosMeliponarios === 'true' && (
+            <div className="space-y-2">
+              <Label>Quantidade de colmeias nos outros meliponarios</Label>
+              <Controller
+                name="qtdColmeiasOutrosMeliponarios"
+                control={control}
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {qtdColmeiasOutrosApiariosOptions.map((opt) => (
+                        <SelectItem key={String(opt.value)} value={String(opt.value)}>
+                          {opt.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </div>
+          )}
+
+          {conditionFields.map((field) => (
+            <div key={field.name} className="space-y-2">
+              <Label>{field.label}</Label>
+              <Controller
+                name={field.name}
+                control={control}
+                render={({ field: controllerField }) => (
+                  <Select onValueChange={controllerField.onChange} value={controllerField.value}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {simNaoOptions.map((opt) => (
+                        <SelectItem key={String(opt.value)} value={String(opt.value)}>
+                          {opt.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </div>
+          ))}
+        </div>
+      ),
+    },
+    {
+      title: 'Resumo',
+      description: 'Revise os dados antes de confirmar',
+      content: (
+        <div className="space-y-4">
+          <Card>
+            <CardContent className="p-4 space-y-3">
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <span className="text-muted-foreground">Nome:</span>
+                  <p className="font-medium">{allValues.nome}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Tipo de Instalacao:</span>
+                  <p className="font-medium">{allValues.tipoInstalacao}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Especie:</span>
+                  <Badge variant="secondary" className="mt-1">{allValues.especieAbelha}</Badge>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Colmeias:</span>
+                  <p className="font-medium">{allValues.quantidadeColmeias}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Latitude:</span>
+                  <p className="font-medium">{allValues.latitude}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Longitude:</span>
+                  <p className="font-medium">{allValues.longitude}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {position && (
+            <div className="overflow-hidden rounded-lg border">
+              <MapContainer
+                center={[position.lat, position.lng]}
+                zoom={15}
+                style={{ height: '200px', width: '100%' }}
+                dragging={false}
+                zoomControl={false}
+                scrollWheelZoom={false}
+              >
+                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                <Marker position={position} icon={myIcon}>
+                  <Popup>Localizacao do meliponario</Popup>
+                </Marker>
+              </MapContainer>
+            </div>
+          )}
+
+          <Card>
+            <CardContent className="p-4 space-y-2 text-sm">
+              <h4 className="font-semibold">Condicoes do Local</h4>
+              <div className="grid grid-cols-1 gap-1">
+                <SummaryRow label="Outros meliponarios no raio de 1km" value={allValues.outrosMeliponariosRaio1km} />
+                {allValues.outrosMeliponariosRaio1km === 'true' && (
+                  <SummaryRow label="Qtd colmeias outros meliponarios" value={allValues.qtdColmeiasOutrosMeliponarios} />
+                )}
+                <SummaryRow label="Fontes de nectar e polen" value={allValues.fontesNectarPolen} />
+                <SummaryRow label="Disponibilidade de agua" value={allValues.disponibilidadeAgua} />
+                <SummaryRow label="Sombreamento natural" value={allValues.sombreamentoNatural} />
+                <SummaryRow label="Protecao contra ventos" value={allValues.protecaoVentosFortes} />
+                <SummaryRow label="Distancia de contaminacao" value={allValues.distanciaSeguraContaminacao} />
+                <SummaryRow label="Distancia de construcoes" value={allValues.distanciaMinimaConstrucoes} />
+                <SummaryRow label="Distancia de lavouras" value={allValues.distanciaSeguraLavouras} />
+                <SummaryRow label="Acesso a veiculos" value={allValues.acessoVeiculos} />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      ),
+    },
+  ]
+
+  return (
+    <div className="p-6">
+      <Wizard
+        steps={steps}
+        onComplete={handleComplete}
+        onCancel={() => navigate('/meus-meliponarios')}
+        submitLabel="Cadastrar Meliponario"
+        isSubmitting={isLoading}
+      />
     </div>
   )
 }
 
-export default memo(NewMeliponary)
-memo(NewMeliponary).displayName = 'NewMeliponary'
+function SummaryRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex justify-between py-1">
+      <span className="text-muted-foreground">{label}</span>
+      <Badge variant={value === 'true' ? 'default' : value === 'false' ? 'destructive' : 'outline'}>
+        {value === 'true' ? 'Sim' : value === 'false' ? 'Nao' : value || '--'}
+      </Badge>
+    </div>
+  )
+}
