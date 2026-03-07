@@ -1,6 +1,5 @@
 // @ts-nocheck
-import L from 'leaflet'
-import 'leaflet.vectorgrid'
+import L, { initVectorGrid } from '../../utils/leaflet-setup'
 import { useSnackbar } from 'notistack'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
@@ -16,9 +15,10 @@ import beebox from '../../assets/bee-hive.png'
 import Legend from '../../components/Legend'
 import { useLoading } from '../../hooks/useLoading.tsx'
 import { getColor } from '../../utils'
-import { fetchGeoJsonByUrl } from '../../utils/fetchGeoJsonByUrl'
 import { useGetDashboardDataQuery } from '../../redux/slices/apiariesAllSlice'
 import { useGetMapsQuery } from '../../redux/slices/mapsSlice'
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8002/api/v1'
 
 // Ícones para o mapa (definidos fora do componente para evitar recriação)
 const myIcon = new L.Icon({
@@ -35,15 +35,41 @@ const meliponaryIcon = new L.Icon({
   iconSize: [32, 32],
 })
 
+function getAuthToken(): string | undefined {
+  return document.cookie
+    .split('; ')
+    .find((row) => row.startsWith('GeoToken='))
+    ?.split('=')[1]
+}
+
+async function fetchGeoJsonFromApi(mapId: string): Promise<any> {
+  const token = getAuthToken()
+  const response = await fetch(`${API_URL}/maps/${mapId}/geojson`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  })
+  if (!response.ok) {
+    throw new Error(`Erro ao buscar GeoJSON: ${response.statusText}`)
+  }
+  return response.json()
+}
+
+// Initialize vectorgrid plugin (sets window.L then loads the IIFE)
+const vectorGridReady = initVectorGrid()
+
 export default function Home() {
   const { setLoading } = useLoading()
   const [userLocation, setUserLocation] = useState<[number, number] | null>(
     null,
   )
-  const [selectedMap, setSelectedMap] = useState<string>('')
+  const [selectedMapId, setSelectedMapId] = useState<string>('')
   const [geoJson, setGeoJson] = useState<any>(null)
   const [geoJsonLoading, setGeoJsonLoading] = useState(false)
   const [geoJsonError, setGeoJsonError] = useState<any>(null)
+  const [vectorGridLoaded, setVectorGridLoaded] = useState(false)
+
+  useEffect(() => {
+    vectorGridReady.then(() => setVectorGridLoaded(true))
+  }, [])
   const { enqueueSnackbar } = useSnackbar()
   const {
     data: dashboardData = { apiarios: [], meliponarios: [] },
@@ -56,29 +82,29 @@ export default function Home() {
     error: mapsError,
   } = useGetMapsQuery()
 
-  // Buscar geojson sempre que selectedMap mudar (evita race e limpa estado)
+  // Buscar geojson sempre que selectedMapId mudar
   useEffect(() => {
-    if (!selectedMap) {
+    if (!selectedMapId) {
       setGeoJson(null)
       return
     }
 
-    const current = selectedMap
+    const currentId = selectedMapId
     setGeoJson(null)
     setGeoJsonLoading(true)
     setGeoJsonError(null)
 
-    fetchGeoJsonByUrl(selectedMap)
+    fetchGeoJsonFromApi(selectedMapId)
       .then((data) => {
-        if (current === selectedMap) setGeoJson(data)
+        if (currentId === selectedMapId) setGeoJson(data)
       })
       .catch((err) => {
-        if (current === selectedMap) setGeoJsonError(err)
+        if (currentId === selectedMapId) setGeoJsonError(err)
       })
       .finally(() => {
-        if (current === selectedMap) setGeoJsonLoading(false)
+        if (currentId === selectedMapId) setGeoJsonLoading(false)
       })
-  }, [selectedMap])
+  }, [selectedMapId])
 
   // Loading global
   useEffect(() => {
@@ -97,20 +123,20 @@ export default function Home() {
       enqueueSnackbar('Erro ao carregar geojson', { variant: 'error' })
   }, [dashboardError, mapsError, geoJsonError, enqueueSnackbar])
 
-  // Garantir selectedMap válido quando maps carregar/alterar
+  // Garantir selectedMapId válido quando maps carregar/alterar
   useEffect(() => {
     if (!maps?.length) return
 
-    if (!selectedMap) {
-      setSelectedMap(maps[0].url)
+    if (!selectedMapId) {
+      setSelectedMapId(String(maps[0].id))
       return
     }
 
-    const exists = maps.some((m: any) => m.url === selectedMap)
+    const exists = maps.some((m: any) => String(m.id) === selectedMapId)
     if (!exists) {
-      setSelectedMap(maps[0].url)
+      setSelectedMapId(String(maps[0].id))
     }
-  }, [maps, selectedMap])
+  }, [maps, selectedMapId])
 
   // Obter localização do usuário
   useEffect(() => {
@@ -127,8 +153,7 @@ export default function Home() {
   }, [])
 
   const handleChange = useCallback((event: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedUrl = event.target.value
-    setSelectedMap(selectedUrl)
+    setSelectedMapId(event.target.value)
   }, [])
 
   // Unifica apiários e meliponários para renderização (memoizado)
@@ -169,7 +194,7 @@ export default function Home() {
     const layerRef = useRef<any>(null)
 
     useEffect(() => {
-      if (!map || !data) return
+      if (!map || !data || !vectorGridLoaded) return
 
       // Remove camada anterior se existir
       if (layerRef.current) {
@@ -181,13 +206,8 @@ export default function Home() {
         rendererFactory: (L as any).canvas.tile,
         interactive: false,
         vectorTileLayerStyles: {
-          // "sliced" é o nome padrão da camada criada pelo slicer
           sliced: (properties: any) => {
-            const type =
-              properties?.['VEGETAÇÃ'] ||
-              properties?.['CLASSE'] ||
-              properties?.VEGETAÇÃ ||
-              properties?.CLASSE
+            const type = properties?.CLASSE || properties?.['CLASSE']
             const color = getColor(type)
             return {
               weight: 1,
@@ -208,7 +228,7 @@ export default function Home() {
           layerRef.current = null
         }
       }
-    }, [map, data])
+    }, [map, data, vectorGridLoaded])
 
     return null
   }
@@ -219,13 +239,13 @@ export default function Home() {
       <div className="z-10 border-b border-gray-200 bg-white px-3 py-2 shadow-sm dark:border-zinc-700 dark:bg-zinc-800">
         <select
           className="w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none dark:border-gray-600 dark:bg-zinc-800 dark:text-gray-200"
-          value={selectedMap}
+          value={selectedMapId}
           onChange={handleChange}
         >
           <option value="">Selecione um mapa</option>
           {maps.map((map: any) => (
-            <option key={map.id} value={map.url}>
-              {map.name}
+            <option key={map.id} value={String(map.id)}>
+              {map.name} ({map.feature_count} features)
             </option>
           ))}
         </select>

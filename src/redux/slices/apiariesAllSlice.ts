@@ -3,17 +3,33 @@ import { apiSlice } from '../../services/apiSlice'
 export interface Apiary {
   id: string
   name: string
-  // adicione outros campos conforme necessário
+  latitude: string
+  longitude: string
+  capacidadeDeSuporte: string
+  tipoInstalacao: string
+  quantidadeColmeias: number
+}
+
+export interface Meliponary {
+  id: string
+  name: string
+  latitude: string
+  longitude: string
+  capacidadeDeSuporte: string
+  especieAbelha: string
+  quantidadeColmeias: number
+}
+
+export interface DashboardData {
+  apiarios: Apiary[]
+  meliponarios: Meliponary[]
 }
 
 export const dashboardApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    getDashboardData: builder.query<Apiary[], void>({
+    getDashboardData: builder.query<DashboardData, void>({
       query: () => '/dashboard',
-      providesTags: (result) =>
-        Array.isArray(result)
-          ? result.map(({ id }) => ({ type: 'Dashboard' as const, id }))
-          : ['Dashboard'],
+      providesTags: ['Dashboard'],
     }),
   }),
 })

@@ -1,9 +1,11 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8443/api/v1';
 
 export const apiSlice = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({
-    baseUrl: 'https://api.geobeeam.com.br/api/v1',
+    baseUrl: API_URL,
     prepareHeaders: (headers) => {
       const token = document.cookie
         .split('; ')

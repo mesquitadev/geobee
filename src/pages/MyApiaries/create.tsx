@@ -307,16 +307,16 @@ export default function NewApiary() {
   }, [handleLocationSelect, enqueueSnackbar])
 
   return (
-    <div className="h-full w-full p-10 pb-0">
+    <div className="h-full w-full p-4 pb-0 md:p-6 lg:p-10">
       <Breadcumbs pageName="Cadastrar Apiário" />
-      <div className="grid grid-cols-1 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div className="mb-5">
-          <p className="mb-2 block text-xs font-bold uppercase tracking-wide text-gray-700">
+          <p className="mb-2 block text-xs font-bold uppercase tracking-wide text-zinc-700 dark:text-zinc-300">
             Selecione as Coordenadas
           </p>
           <button
             onClick={getUserLocation}
-            className="my-3 flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            className="my-3 flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
           >
             Usar Minha Localização
           </button>
@@ -343,11 +343,11 @@ export default function NewApiary() {
             onSubmit={handleSubmit(handleSignUp)}
             className="mb-0 w-full pb-24 md:pb-20"
           >
-            <div className="mx-1 mb-6 flex flex-wrap md:mx-3">
+            <div className="space-y-4 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-700 dark:bg-zinc-800">
               <InputContainer className="mb-6  w-full px-3 md:mb-0">
                 <InputLabel label="Nome" name="name" />
                 <Input<Inputs>
-                  className="mb-3 block w-full appearance-none rounded border border-red-500 bg-gray-200 px-4 py-3 leading-tight text-gray-700 focus:bg-white focus:outline-none"
+                  className=""
                   control={control}
                   name="name"
                   placeholder="Nome para identificação do apiário..."
@@ -357,7 +357,7 @@ export default function NewApiary() {
               <InputContainer className="mb-6 w-full px-3 md:mb-0 md:w-1/2">
                 <InputLabel label="Latitude" name="latitude" />
                 <Input<Inputs>
-                  className="mb-3 block w-full appearance-none rounded border border-red-500 bg-gray-200 px-4 py-3 leading-tight text-gray-700 focus:bg-white focus:outline-none"
+                  className=""
                   control={control}
                   name="latitude"
                   placeholder="0"
@@ -369,7 +369,7 @@ export default function NewApiary() {
               <InputContainer className="mb-6 w-full px-3 md:mb-0 md:w-1/2">
                 <InputLabel label="Longitude" name="longitude" />
                 <Input<Inputs>
-                  className="mb-3 block w-full appearance-none rounded border border-red-500 bg-gray-200 px-4 py-3 leading-tight text-gray-700 focus:bg-white focus:outline-none"
+                  className=""
                   control={control}
                   name="longitude"
                   placeholder="0"
@@ -387,7 +387,7 @@ export default function NewApiary() {
                   options={options}
                   control={control}
                   name="tipoInstalacao"
-                  className="block w-full appearance-none rounded border border-gray-200 bg-gray-200 px-4 py-3 pr-8 leading-tight text-gray-700 focus:border-gray-500 focus:bg-white focus:outline-none"
+                  className=""
                   errors={errors?.tipoInstalacao?.message}
                 />
               </SelectContainer>
@@ -402,7 +402,7 @@ export default function NewApiary() {
                     options={tempoIntineranteOptions}
                     control={control}
                     name="tempoItinerante"
-                    className="block w-full appearance-none rounded border border-gray-200 bg-gray-200 px-4 py-3 pr-8 leading-tight text-gray-700 focus:border-gray-500 focus:bg-white focus:outline-none"
+                    className=""
                     errors={errors?.tempoItinerante?.message}
                   />
                 </SelectContainer>
@@ -416,7 +416,7 @@ export default function NewApiary() {
                   options={qtdColmeiasOptions}
                   control={control}
                   name="quantidadeColmeias"
-                  className="block w-full appearance-none rounded border border-gray-200 bg-gray-200 px-4 py-3 pr-8 leading-tight text-gray-700 focus:border-gray-500 focus:bg-white focus:outline-none"
+                  className=""
                   errors={errors?.quantidadeColmeias?.message}
                 />
               </SelectContainer>
@@ -429,7 +429,7 @@ export default function NewApiary() {
                   options={outrosApiariosRaio3kmOptions}
                   control={control}
                   name="outrosApiariosRaio3km"
-                  className="block w-full appearance-none rounded border border-gray-200 bg-gray-200 px-4 py-3 pr-8 leading-tight text-gray-700 focus:border-gray-500 focus:bg-white focus:outline-none"
+                  className=""
                   errors={errors?.quantidadeColmeias?.message}
                 />
               </SelectContainer>
@@ -443,7 +443,7 @@ export default function NewApiary() {
                     options={qtdColmeiasOutrosApiariosOptions}
                     control={control}
                     name="qtdColmeiasOutrosApiarios"
-                    className="block w-full appearance-none rounded border border-gray-200 bg-gray-200 px-4 py-3 pr-8 leading-tight text-gray-700 focus:border-gray-500 focus:bg-white focus:outline-none"
+                    className=""
                     errors={errors?.qtdColmeiasOutrosApiarios?.message}
                   />
                 </SelectContainer>
@@ -457,7 +457,7 @@ export default function NewApiary() {
                   options={simNaoOptions}
                   control={control}
                   name="fontesNectarPolen"
-                  className="block w-full appearance-none rounded border border-gray-200 bg-gray-200 px-4 py-3 pr-8 leading-tight text-gray-700 focus:border-gray-500 focus:bg-white focus:outline-none"
+                  className=""
                   errors={errors?.fontesNectarPolen?.message}
                 />
               </SelectContainer>
@@ -470,7 +470,7 @@ export default function NewApiary() {
                   options={simNaoOptions}
                   control={control}
                   name="disponibilidadeAgua"
-                  className="block w-full appearance-none rounded border border-gray-200 bg-gray-200 px-4 py-3 pr-8 leading-tight text-gray-700 focus:border-gray-500 focus:bg-white focus:outline-none"
+                  className=""
                   errors={errors?.disponibilidadeAgua?.message}
                 />
               </SelectContainer>
@@ -483,7 +483,7 @@ export default function NewApiary() {
                   options={simNaoOptions}
                   control={control}
                   name="sombreamentoNatural"
-                  className="block w-full appearance-none rounded border border-gray-200 bg-gray-200 px-4 py-3 pr-8 leading-tight text-gray-700 focus:border-gray-500 focus:bg-white focus:outline-none"
+                  className=""
                   errors={errors?.sombreamentoNatural?.message}
                 />
               </SelectContainer>
@@ -496,7 +496,7 @@ export default function NewApiary() {
                   options={simNaoOptions}
                   control={control}
                   name="protecaoVentosFortes"
-                  className="block w-full appearance-none rounded border border-gray-200 bg-gray-200 px-4 py-3 pr-8 leading-tight text-gray-700 focus:border-gray-500 focus:bg-white focus:outline-none"
+                  className=""
                   errors={errors?.protecaoVentosFortes?.message}
                 />
               </SelectContainer>
@@ -509,7 +509,7 @@ export default function NewApiary() {
                   options={simNaoOptions}
                   control={control}
                   name="distanciaSeguraContaminacao"
-                  className="block w-full appearance-none rounded border border-gray-200 bg-gray-200 px-4 py-3 pr-8 leading-tight text-gray-700 focus:border-gray-500 focus:bg-white focus:outline-none"
+                  className=""
                   errors={errors?.distanciaSeguraContaminacao?.message}
                 />
               </SelectContainer>
@@ -522,7 +522,7 @@ export default function NewApiary() {
                   options={simNaoOptions}
                   control={control}
                   name="distanciaMinimaConstrucoes"
-                  className="block w-full appearance-none rounded border border-gray-200 bg-gray-200 px-4 py-3 pr-8 leading-tight text-gray-700 focus:border-gray-500 focus:bg-white focus:outline-none"
+                  className=""
                   errors={errors?.distanciaMinimaConstrucoes?.message}
                 />
               </SelectContainer>
@@ -535,7 +535,7 @@ export default function NewApiary() {
                   options={simNaoOptions}
                   control={control}
                   name="distanciaSeguraLavouras"
-                  className="block w-full appearance-none rounded border border-gray-200 bg-gray-200 px-4 py-3 pr-8 leading-tight text-gray-700 focus:border-gray-500 focus:bg-white focus:outline-none"
+                  className=""
                   errors={errors?.distanciaSeguraLavouras?.message}
                 />
               </SelectContainer>
@@ -548,7 +548,7 @@ export default function NewApiary() {
                   options={simNaoOptions}
                   control={control}
                   name="acessoVeiculos"
-                  className="block w-full appearance-none rounded border border-gray-200 bg-gray-200 px-4 py-3 pr-8 leading-tight text-gray-700 focus:border-gray-500 focus:bg-white focus:outline-none"
+                  className=""
                   errors={errors?.acessoVeiculos?.message}
                 />
               </SelectContainer>
@@ -557,9 +557,9 @@ export default function NewApiary() {
             <button
               disabled={isLoading || disabled}
               type="submit"
-              className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-indigo-500 dark:hover:bg-indigo-600"
             >
-              Cadastrar
+              {isLoading ? 'Cadastrando...' : 'Cadastrar Apiário'}
             </button>
           </form>
         </div>

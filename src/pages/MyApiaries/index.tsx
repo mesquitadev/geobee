@@ -228,50 +228,40 @@ const MyApiaries = () => {
       <Dialog
         open={open}
         onClose={() => !isDeleting && setOpen(false)}
-        className="relative z-10"
+        className="relative z-50"
       >
-        <DialogBackdrop className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" />
-
-        <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
-          <div className="flex min-h-full items-center justify-center p-4 text-center">
-            <DialogPanel className="w-full max-w-md transform overflow-hidden rounded-lg bg-white p-6 text-left align-middle shadow-xl transition-all dark:bg-zinc-800">
-              <DialogTitle
-                as="h3"
-                className="flex items-center gap-2 text-lg font-medium leading-6 text-gray-900 dark:text-gray-100"
+        <DialogBackdrop className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <DialogPanel className="w-full max-w-md transform overflow-hidden rounded-xl bg-white p-6 shadow-xl transition-all dark:bg-zinc-800">
+            <DialogTitle
+              as="h3"
+              className="flex items-center gap-2 text-lg font-semibold text-zinc-900 dark:text-zinc-100"
+            >
+              <ExclamationTriangleIcon className="h-6 w-6 text-red-600 dark:text-red-400" />
+              Remover Apiário
+            </DialogTitle>
+            <p className="mt-3 text-sm text-zinc-500 dark:text-zinc-400">
+              Você tem certeza que deseja remover este apiário? Esta ação não pode ser desfeita.
+            </p>
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                disabled={isDeleting}
+                className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-700 shadow-sm transition-colors hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-600"
               >
-                <ExclamationTriangleIcon
-                  className="h-6 w-6 text-red-600"
-                  aria-hidden="true"
-                />
-                <span>Remover Apiário</span>
-              </DialogTitle>
-              <div className="mt-3">
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Você tem certeza que deseja remover este apiário? Esta ação
-                  não pode ser desfeita.
-                </p>
-              </div>
-
-              <div className="mt-6 flex justify-end gap-3">
-                <button
-                  type="button"
-                  className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none dark:border-zinc-600 dark:bg-zinc-700 dark:text-gray-200 dark:hover:bg-zinc-600"
-                  onClick={() => setOpen(false)}
-                  disabled={isDeleting}
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="button"
-                  className="inline-flex justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                  onClick={handleDeleteApiary}
-                  disabled={isDeleting}
-                >
-                  {isDeleting ? 'Removendo...' : 'Remover'}
-                </button>
-              </div>
-            </DialogPanel>
-          </div>
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteApiary}
+                disabled={isDeleting}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-red-500 dark:hover:bg-red-600"
+              >
+                {isDeleting ? 'Removendo...' : 'Remover'}
+              </button>
+            </div>
+          </DialogPanel>
         </div>
       </Dialog>
     </div>

@@ -4,14 +4,21 @@ import { ArrowLeft, Save, Eye, EyeOff } from 'lucide-react'
 import { Button } from '../../components/Button'
 import Input from '../../components/Input/SimpleInput'
 import { tw } from '../../utils/tw'
+import {
+  useRegisterMutation,
+  useGetUserConfigQuery,
+  useUpdateLimitsMutation,
+} from '../../redux/slices/usersSlice'
 
 interface UserFormData {
-  name: string
+  fullName: string
+  cpf: string
   email: string
-  password?: string
-  confirmPassword?: string
+  phone: string
+  password: string
+  confirmPassword: string
   role: string
-  status: 'active' | 'inactive'
+  maxLocations: number
 }
 
 const UserForm = () => {
@@ -19,48 +26,56 @@ const UserForm = () => {
   const { userId } = useParams()
   const isEditing = !!userId
 
+  const [register, { isLoading: isRegistering }] = useRegisterMutation()
+  const [updateLimits, { isLoading: isUpdatingLimits }] = useUpdateLimitsMutation()
+  const { data: userConfig } = useGetUserConfigQuery(userId!, { skip: !isEditing })
+
   const [formData, setFormData] = useState<UserFormData>({
-    name: '',
+    fullName: '',
+    cpf: '',
     email: '',
+    phone: '',
     password: '',
     confirmPassword: '',
-    role: 'APICULTOR',
-    status: 'active',
+    role: 'Apicultor',
+    maxLocations: 3,
   })
 
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
-  const [isLoading, setIsLoading] = useState(false)
+  const [apiError, setApiError] = useState<string | null>(null)
 
-  // Simular carregamento de dados do usuário para edição
   useEffect(() => {
-    if (isEditing) {
-      // Aqui você faria a busca real na API
-      const mockUser = {
-        name: 'João Silva',
-        email: 'joao@email.com',
-        role: 'ADMIN',
-        status: 'active' as const,
-      }
-      setFormData((prev) => ({ ...prev, ...mockUser }))
+    if (isEditing && userConfig) {
+      setFormData((prev) => ({
+        ...prev,
+        maxLocations: userConfig.max_locations,
+        role: userConfig.perfis[0] || 'Apicultor',
+      }))
     }
-  }, [isEditing])
+  }, [isEditing, userConfig])
+
+  const isLoading = isRegistering || isUpdatingLimits
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {}
 
-    if (!formData.name.trim()) {
-      newErrors.name = 'Nome é obrigatório'
-    }
-
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email é obrigatório'
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Email inválido'
-    }
-
     if (!isEditing) {
+      if (!formData.fullName.trim()) {
+        newErrors.fullName = 'Nome é obrigatório'
+      }
+
+      if (!formData.email.trim()) {
+        newErrors.email = 'Email é obrigatório'
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+        newErrors.email = 'Email inválido'
+      }
+
+      if (!formData.cpf.trim()) {
+        newErrors.cpf = 'CPF é obrigatório'
+      }
+
       if (!formData.password) {
         newErrors.password = 'Senha é obrigatória'
       } else if (formData.password.length < 6) {
@@ -72,15 +87,10 @@ const UserForm = () => {
       } else if (formData.password !== formData.confirmPassword) {
         newErrors.confirmPassword = 'Senhas não coincidem'
       }
-    } else if (
-      formData.password &&
-      formData.password !== formData.confirmPassword
-    ) {
-      newErrors.confirmPassword = 'Senhas não coincidem'
-    }
 
-    if (!formData.role) {
-      newErrors.role = 'Role é obrigatória'
+      if (!formData.role) {
+        newErrors.role = 'Perfil é obrigatório'
+      }
     }
 
     setErrors(newErrors)
@@ -89,25 +99,33 @@ const UserForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
     if (!validateForm()) return
-
-    setIsLoading(true)
+    setApiError(null)
 
     try {
-      // Aqui você faria a chamada real para a API
-      await new Promise((resolve) => setTimeout(resolve, 1000)) // Simular delay da API
-
-      console.log('Dados do formulário:', formData)
+      if (isEditing && userId) {
+        await updateLimits({
+          userId,
+          max_locations: formData.maxLocations,
+        }).unwrap()
+      } else {
+        await register({
+          fullName: formData.fullName,
+          cpf: formData.cpf,
+          email: formData.email,
+          phone: formData.phone,
+          password: formData.password,
+          role: formData.role,
+        }).unwrap()
+      }
       navigate('/usuarios')
-    } catch (error) {
-      console.error('Erro ao salvar usuário:', error)
-    } finally {
-      setIsLoading(false)
+    } catch (err: any) {
+      const detail = err?.data?.detail || err?.data?.email?.[0] || err?.data?.cpf?.[0]
+      setApiError(detail || 'Erro ao salvar usuário')
     }
   }
 
-  const handleInputChange = (field: keyof UserFormData, value: string) => {
+  const handleInputChange = (field: keyof UserFormData, value: string | number) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: '' }))
@@ -128,201 +146,234 @@ const UserForm = () => {
         </Button>
 
         <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
-          {isEditing ? 'Editar Usuário' : 'Novo Usuário'}
+          {isEditing ? 'Editar Limites do Usuário' : 'Novo Usuário'}
         </h1>
         <p className="mt-1 text-zinc-600 dark:text-zinc-400">
           {isEditing
-            ? 'Atualize as informações do usuário'
+            ? 'Atualize os limites do usuário'
             : 'Preencha os dados para criar um novo usuário'}
         </p>
       </div>
 
+      {apiError && (
+        <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
+          {apiError}
+        </div>
+      )}
+
       {/* Form */}
       <div className="rounded-lg border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-700 dark:bg-zinc-800">
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Nome */}
-          <div>
-            <Input.Label htmlFor="name" required>
-              Nome completo
-            </Input.Label>
-            <Input.Container>
-              <Input
-                id="name"
-                type="text"
-                value={formData.name}
-                onChange={(e) => handleInputChange('name', e.target.value)}
-                placeholder="Digite o nome completo"
-                className={errors.name ? 'border-red-500' : ''}
-              />
-            </Input.Container>
-            {errors.name && (
-              <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                {errors.name}
-              </p>
-            )}
-          </div>
-
-          {/* Email */}
-          <div>
-            <Input.Label htmlFor="email" required>
-              Email
-            </Input.Label>
-            <Input.Container>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => handleInputChange('email', e.target.value)}
-                placeholder="usuario@email.com"
-                className={errors.email ? 'border-red-500' : ''}
-              />
-            </Input.Container>
-            {errors.email && (
-              <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                {errors.email}
-              </p>
-            )}
-          </div>
-
-          {/* Senha */}
-          <div>
-            <Input.Label htmlFor="password" required={!isEditing}>
-              {isEditing ? 'Nova senha (opcional)' : 'Senha'}
-            </Input.Label>
-            <Input.Container>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={formData.password}
-                  onChange={(e) =>
-                    handleInputChange('password', e.target.value)
-                  }
-                  placeholder={
-                    isEditing
-                      ? 'Deixe em branco para manter a atual'
-                      : 'Digite a senha'
-                  }
-                  className={tw(
-                    'pr-10',
-                    errors.password ? 'border-red-500' : '',
-                  )}
-                />
-                <button
-                  type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 transform text-zinc-400 hover:text-zinc-600"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
+          {!isEditing && (
+            <>
+              {/* Nome */}
+              <div>
+                <Input.Label htmlFor="fullName" required>
+                  Nome completo
+                </Input.Label>
+                <Input.Container>
+                  <Input
+                    id="fullName"
+                    type="text"
+                    value={formData.fullName}
+                    onChange={(e) => handleInputChange('fullName', e.target.value)}
+                    placeholder="Digite o nome completo"
+                    className={errors.fullName ? 'border-red-500' : ''}
+                  />
+                </Input.Container>
+                {errors.fullName && (
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                    {errors.fullName}
+                  </p>
+                )}
               </div>
-            </Input.Container>
-            {errors.password && (
-              <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                {errors.password}
-              </p>
-            )}
-          </div>
 
-          {/* Confirmar Senha */}
-          <div>
-            <Input.Label
-              htmlFor="confirmPassword"
-              required={!isEditing || !!formData.password}
-            >
-              Confirmar senha
-            </Input.Label>
-            <Input.Container>
-              <div className="relative">
-                <Input
-                  id="confirmPassword"
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  value={formData.confirmPassword}
-                  onChange={(e) =>
-                    handleInputChange('confirmPassword', e.target.value)
-                  }
-                  placeholder="Confirme a senha"
-                  className={tw(
-                    'pr-10',
-                    errors.confirmPassword ? 'border-red-500' : '',
-                  )}
-                />
-                <button
-                  type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 transform text-zinc-400 hover:text-zinc-600"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
+              {/* CPF */}
+              <div>
+                <Input.Label htmlFor="cpf" required>
+                  CPF
+                </Input.Label>
+                <Input.Container>
+                  <Input
+                    id="cpf"
+                    type="text"
+                    value={formData.cpf}
+                    onChange={(e) => handleInputChange('cpf', e.target.value)}
+                    placeholder="000.000.000-00"
+                    className={errors.cpf ? 'border-red-500' : ''}
+                  />
+                </Input.Container>
+                {errors.cpf && (
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                    {errors.cpf}
+                  </p>
+                )}
               </div>
-            </Input.Container>
-            {errors.confirmPassword && (
-              <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                {errors.confirmPassword}
-              </p>
-            )}
-          </div>
 
-          {/* Role */}
-          <div>
-            <Input.Label htmlFor="role" required>
-              Perfil de acesso
-            </Input.Label>
-            <select
-              id="role"
-              value={formData.role}
-              onChange={(e) => handleInputChange('role', e.target.value)}
-              className={tw(
-                'w-full rounded-md border border-zinc-300 dark:border-zinc-600',
-                'bg-white text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100',
-                'px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500',
-                errors.role ? 'border-red-500' : '',
-              )}
-            >
-              <option value="">Selecione um perfil</option>
-              <option value="ADMIN">Administrador</option>
-              <option value="APICULTOR">Apicultor</option>
-              <option value="MELIPONICULTOR">Meliponicultor</option>
-            </select>
-            {errors.role && (
-              <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                {errors.role}
-              </p>
-            )}
-          </div>
+              {/* Email */}
+              <div>
+                <Input.Label htmlFor="email" required>
+                  Email
+                </Input.Label>
+                <Input.Container>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    placeholder="usuario@email.com"
+                    className={errors.email ? 'border-red-500' : ''}
+                  />
+                </Input.Container>
+                {errors.email && (
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                    {errors.email}
+                  </p>
+                )}
+              </div>
 
-          {/* Status */}
-          <div>
-            <Input.Label htmlFor="status" required>
-              Status
-            </Input.Label>
-            <select
-              id="status"
-              value={formData.status}
-              onChange={(e) =>
-                handleInputChange(
-                  'status',
-                  e.target.value as 'active' | 'inactive',
-                )
-              }
-              className={tw(
-                'w-full rounded-md border border-zinc-300 dark:border-zinc-600',
-                'bg-white text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100',
-                'px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500',
-              )}
-            >
-              <option value="active">Ativo</option>
-              <option value="inactive">Inativo</option>
-            </select>
-          </div>
+              {/* Telefone */}
+              <div>
+                <Input.Label htmlFor="phone">
+                  Telefone
+                </Input.Label>
+                <Input.Container>
+                  <Input
+                    id="phone"
+                    type="text"
+                    value={formData.phone}
+                    onChange={(e) => handleInputChange('phone', e.target.value)}
+                    placeholder="(00) 00000-0000"
+                  />
+                </Input.Container>
+              </div>
+
+              {/* Senha */}
+              <div>
+                <Input.Label htmlFor="password" required>
+                  Senha
+                </Input.Label>
+                <Input.Container>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? 'text' : 'password'}
+                      value={formData.password}
+                      onChange={(e) => handleInputChange('password', e.target.value)}
+                      placeholder="Digite a senha"
+                      className={tw(
+                        'pr-10',
+                        errors.password ? 'border-red-500' : '',
+                      )}
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 transform text-zinc-400 hover:text-zinc-600"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
+                </Input.Container>
+                {errors.password && (
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                    {errors.password}
+                  </p>
+                )}
+              </div>
+
+              {/* Confirmar Senha */}
+              <div>
+                <Input.Label htmlFor="confirmPassword" required>
+                  Confirmar senha
+                </Input.Label>
+                <Input.Container>
+                  <div className="relative">
+                    <Input
+                      id="confirmPassword"
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      value={formData.confirmPassword}
+                      onChange={(e) =>
+                        handleInputChange('confirmPassword', e.target.value)
+                      }
+                      placeholder="Confirme a senha"
+                      className={tw(
+                        'pr-10',
+                        errors.confirmPassword ? 'border-red-500' : '',
+                      )}
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 transform text-zinc-400 hover:text-zinc-600"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
+                </Input.Container>
+                {errors.confirmPassword && (
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                    {errors.confirmPassword}
+                  </p>
+                )}
+              </div>
+
+              {/* Perfil */}
+              <div>
+                <Input.Label htmlFor="role" required>
+                  Perfil de acesso
+                </Input.Label>
+                <select
+                  id="role"
+                  value={formData.role}
+                  onChange={(e) => handleInputChange('role', e.target.value)}
+                  className={tw(
+                    'w-full rounded-md border border-zinc-300 dark:border-zinc-600',
+                    'bg-white text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100',
+                    'px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500',
+                    errors.role ? 'border-red-500' : '',
+                  )}
+                >
+                  <option value="">Selecione um perfil</option>
+                  <option value="Admin">Administrador</option>
+                  <option value="Apicultor">Apicultor</option>
+                  <option value="Meliponicultor">Meliponicultor</option>
+                </select>
+                {errors.role && (
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                    {errors.role}
+                  </p>
+                )}
+              </div>
+            </>
+          )}
+
+          {isEditing && (
+            <div>
+              <Input.Label htmlFor="maxLocations">
+                Limite de Locais (apiários + meliponários)
+              </Input.Label>
+              <Input.Container>
+                <Input
+                  id="maxLocations"
+                  type="number"
+                  min={1}
+                  value={formData.maxLocations}
+                  onChange={(e) =>
+                    handleInputChange('maxLocations', parseInt(e.target.value) || 1)
+                  }
+                />
+              </Input.Container>
+            </div>
+          )}
 
           {/* Actions */}
           <div className="flex justify-end gap-3 border-t border-zinc-200 pt-6 dark:border-zinc-700">

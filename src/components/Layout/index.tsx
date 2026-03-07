@@ -3,6 +3,8 @@ import { Folder, Home, LogOut, Menu, Plus, Settings, Users } from 'lucide-react'
 import BackdropLoading from '../BackdropLoading'
 import { useLoading } from '../../hooks/useLoading'
 import { useGetMeQuery } from '../../redux/slices/usersSlice'
+import { useGetApiariesQuery } from '../../redux/slices/apiariesSlice'
+import { useGetMeliponariesQuery } from '../../redux/slices/meliponarySlice'
 import { useAuth } from '../../hooks/useAuth'
 import { useNavigate } from 'react-router-dom'
 import Profile from './Profile'
@@ -27,6 +29,8 @@ const Layout = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate()
 
   const { data: userData, isLoading: userLoading } = useGetMeQuery()
+  const { data: apiaries = [] } = useGetApiariesQuery()
+  const { data: meliponaries = [] } = useGetMeliponariesQuery()
 
   // Mapeamento dos perfis técnicos
   const profileMap = {
@@ -129,10 +133,9 @@ const Layout = ({ children }: { children: ReactNode }) => {
   const sidebarFooterContent = (
     <>
       <UsedSpace
-        apiariesCount={2}
-        meliponariesCount={1}
-        maxCount={3}
-        userRoles={userRoles}
+        apiariesCount={apiaries.length}
+        meliponariesCount={meliponaries.length}
+        maxLocations={userData?.maxLocations ?? 3}
       />
       <Profile />
     </>

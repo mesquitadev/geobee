@@ -44,7 +44,7 @@ export default function AddMap() {
       enqueueSnackbar('Cadastro realizado com sucesso!', {
         variant: 'success',
       })
-      navigate.goBack()
+      navigate(-1)
     } catch (err: any) {
       const message = err?.data?.message || 'Ocorreu um erro ao cadastrar.'
       enqueueSnackbar(`Erro no cadastro! ${message}`, {
@@ -57,23 +57,23 @@ export default function AddMap() {
   }
 
   return (
-    <div className="h-full w-full p-10">
+    <div className="h-full w-full p-4 md:p-6 lg:p-10">
       <Breadcumbs pageName="Cadastrar Mapa" />
-      <div className="grid grid-cols-2">
+      <div className="grid grid-cols-1 md:grid-cols-2">
         <div className="mb-5">
           <form onSubmit={handleSubmit(handleSignUp)} className="w-full">
-            <div className="mx-3 mb-6 flex flex-wrap">
-              <InputContainer className="mb-6  w-full px-3 md:mb-0">
-                <InputLabel label="Arquivo" name="files" />
+            <div className="space-y-4 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-700 dark:bg-zinc-800">
+              <InputContainer className="w-full">
+                <InputLabel label="Arquivo GeoJSON" name="files" />
                 <input
-                  className="mb-3 block w-full appearance-none rounded border border-red-500 bg-gray-200 px-4 py-3 leading-tight text-gray-700 focus:bg-white focus:outline-none"
+                  className="block w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-700 file:mr-4 file:rounded-md file:border-0 file:bg-indigo-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-indigo-700 hover:file:bg-indigo-100 focus:border-indigo-500 focus:outline-none dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200 dark:file:bg-indigo-900/30 dark:file:text-indigo-300"
                   type="file"
                   {...register('files')}
                   multiple
                   accept={'.geojson'}
                 />
                 {errors.files && (
-                  <p className="text-xs italic text-red-500">
+                  <p className="mt-1 text-xs text-red-500">
                     {errors.files.message}
                   </p>
                 )}
@@ -82,7 +82,7 @@ export default function AddMap() {
 
             <button
               type="submit"
-              className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-indigo-500 dark:hover:bg-indigo-600"
             >
               Salvar Mapa
             </button>

@@ -12,7 +12,8 @@ import { removeMask, validarCPF } from '../../utils'
 import { useCallback } from 'react'
 import { useRegisterMutation } from '../../redux/slices/usersSlice'
 import { enqueueSnackbar } from 'notistack'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { UserPlus } from 'lucide-react'
 
 type Inputs = {
   fullName: string
@@ -23,11 +24,11 @@ type Inputs = {
   password: string
 }
 
-const SignIn = () => {
+const SignUp = () => {
   const { setLoading } = useLoading()
   const navigate = useNavigate()
   const [registerUser] = useRegisterMutation()
-  const signInFormSchema = yup.object().shape({
+  const signUpFormSchema = yup.object().shape({
     fullName: yup.string().required('Este campo é obrigatório'),
     cpf: yup
       .string()
@@ -54,7 +55,7 @@ const SignIn = () => {
   const { handleSubmit, formState, control } = useForm({
     mode: 'onBlur',
     reValidateMode: 'onBlur',
-    resolver: yupResolver(signInFormSchema),
+    resolver: yupResolver(signUpFormSchema),
   })
   const { errors } = formState
 
@@ -72,19 +73,12 @@ const SignIn = () => {
           password,
           email,
         }).unwrap()
-        // @ts-ignore
-        enqueueSnackbar({
-          message:
-            'Cadastro realizado com sucesso, voltando pra tela de login...',
-          anchorOrigin: 'center',
+        enqueueSnackbar('Cadastro realizado com sucesso!', {
           variant: 'success',
         })
-
         navigate('/')
       } catch (err) {
-        enqueueSnackbar({
-          message:
-            'Erro no cadastro! Ocorreu um erro ao cadastrar, verifique os dados inseridos!',
+        enqueueSnackbar('Erro no cadastro! Verifique os dados inseridos.', {
           variant: 'error',
         })
         setLoading(false)
@@ -92,119 +86,151 @@ const SignIn = () => {
         setLoading(false)
       }
     },
-    [navigate, setLoading],
+    [navigate, setLoading, registerUser],
   )
 
   const options = [
-    {
-      label: 'Apicultor',
-      value: 'APICULTOR',
-    },
-    {
-      label: 'Meliponicultor',
-      value: 'MELIPONICULTOR',
-    },
+    { label: 'Apicultor', value: 'Apicultor' },
+    { label: 'Meliponicultor', value: 'Meliponicultor' },
   ]
 
   return (
-    <div className="min-h-screen flex flex-1 flex-col justify-center px-6 py-12 lg:px-8 ">
-      <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-        <img className="mx-auto h-32 w-auto" src={logo} alt="Your Company" />
-        <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-zinc-700">
-          BeeMAPPER | Cadastre-se
-        </h2>
+    <div className="flex min-h-screen bg-zinc-50 dark:bg-zinc-900">
+      {/* Left panel - Brand */}
+      <div className="hidden flex-col justify-between bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-800 p-12 lg:flex lg:w-5/12">
+        <div>
+          <img className="h-16 w-auto brightness-0 invert" src={logo} alt="GeoBEE" />
+        </div>
+        <div>
+          <h1 className="text-4xl font-bold leading-tight text-white">
+            Faça parte da plataforma de gestão apícola mais inteligente do Brasil.
+          </h1>
+          <p className="mt-4 text-lg text-indigo-200">
+            Cadastre-se e comece a gerenciar seus apiários com tecnologia geoespacial.
+          </p>
+        </div>
+        <p className="text-sm text-indigo-300">
+          GeoBEE &copy; {new Date().getFullYear()} - Todos os direitos reservados
+        </p>
       </div>
 
-      <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-        <form onSubmit={handleSubmit(handleSignUp)} className="w-full max-w-lg">
-          <div className="flex flex-wrap -mx-3 mb-6">
-            <InputContainer className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
-              <InputLabel label="Nome Completo" name="email" />
-              <Input
-                className="appearance-none block w-full bg-gray-200 text-gray-700 border border-red-500 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white"
-                control={control}
-                name="fullName"
-                placeholder="Digite seu nome completo..."
-                errors={errors?.fullName?.message}
-              />
-            </InputContainer>
-
-            <InputContainer className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
-              <InputLabel label="CPF" name="cpf" />
-              <Input
-                className="appearance-none block w-full bg-gray-200 text-gray-700 border border-red-500 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white"
-                control={control}
-                name="cpf"
-                placeholder="000.000.000-00"
-                errors={errors?.cpf?.message}
-              />
-            </InputContainer>
-
-            <InputContainer className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
-              <InputLabel label="Email" name="phone" />
-              <Input
-                className="appearance-none block w-full bg-gray-200 text-gray-700 border border-red-500 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white"
-                control={control}
-                name="email"
-                placeholder="email@email.com"
-                errors={errors?.email?.message}
-              />
-            </InputContainer>
-
-            <InputContainer className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
-              <InputLabel label="Telefone" name="phone" />
-              <Input
-                className="appearance-none block w-full bg-gray-200 text-gray-700 border border-red-500 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white"
-                control={control}
-                name="phone"
-                placeholder="(00) 0000-0000"
-                errors={errors?.phone?.message}
-              />
-            </InputContainer>
-            <SelectContainer className="w-full px-3 py-2">
-              <InputLabel label="Eu sou um:" name="role" />
-              <Select
-                options={options}
-                control={control}
-                name="role"
-                className="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
-                errors={errors?.role?.message}
-              />
-            </SelectContainer>
-
-            <InputContainer className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
-              <InputLabel label="Senha" name="password" />
-              <Input
-                className="appearance-none block w-full bg-gray-200 text-gray-700 border border-red-500 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white"
-                control={control}
-                name="password"
-                type="password"
-                placeholder="Digite sua Senha..."
-                errors={errors?.password?.message}
-              />
-            </InputContainer>
-            <InputContainer className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
-              <InputLabel label="Confirmar Senha" name="password" />
-              <Input
-                className="appearance-none block w-full bg-gray-200 text-gray-700 border border-red-500 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white"
-                control={control}
-                name="confirmPassword"
-                type="password"
-                placeholder="Confirme sua Senha..."
-                errors={errors?.confirmPassword?.message}
-              />
-            </InputContainer>
+      {/* Right panel - Form */}
+      <div className="flex w-full flex-col items-center justify-center px-6 py-12 lg:w-7/12">
+        <div className="w-full max-w-lg">
+          {/* Mobile logo */}
+          <div className="mb-8 flex flex-col items-center lg:hidden">
+            <img className="h-20 w-auto" src={logo} alt="GeoBEE" />
           </div>
 
-          <button
-            type="submit"
-            className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-          >
-            Cadastrar
-          </button>
-        </form>
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+              Crie sua conta
+            </h2>
+            <p className="mt-2 text-zinc-600 dark:text-zinc-400">
+              Preencha os dados abaixo para se cadastrar na plataforma
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-zinc-200 bg-white p-8 shadow-sm dark:border-zinc-700 dark:bg-zinc-800">
+            <form onSubmit={handleSubmit(handleSignUp)} className="space-y-5">
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                <InputContainer className="w-full">
+                  <InputLabel label="Nome Completo" name="fullName" />
+                  <Input
+                    control={control}
+                    name="fullName"
+                    placeholder="Seu nome completo"
+                    errors={errors?.fullName?.message}
+                  />
+                </InputContainer>
+
+                <InputContainer className="w-full">
+                  <InputLabel label="CPF" name="cpf" />
+                  <Input
+                    control={control}
+                    name="cpf"
+                    placeholder="000.000.000-00"
+                    errors={errors?.cpf?.message}
+                  />
+                </InputContainer>
+
+                <InputContainer className="w-full">
+                  <InputLabel label="Email" name="email" />
+                  <Input
+                    control={control}
+                    name="email"
+                    placeholder="seu@email.com"
+                    errors={errors?.email?.message}
+                  />
+                </InputContainer>
+
+                <InputContainer className="w-full">
+                  <InputLabel label="Telefone" name="phone" />
+                  <Input
+                    control={control}
+                    name="phone"
+                    placeholder="(00) 00000-0000"
+                    errors={errors?.phone?.message}
+                  />
+                </InputContainer>
+              </div>
+
+              <SelectContainer className="w-full">
+                <InputLabel label="Eu sou um:" name="role" />
+                <Select
+                  options={options}
+                  control={control}
+                  name="role"
+                  errors={errors?.role?.message}
+                />
+              </SelectContainer>
+
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                <InputContainer className="w-full">
+                  <InputLabel label="Senha" name="password" />
+                  <Input
+                    control={control}
+                    name="password"
+                    type="password"
+                    placeholder="Mínimo 8 caracteres"
+                    errors={errors?.password?.message}
+                  />
+                </InputContainer>
+
+                <InputContainer className="w-full">
+                  <InputLabel label="Confirmar Senha" name="confirmPassword" />
+                  <Input
+                    control={control}
+                    name="confirmPassword"
+                    type="password"
+                    placeholder="Confirme sua senha"
+                    errors={errors?.confirmPassword?.message}
+                  />
+                </InputContainer>
+              </div>
+
+              <button
+                type="submit"
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+              >
+                <UserPlus className="h-4 w-4" />
+                Cadastrar
+              </button>
+            </form>
+          </div>
+
+          <p className="mt-6 text-center text-sm text-zinc-600 dark:text-zinc-400">
+            Já tem uma conta?{' '}
+            <Link
+              className="font-semibold text-indigo-600 transition-colors hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+              to="/"
+            >
+              Faça login
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   )
 }
-export default SignIn
+export default SignUp

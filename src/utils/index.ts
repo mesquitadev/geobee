@@ -11,6 +11,7 @@ export function getColor(d: string) {
     case 'HERBACEO':
       return '#006401'
     case "Corpos D'água":
+    case 'AGUA':
       return '#0000FF'
     default:
       return '#000000'

@@ -1,102 +1,77 @@
 import { useState } from 'react'
-import { Edit, Plus, Search, Trash2, UserCheck, UserX } from 'lucide-react'
+import { Edit, Plus, Search, UserCheck, UserX } from 'lucide-react'
 import { Button } from '../../components/Button'
 import Input from '../../components/Input/SimpleInput'
 import Dialog from '../../components/Dialog/Dialog'
 import { tw } from '../../utils/tw'
 import { Link } from 'react-router-dom'
+import {
+  useGetUsersQuery,
+  useActivateUserMutation,
+  useDeactivateUserMutation,
+} from '../../redux/slices/usersSlice'
 
-interface User {
-  id: string
-  name: string
-  role?: string
-  email: string
-  status: 'active' | 'inactive'
-  createdAt: string
-  lastLogin?: string
-}
-
-// Mock data - substituir por dados reais da API
-const mockUsers: User[] = [
-  {
-    id: '1',
-    name: 'João Silva',
-    email: 'joao@email.com',
-    role: 'ADMIN',
-    status: 'active',
-    createdAt: '2024-01-15',
-    lastLogin: '2024-12-15',
-  },
-  {
-    id: '2',
-    name: 'Maria Santos',
-    email: 'maria@email.com',
-    role: 'APICULTOR',
-    status: 'active',
-    createdAt: '2024-02-20',
-    lastLogin: '2024-12-14',
-  },
-  {
-    id: '3',
-    name: 'Pedro Costa',
-    email: 'pedro@email.com',
-    role: 'MELIPONICULTOR',
-    status: 'inactive',
-    createdAt: '2024-03-10',
-    lastLogin: '2024-11-20',
-  },
-]
-
-const roleColors = {
-  ADMIN: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
-  APICULTOR: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
-  MELIPONICULTOR:
+const roleColors: Record<string, string> = {
+  Admin: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+  Apicultor: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+  Meliponicultor:
     'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-}
-
-const statusColors = {
-  active:
-    'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-  inactive: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
 }
 
 const UsersPage = () => {
-  const [users, setUsers] = useState<User[]>(mockUsers)
+  const { data: users = [], isLoading, error } = useGetUsersQuery()
+  const [activateUser] = useActivateUserMutation()
+  const [deactivateUser] = useDeactivateUserMutation()
+
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedRole, setSelectedRole] = useState<string>('')
   const [selectedStatus, setSelectedStatus] = useState<string>('')
-  const [showDeleteDialog, setShowDeleteDialog] = useState<string | null>(null)
+  const [showToggleDialog, setShowToggleDialog] = useState<string | null>(null)
 
   const filteredUsers = users.filter((user) => {
     const matchesSearch =
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesRole = !selectedRole || user.role === selectedRole
-    const matchesStatus = !selectedStatus || user.status === selectedStatus
+    const matchesRole =
+      !selectedRole || user.perfis.some((p) => p === selectedRole)
+    const matchesStatus =
+      !selectedStatus ||
+      (selectedStatus === 'active' ? user.isActive : !user.isActive)
 
     return matchesSearch && matchesRole && matchesStatus
   })
 
-  const handleDeleteUser = (userId: string) => {
-    setUsers(users.filter((user) => user.id !== userId))
-    setShowDeleteDialog(null)
-  }
-
-  const handleToggleStatus = (userId: string) => {
-    setUsers(
-      users.map((user) =>
-        user.id === userId
-          ? {
-              ...user,
-              status: user.status === 'active' ? 'inactive' : 'active',
-            }
-          : user,
-      ),
-    )
+  const handleToggleStatus = async (userId: string, isActive: boolean) => {
+    try {
+      if (isActive) {
+        await deactivateUser(userId).unwrap()
+      } else {
+        await activateUser(userId).unwrap()
+      }
+    } catch {
+      // Error handled by RTK Query
+    }
+    setShowToggleDialog(null)
   }
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-BR')
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <p className="text-zinc-500 dark:text-zinc-400">Carregando usuários...</p>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <p className="text-red-500">Erro ao carregar usuários. Verifique suas permissões.</p>
+      </div>
+    )
   }
 
   return (
@@ -144,9 +119,9 @@ const UsersPage = () => {
             )}
           >
             <option value="">Todas as roles</option>
-            <option value="ADMIN">Administrador</option>
-            <option value="APICULTOR">Apicultor</option>
-            <option value="MELIPONICULTOR">Meliponicultor</option>
+            <option value="Admin">Administrador</option>
+            <option value="Apicultor">Apicultor</option>
+            <option value="Meliponicultor">Meliponicultor</option>
           </select>
 
           <select
@@ -179,13 +154,13 @@ const UsersPage = () => {
                   Usuário
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                  Role
+                  Perfil
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                   Status
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                  Último Login
+                  Limites
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                   Criado em
@@ -204,7 +179,7 @@ const UsersPage = () => {
                   <td className="whitespace-nowrap px-6 py-4">
                     <div>
                       <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                        {user.name}
+                        {user.fullName}
                       </div>
                       <div className="text-sm text-zinc-500 dark:text-zinc-400">
                         {user.email}
@@ -212,27 +187,34 @@ const UsersPage = () => {
                     </div>
                   </td>
                   <td className="whitespace-nowrap px-6 py-4">
-                    <span
-                      className={tw(
-                        'inline-flex rounded-full px-2 py-1 text-xs font-semibold',
-                        roleColors[user.role as keyof typeof roleColors],
-                      )}
-                    >
-                      {user.role}
-                    </span>
+                    <div className="flex flex-wrap gap-1">
+                      {user.perfis.map((perfil) => (
+                        <span
+                          key={perfil}
+                          className={tw(
+                            'inline-flex rounded-full px-2 py-1 text-xs font-semibold',
+                            roleColors[perfil] || 'bg-gray-100 text-gray-800',
+                          )}
+                        >
+                          {perfil}
+                        </span>
+                      ))}
+                    </div>
                   </td>
                   <td className="whitespace-nowrap px-6 py-4">
                     <span
                       className={tw(
                         'inline-flex rounded-full px-2 py-1 text-xs font-semibold',
-                        statusColors[user.status],
+                        user.isActive
+                          ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                          : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
                       )}
                     >
-                      {user.status === 'active' ? 'Ativo' : 'Inativo'}
+                      {user.isActive ? 'Ativo' : 'Inativo'}
                     </span>
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm text-zinc-500 dark:text-zinc-400">
-                    {user.lastLogin ? formatDate(user.lastLogin) : 'Nunca'}
+                    <div>{user.maxLocations} locais</div>
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm text-zinc-500 dark:text-zinc-400">
                     {formatDate(user.createdAt)}
@@ -248,27 +230,18 @@ const UsersPage = () => {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleToggleStatus(user.id)}
+                        onClick={() => setShowToggleDialog(user.id)}
                         className={
-                          user.status === 'active'
+                          user.isActive
                             ? 'text-red-600 hover:text-red-700'
                             : 'text-green-600 hover:text-green-700'
                         }
                       >
-                        {user.status === 'active' ? (
+                        {user.isActive ? (
                           <UserX className="h-4 w-4" />
                         ) : (
                           <UserCheck className="h-4 w-4" />
                         )}
-                      </Button>
-
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setShowDeleteDialog(user.id)}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </td>
@@ -287,29 +260,38 @@ const UsersPage = () => {
         )}
       </div>
 
-      {/* Delete Confirmation Dialog */}
+      {/* Toggle Status Confirmation Dialog */}
       <Dialog
-        isOpen={!!showDeleteDialog}
-        onClose={() => setShowDeleteDialog(null)}
-        title="Confirmar Exclusão"
+        isOpen={!!showToggleDialog}
+        onClose={() => setShowToggleDialog(null)}
+        title="Confirmar Alteração"
       >
-        <p className="mb-6 text-zinc-600 dark:text-zinc-400">
-          Tem certeza que deseja excluir este usuário? Esta ação não pode ser
-          desfeita.
-        </p>
-        <div className="flex justify-end gap-3">
-          <Button variant="outline" onClick={() => setShowDeleteDialog(null)}>
-            Cancelar
-          </Button>
-          <Button
-            variant="danger"
-            onClick={() =>
-              showDeleteDialog && handleDeleteUser(showDeleteDialog)
-            }
-          >
-            Excluir
-          </Button>
-        </div>
+        {(() => {
+          const targetUser = users.find((u) => u.id === showToggleDialog)
+          return (
+            <>
+              <p className="mb-6 text-zinc-600 dark:text-zinc-400">
+                {targetUser?.isActive
+                  ? `Deseja desativar o usuário "${targetUser?.fullName}"?`
+                  : `Deseja ativar o usuário "${targetUser?.fullName}"?`}
+              </p>
+              <div className="flex justify-end gap-3">
+                <Button variant="outline" onClick={() => setShowToggleDialog(null)}>
+                  Cancelar
+                </Button>
+                <Button
+                  variant={targetUser?.isActive ? 'danger' : 'success'}
+                  onClick={() =>
+                    showToggleDialog &&
+                    handleToggleStatus(showToggleDialog, !!targetUser?.isActive)
+                  }
+                >
+                  {targetUser?.isActive ? 'Desativar' : 'Ativar'}
+                </Button>
+              </div>
+            </>
+          )
+        })()}
       </Dialog>
     </div>
   )

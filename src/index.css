@@ -49,28 +49,10 @@ body {
   font-feature-settings: "rlig" 1, "calt" 1;
 }
 
-/* Estilos específicos para links */
-a {
-  color: hsl(var(--primary));
-  transition-property: color;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
-}
-
-a:hover {
-  color: hsl(var(--primary) / 0.9);
-}
-
 /* Elementos de foco globais */
 :focus-visible {
   outline: none;
   @apply ring-2 ring-primary ring-offset-2;
-}
-
-/* Estilos para cabeçalhos */
-h1, h2, h3, h4, h5, h6 {
-  color: hsl(var(--foreground));
-  font-weight: 500;
 }
 
 /* Estilos para o mapa */

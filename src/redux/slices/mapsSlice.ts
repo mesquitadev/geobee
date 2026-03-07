@@ -3,7 +3,11 @@ import { apiSlice } from '../../services/apiSlice'
 export interface Map {
   id: string
   name: string
-  // adicione outros campos conforme necessário
+  file_name: string
+  active: boolean
+  feature_count: number
+  createdAt: string
+  updatedAt: string
 }
 
 export const mapsApiSlice = apiSlice.injectEndpoints({
@@ -19,14 +23,6 @@ export const mapsApiSlice = apiSlice.injectEndpoints({
       query: (id) => `maps/${id}`,
       providesTags: (_result, _error, id) => [{ type: 'Maps', id }],
     }),
-    createMap: builder.mutation<void, Partial<Map>>({
-      query: (data) => ({
-        url: 'maps/',
-        method: 'POST',
-        body: data,
-      }),
-      invalidatesTags: ['Maps'],
-    }),
     uploadMaps: builder.mutation<void, FormData>({
       query: (formData) => ({
         url: 'maps/upload/',
@@ -34,14 +30,6 @@ export const mapsApiSlice = apiSlice.injectEndpoints({
         body: formData,
       }),
       invalidatesTags: ['Maps'],
-    }),
-    updateMap: builder.mutation<void, Map>({
-      query: (data) => ({
-        url: `maps/${data.id}`,
-        method: 'PUT',
-        body: data,
-      }),
-      invalidatesTags: (_result, _error, { id }) => [{ type: 'Maps', id }],
     }),
     deleteMap: builder.mutation<void, string>({
       query: (id) => ({
@@ -56,8 +44,6 @@ export const mapsApiSlice = apiSlice.injectEndpoints({
 export const {
   useGetMapsQuery,
   useGetMapQuery,
-  useCreateMapMutation,
   useUploadMapsMutation,
-  useUpdateMapMutation,
   useDeleteMapMutation,
 } = mapsApiSlice
