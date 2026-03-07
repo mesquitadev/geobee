@@ -1,4 +1,5 @@
-import { LogOut, Moon, Sun } from 'lucide-react'
+import { LogOut, Moon, Sun, UserCog } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
@@ -21,6 +22,7 @@ interface UserMenuProps {
 export function UserMenu({ collapsed, user }: UserMenuProps) {
   const { signOut } = useAuth()
   const { darkMode, toggleTheme } = useTheme()
+  const navigate = useNavigate()
 
   const initials = user?.fullName
     ? user.fullName
@@ -37,10 +39,10 @@ export function UserMenu({ collapsed, user }: UserMenuProps) {
         <Button
           variant="ghost"
           className={cn(
-            'h-auto',
+            'h-auto rounded-xl transition-all duration-200 hover:bg-primary/10',
             collapsed
-              ? 'w-full justify-center px-2'
-              : 'w-full justify-start gap-3'
+              ? 'h-11 w-11 justify-center p-0'
+              : 'w-full justify-start gap-3 px-2 py-2'
           )}
         >
           <Avatar className="h-8 w-8">
@@ -57,6 +59,10 @@ export function UserMenu({ collapsed, user }: UserMenuProps) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
+        <DropdownMenuItem onClick={() => navigate('/minha-conta')}>
+          <UserCog className="mr-2 h-4 w-4" />
+          Minha Conta
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={toggleTheme}>
           {darkMode ? (
             <Sun className="mr-2 h-4 w-4" />

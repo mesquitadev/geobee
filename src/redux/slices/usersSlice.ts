@@ -114,6 +114,16 @@ export const usersApiSlice = apiSlice.injectEndpoints({
         body,
       }),
     }),
+    changePassword: builder.mutation<
+      { detail: string },
+      { currentPassword: string; newPassword: string }
+    >({
+      query: (body) => ({
+        url: '/users/me/change-password',
+        method: 'POST',
+        body,
+      }),
+    }),
   }),
 })
 
@@ -127,4 +137,5 @@ export const {
   useUpdateLimitsMutation,
   useGetUserConfigQuery,
   useRecuperarSenhaMutation,
+  useChangePasswordMutation,
 } = usersApiSlice

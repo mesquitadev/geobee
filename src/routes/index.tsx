@@ -14,6 +14,7 @@ import {
 import NotFound from '../pages/NotFound'
 import UsersPage from '../pages/Users'
 import UserForm from '../pages/Users/form'
+import AccountPage from '../pages/Account'
 import { PrivateRoute, PublicRoute } from './Route'
 import { AdminRoute } from './AdminRoute'
 
@@ -33,6 +34,7 @@ function AppRoutes() {
 
         <Route element={<PrivateRoute />}>
           <Route path="/home" element={<Home />} />
+          <Route path="/minha-conta" element={<AccountPage />} />
         </Route>
 
         <Route path="/meus-mapas" element={<PrivateRoute />}>

@@ -3,6 +3,7 @@ import {
   MapPinned,
   Layers,
   Users,
+  Settings,
   PanelLeftClose,
   PanelLeft,
 } from 'lucide-react'
@@ -13,8 +14,10 @@ import { useGetApiariesQuery } from '@/redux/slices/apiariesSlice'
 import { useGetMeliponariesQuery } from '@/redux/slices/meliponarySlice'
 import { usePermissions } from '@/hooks/usePermissions'
 import { NavItem } from './nav-item'
+import { NavGroup } from './nav-group'
 import { UserMenu } from './user-menu'
 import { SpaceIndicator } from './space-indicator'
+import logoGeobee from '@/assets/logo-geobee.svg'
 
 interface AppSidebarProps {
   collapsed: boolean
@@ -40,21 +43,21 @@ export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
     >
       <div
         className={cn(
-          'flex h-14 items-center border-b px-3',
-          collapsed && 'justify-center'
+          'flex items-center border-b bg-primary/10',
+          collapsed ? 'h-14 justify-center px-2' : 'h-16 gap-2 px-3'
         )}
       >
         <img
-          src="/geobee.png"
+          src={logoGeobee}
           alt="GeoBEE"
-          className="h-8 w-8"
-          onError={(e) => {
-            e.currentTarget.style.display = 'none'
-          }}
+          className={cn(
+            'shrink-0 object-contain',
+            collapsed ? 'h-9 w-9' : 'h-10 w-10'
+          )}
         />
         {!collapsed && (
-          <span className="ml-2 text-lg font-semibold text-primary">
-            GeoBEE
+          <span className="text-lg font-bold tracking-tight text-accent-foreground">
+            Geo<span className="text-primary">BEE</span>
           </span>
         )}
       </div>
@@ -64,19 +67,14 @@ export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
           <NavItem key={item.to} {...item} collapsed={collapsed} />
         ))}
         {isAdmin && (
-          <NavItem
-            to="/meus-mapas"
-            icon={Layers}
-            label="Mapas"
+          <NavGroup
+            icon={Settings}
+            label="Gestão"
             collapsed={collapsed}
-          />
-        )}
-        {isAdmin && (
-          <NavItem
-            to="/usuarios"
-            icon={Users}
-            label="Usuarios"
-            collapsed={collapsed}
+            children={[
+              { to: '/meus-mapas', icon: Layers, label: 'Mapas' },
+              { to: '/usuarios', icon: Users, label: 'Usuários' },
+            ]}
           />
         )}
       </nav>

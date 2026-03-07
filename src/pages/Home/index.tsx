@@ -300,7 +300,7 @@ export default function Home() {
       {/* Map selector overlay */}
       <div className="absolute left-3 right-3 top-3 z-[1000]">
         <select
-          className="w-full max-w-xs rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-md focus:border-indigo-500 focus:outline-none dark:border-gray-600 dark:bg-zinc-800 dark:text-gray-200"
+          className="w-full max-w-xs rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground shadow-md focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           value={selectedMapId}
           onChange={handleChange}
         >

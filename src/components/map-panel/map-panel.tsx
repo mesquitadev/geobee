@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Plus, Search } from 'lucide-react'
+import { MapPinned, Plus, Search } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -37,29 +37,44 @@ export function MapPanel({
     return meliponaries.filter((m) => m.name.toLowerCase().includes(q))
   }, [meliponaries, search])
 
+  const totalCount = apiaries.length + meliponaries.length
+
   return (
-    <div className="flex h-full flex-col overflow-hidden">
+    <div className="flex h-full flex-col overflow-hidden bg-card">
+      {/* Header */}
+      <div className="border-b bg-primary/10 px-4 py-3">
+        <div className="flex items-center gap-2">
+          <MapPinned className="h-5 w-5 text-primary" />
+          <div>
+            <h2 className="text-sm font-semibold">Localidades</h2>
+            <p className="text-xs text-muted-foreground">
+              {totalCount} {totalCount === 1 ? 'local cadastrado' : 'locais cadastrados'}
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Search */}
-      <div className="border-b p-3">
+      <div className="px-3 pt-3 pb-2">
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Buscar localidade..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
+            className="h-9 pl-9 text-sm"
           />
         </div>
       </div>
 
       {/* Tabs */}
       <Tabs defaultValue="apiaries" className="flex min-h-0 flex-1 flex-col">
-        <div className="border-b px-3 pt-2">
-          <TabsList className="w-full">
-            <TabsTrigger value="apiaries" className="flex-1">
+        <div className="px-3">
+          <TabsList className="h-9 w-full">
+            <TabsTrigger value="apiaries" className="flex-1 text-xs">
               Apiarios ({filteredApiaries.length})
             </TabsTrigger>
-            <TabsTrigger value="meliponaries" className="flex-1">
+            <TabsTrigger value="meliponaries" className="flex-1 text-xs">
               Meliponarios ({filteredMeliponaries.length})
             </TabsTrigger>
           </TabsList>
@@ -71,9 +86,10 @@ export function MapPanel({
         >
           <div className="flex-1 space-y-2 overflow-y-auto p-3">
             {filteredApiaries.length === 0 ? (
-              <p className="py-8 text-center text-sm text-muted-foreground">
-                Nenhum apiario encontrado
-              </p>
+              <div className="flex flex-col items-center gap-2 py-12 text-muted-foreground">
+                <MapPinned className="h-8 w-8 opacity-40" />
+                <p className="text-sm">Nenhum apiario encontrado</p>
+              </div>
             ) : (
               filteredApiaries.map((apiary) => (
                 <LocationCard
@@ -115,9 +131,10 @@ export function MapPanel({
         >
           <div className="flex-1 space-y-2 overflow-y-auto p-3">
             {filteredMeliponaries.length === 0 ? (
-              <p className="py-8 text-center text-sm text-muted-foreground">
-                Nenhum meliponario encontrado
-              </p>
+              <div className="flex flex-col items-center gap-2 py-12 text-muted-foreground">
+                <MapPinned className="h-8 w-8 opacity-40" />
+                <p className="text-sm">Nenhum meliponario encontrado</p>
+              </div>
             ) : (
               filteredMeliponaries.map((mel) => (
                 <LocationCard

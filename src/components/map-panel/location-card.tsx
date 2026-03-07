@@ -1,4 +1,3 @@
-import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { MapPin } from 'lucide-react'
@@ -32,41 +31,44 @@ export function LocationCard({
   onClick,
 }: LocationCardProps) {
   return (
-    <Card
+    <div
       className={cn(
-        'cursor-pointer transition-colors hover:bg-accent/50',
-        isHighlighted && 'ring-2 ring-primary bg-accent/30',
+        'group cursor-pointer rounded-lg border bg-card p-3 transition-all hover:shadow-sm',
+        isHighlighted
+          ? 'border-primary bg-primary/5 shadow-sm'
+          : 'border-border hover:border-primary/40',
       )}
       onClick={onClick}
     >
-      <CardContent className="p-3">
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium">{name}</p>
-            <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-              <MapPin className="h-3 w-3 flex-shrink-0" />
-              <span className="truncate">
-                {truncateCoord(latitude)}, {truncateCoord(longitude)}
-              </span>
-            </div>
-          </div>
-          <div className="flex flex-col items-end gap-1">
-            {capacity != null && (
-              <Badge variant="secondary" className="text-[10px]">
-                Cap: {capacity}
-              </Badge>
-            )}
-            {typeBadge && (
-              <Badge
-                variant={variant === 'meliponary' ? 'default' : 'outline'}
-                className="text-[10px]"
-              >
-                {typeBadge}
-              </Badge>
-            )}
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0 flex-1">
+          <p className={cn(
+            'truncate text-sm font-medium',
+            isHighlighted && 'text-primary'
+          )}>{name}</p>
+          <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+            <MapPin className="h-3 w-3 flex-shrink-0" />
+            <span className="truncate">
+              {truncateCoord(latitude)}, {truncateCoord(longitude)}
+            </span>
           </div>
         </div>
-      </CardContent>
-    </Card>
+        <div className="flex flex-col items-end gap-1">
+          {capacity != null && (
+            <Badge variant="secondary" className="text-[10px] font-medium">
+              Cap: {capacity}
+            </Badge>
+          )}
+          {typeBadge && (
+            <Badge
+              variant={variant === 'meliponary' ? 'default' : 'outline'}
+              className="text-[10px]"
+            >
+              {typeBadge}
+            </Badge>
+          )}
+        </div>
+      </div>
+    </div>
   )
 }
