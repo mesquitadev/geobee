@@ -17,10 +17,26 @@ import { useLoading } from '../../hooks/useLoading.tsx'
 import { getColor } from '../../utils'
 import { useGetDashboardDataQuery } from '../../redux/slices/apiariesAllSlice'
 import { useGetMapsQuery } from '../../redux/slices/mapsSlice'
+import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizableHandle,
+} from '@/components/ui/resizable'
+import { MapPanel } from '@/components/map-panel/map-panel'
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet'
+import { Card } from '@/components/ui/card'
+import { PanelRight } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { useMediaQuery } from '../../hooks/useMediaQuery'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8002/api/v1'
 
-// Ícones para o mapa (definidos fora do componente para evitar recriação)
+// Icones para o mapa (definidos fora do componente para evitar recriacao)
 const myIcon = new L.Icon({
   iconUrl: marker as string,
   iconRetinaUrl: marker as string,
@@ -66,10 +82,17 @@ export default function Home() {
   const [geoJsonLoading, setGeoJsonLoading] = useState(false)
   const [geoJsonError, setGeoJsonError] = useState<any>(null)
   const [vectorGridLoaded, setVectorGridLoaded] = useState(false)
+  const [highlightedId, setHighlightedId] = useState<string | null>(null)
+  const [sheetOpen, setSheetOpen] = useState(false)
+  const mapRef = useRef<any>(null)
+  const markerRefs = useRef<Record<string, any>>({})
+
+  const isMobile = useMediaQuery('(max-width: 768px)')
 
   useEffect(() => {
     vectorGridReady.then(() => setVectorGridLoaded(true))
   }, [])
+
   const {
     data: dashboardData = { apiarios: [], meliponarios: [] },
     isLoading: dashboardLoading,
@@ -110,7 +133,7 @@ export default function Home() {
     setLoading(dashboardLoading || geoJsonLoading || mapsLoading)
   }, [dashboardLoading, geoJsonLoading, mapsLoading, setLoading])
 
-  // Notificações de erro
+  // Notificacoes de erro
   useEffect(() => {
     if (dashboardError)
       toast.error('Erro ao carregar dados do dashboard')
@@ -120,7 +143,7 @@ export default function Home() {
       toast.error('Erro ao carregar geojson')
   }, [dashboardError, mapsError, geoJsonError])
 
-  // Garantir selectedMapId válido quando maps carregar/alterar
+  // Garantir selectedMapId valido quando maps carregar/alterar
   useEffect(() => {
     if (!maps?.length) return
 
@@ -135,7 +158,7 @@ export default function Home() {
     }
   }, [maps, selectedMapId])
 
-  // Obter localização do usuário
+  // Obter localizacao do usuario
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -153,7 +176,7 @@ export default function Home() {
     setSelectedMapId(event.target.value)
   }, [])
 
-  // Unifica apiários e meliponários para renderização (memoizado)
+  // Unifica apiarios e meliponarios para renderizacao (memoizado)
   const dashboardMarkers = useMemo(
     () => [
       ...(dashboardData.apiarios || []).map((a: any) => ({
@@ -168,13 +191,46 @@ export default function Home() {
     [dashboardData.apiarios, dashboardData.meliponarios],
   )
 
-  // Centro padrão do mapa
+  // Centro padrao do mapa
   const defaultCenter = useMemo<[number, number]>(
     () => [-2.5555334824608353, -44.208297729492195],
     [],
   )
 
-  // Reposiciona o mapa quando a localização do usuário estiver disponível
+  // Handle location click from panel
+  const handleLocationClick = useCallback(
+    (item: {
+      id: string
+      latitude: string | number
+      longitude: string | number
+      type: 'APIARY' | 'MELIPONARY'
+      name: string
+    }) => {
+      setHighlightedId(item.id)
+      const lat = Number(item.latitude)
+      const lng = Number(item.longitude)
+      if (mapRef.current) {
+        mapRef.current.setView([lat, lng], 15)
+      }
+      // Open the marker popup
+      const markerRef = markerRefs.current[item.id]
+      if (markerRef) {
+        markerRef.openPopup()
+      }
+      // On mobile, close the sheet after clicking
+      if (isMobile) {
+        setSheetOpen(false)
+      }
+    },
+    [isMobile],
+  )
+
+  // Handle marker click from map
+  const handleMarkerClick = useCallback((id: string) => {
+    setHighlightedId(id)
+  }, [])
+
+  // Reposiciona o mapa quando a localizacao do usuario estiver disponivel
   const RecenterOnUserLocation: React.FC<{ center: [number, number] | null }> = ({ center }) => {
     const map = useMap()
     useEffect(() => {
@@ -182,6 +238,15 @@ export default function Home() {
         map.setView(center)
       }
     }, [center, map])
+    return null
+  }
+
+  // Capture map reference
+  const MapRefSetter: React.FC = () => {
+    const map = useMap()
+    useEffect(() => {
+      mapRef.current = map
+    }, [map])
     return null
   }
 
@@ -230,12 +295,12 @@ export default function Home() {
     return null
   }
 
-  return (
-    <div className="flex h-full w-full flex-col">
-      {/* Seletor de mapas - visível em todos os dispositivos */}
-      <div className="z-10 border-b border-gray-200 bg-white px-3 py-2 shadow-sm dark:border-zinc-700 dark:bg-zinc-800">
+  const mapContent = (
+    <div className="relative h-full w-full">
+      {/* Map selector overlay */}
+      <div className="absolute left-3 right-3 top-3 z-[1000]">
         <select
-          className="w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none dark:border-gray-600 dark:bg-zinc-800 dark:text-gray-200"
+          className="w-full max-w-xs rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-md focus:border-indigo-500 focus:outline-none dark:border-gray-600 dark:bg-zinc-800 dark:text-gray-200"
           value={selectedMapId}
           onChange={handleChange}
         >
@@ -246,56 +311,113 @@ export default function Home() {
             </option>
           ))}
         </select>
+      </div>
 
-        <div className="mt-2 flex w-full">
+      {/* Vegetation legend overlay */}
+      <div className="absolute bottom-3 left-3 z-[1000] w-64">
+        <Card className="p-0">
           <Legend />
+        </Card>
+      </div>
+
+      <MapContainer
+        center={userLocation ?? defaultCenter}
+        zoom={13}
+        className="relative h-full w-full"
+      >
+        {/* Capture map ref */}
+        <MapRefSetter />
+        {/* Camada base do mapa */}
+        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        {/* Recentrar quando a posicao do usuario existir */}
+        <RecenterOnUserLocation center={userLocation} />
+        {/* Dados GeoJSON como Vector Tiles */}
+        {geoJson && <VectorGeoJsonLayer data={geoJson} />}
+        {/* Marcadores de apiarios e meliponarios (dashboard) */}
+        {dashboardMarkers.map((data: any) => (
+          <React.Fragment key={data.id}>
+            <Marker
+              ref={(ref) => {
+                if (ref) markerRefs.current[data.id] = ref
+              }}
+              icon={data.type === 'MELIPONARY' ? meliponaryIcon : myIcon}
+              position={[Number(data.latitude), Number(data.longitude)]}
+              eventHandlers={{
+                click: () => handleMarkerClick(data.id),
+              }}
+            >
+              <Popup>
+                {data.type === 'MELIPONARY' ? 'Meliponario' : 'Apiario'}{' '}
+                {data.name} - Capacidade de Suporte:{' '}
+                {data.capacidadeDeSuporte || 'N/A'}
+              </Popup>
+            </Marker>
+            <CircleMarker
+              center={[Number(data.latitude), Number(data.longitude)]}
+              radius={20}
+              color={data.type === 'MELIPONARY' ? 'green' : 'orange'}
+            />
+          </React.Fragment>
+        ))}
+        {/* Marcador da localizacao do usuario */}
+        {userLocation && (
+          <React.Fragment>
+            <Marker position={userLocation}>
+              <Popup>Sua localizacao</Popup>
+            </Marker>
+            <CircleMarker center={userLocation} radius={20} color="blue" />
+          </React.Fragment>
+        )}
+      </MapContainer>
+    </div>
+  )
+
+  const panelContent = (
+    <MapPanel
+      apiaries={dashboardData.apiarios || []}
+      meliponaries={dashboardData.meliponarios || []}
+      highlightedId={highlightedId}
+      onLocationClick={handleLocationClick}
+    />
+  )
+
+  // Mobile layout: full map + floating button that opens bottom Sheet
+  if (isMobile) {
+    return (
+      <div className="flex h-full w-full flex-col">
+        <div className="relative flex-1">
+          {mapContent}
+          <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+            <SheetTrigger asChild>
+              <Button
+                size="icon"
+                className="absolute bottom-20 right-3 z-[1000] h-12 w-12 rounded-full shadow-lg"
+              >
+                <PanelRight className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="bottom" className="h-[70vh] p-0">
+              <SheetTitle className="sr-only">Painel de localidades</SheetTitle>
+              {panelContent}
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
+    )
+  }
 
-      {/* Contêiner do mapa */}
-      <div className="relative flex-1">
-        <MapContainer
-          center={userLocation ?? defaultCenter}
-          zoom={13}
-          className="relative h-full w-full"
-        >
-          {/* Camada base do mapa */}
-          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-          {/* Recentrar quando a posição do usuário existir */}
-          <RecenterOnUserLocation center={userLocation} />
-          {/* Dados GeoJSON como Vector Tiles */}
-          {geoJson && <VectorGeoJsonLayer data={geoJson} />}
-          {/* Marcadores de apiários e meliponários (dashboard) */}
-          {dashboardMarkers.map((data: any) => (
-            <React.Fragment key={data.id}>
-              <Marker
-                icon={data.type === 'MELIPONARY' ? meliponaryIcon : myIcon}
-                position={[Number(data.latitude), Number(data.longitude)]}
-              >
-                <Popup>
-                  {data.type === 'MELIPONARY' ? 'Meliponário' : 'Apiário'}{' '}
-                  {data.name} - Capacidade de Suporte:{' '}
-                  {data.capacidadeDeSuporte || 'N/A'}
-                </Popup>
-              </Marker>
-              <CircleMarker
-                center={[Number(data.latitude), Number(data.longitude)]}
-                radius={20}
-                color={data.type === 'MELIPONARY' ? 'green' : 'orange'}
-              />
-            </React.Fragment>
-          ))}
-          {/* Marcador da localização do usuário */}
-          {userLocation && (
-            <React.Fragment>
-              <Marker position={userLocation}>
-                <Popup>Sua localização</Popup>
-              </Marker>
-              <CircleMarker center={userLocation} radius={20} color="blue" />
-            </React.Fragment>
-          )}
-        </MapContainer>
-      </div>
+  // Desktop layout: resizable panels
+  return (
+    <div className="flex h-full w-full">
+      <ResizablePanelGroup direction="horizontal">
+        <ResizablePanel defaultSize={70} minSize={50}>
+          {mapContent}
+        </ResizablePanel>
+        <ResizableHandle withHandle />
+        <ResizablePanel defaultSize={30} minSize={20} maxSize={50}>
+          {panelContent}
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </div>
   )
 }
