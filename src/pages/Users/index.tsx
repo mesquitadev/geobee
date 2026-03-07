@@ -31,7 +31,7 @@ import {
 } from '@/components/ui/alert-dialog'
 
 export default function UsersPage() {
-  const { data: users = [], isLoading, error } = useGetUsersQuery()
+  const { data: users = [], isLoading: _isLoading, error } = useGetUsersQuery()
   const [activateUser] = useActivateUserMutation()
   const [deactivateUser] = useDeactivateUserMutation()
 
