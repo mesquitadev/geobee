@@ -10,9 +10,9 @@ import {
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
-import { useGetMeQuery } from '@/redux/slices/usersSlice'
 import { useGetApiariesQuery } from '@/redux/slices/apiariesSlice'
 import { useGetMeliponariesQuery } from '@/redux/slices/meliponarySlice'
+import { usePermissions } from '@/hooks/usePermissions'
 import { NavItem } from './nav-item'
 import { UserMenu } from './user-menu'
 import { SpaceIndicator } from './space-indicator'
@@ -22,30 +22,15 @@ interface AppSidebarProps {
   onToggle: () => void
 }
 
-const profileMap: Record<number, string> = {
-  1: 'ADMIN',
-  2: 'APICULTOR',
-  3: 'MELIPONICULTOR',
-  4: 'USER',
-}
-
 export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
-  const { data: user } = useGetMeQuery()
+  const { user, isAdmin } = usePermissions()
   const { data: apiaries = [] } = useGetApiariesQuery()
   const { data: meliponaries = [] } = useGetMeliponariesQuery()
-
-  const userRoles = Array.isArray(user?.profiles)
-    ? user.profiles
-        .map((p: string | number) => profileMap[Number(p)])
-        .filter(Boolean)
-    : []
-  const isAdmin = userRoles.includes('ADMIN')
 
   const navItems = [
     { to: '/home', icon: MapPin, label: 'Mapa' },
     { to: '/meus-apiarios', icon: Warehouse, label: 'Apiarios' },
     { to: '/meus-meliponarios', icon: Bug, label: 'Meliponarios' },
-    { to: '/meus-mapas', icon: Layers, label: 'Mapas' },
   ]
 
   return (
@@ -80,6 +65,14 @@ export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
         {navItems.map((item) => (
           <NavItem key={item.to} {...item} collapsed={collapsed} />
         ))}
+        {isAdmin && (
+          <NavItem
+            to="/meus-mapas"
+            icon={Layers}
+            label="Mapas"
+            collapsed={collapsed}
+          />
+        )}
         {isAdmin && (
           <NavItem
             to="/usuarios"

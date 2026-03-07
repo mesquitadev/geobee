@@ -16,6 +16,7 @@ import NotFound from '../pages/NotFound'
 import UsersPage from '../pages/Users'
 import UserForm from '../pages/Users/form'
 import { PrivateRoute, PublicRoute } from './Route'
+import { AdminRoute } from './AdminRoute'
 
 function AppRoutes() {
   return (
@@ -36,8 +37,8 @@ function AppRoutes() {
         </Route>
 
         <Route path="/meus-mapas" element={<PrivateRoute />}>
-          <Route index element={<Config />} />
-          <Route path="novo" element={<AddFile />} />
+          <Route index element={<AdminRoute><Config /></AdminRoute>} />
+          <Route path="novo" element={<AdminRoute><AddFile /></AdminRoute>} />
         </Route>
 
         <Route path="/meus-apiarios" element={<PrivateRoute />}>
@@ -53,9 +54,9 @@ function AppRoutes() {
         </Route>
 
         <Route path="/usuarios" element={<PrivateRoute />}>
-          <Route index element={<UsersPage />} />
-          <Route path="novo" element={<UserForm />} />
-          <Route path=":userId/editar" element={<UserForm />} />
+          <Route index element={<AdminRoute><UsersPage /></AdminRoute>} />
+          <Route path="novo" element={<AdminRoute><UserForm /></AdminRoute>} />
+          <Route path=":userId/editar" element={<AdminRoute><UserForm /></AdminRoute>} />
         </Route>
 
         <Route path="*" element={<NotFound />} />
