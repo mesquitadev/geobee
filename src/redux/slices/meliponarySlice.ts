@@ -4,9 +4,21 @@ export interface Meliponary {
   id: string
   latitude: number
   longitude: number
-  capacidadeDeSuporte?: number // caso apareça nos erros relacionados a suporte
+  capacidadeDeSuporte?: number
   name: string
   tipoInstalacao?: string
+  especieAbelha?: string
+  quantidadeColmeias?: string | number
+  outrosMeliponariosRaio1km?: string
+  qtdColmeiasOutrosMeliponarios?: string
+  fontesNectarPolen?: string
+  disponibilidadeAgua?: string
+  sombreamentoNatural?: string
+  protecaoVentosFortes?: string
+  distanciaSeguraContaminacao?: string
+  distanciaMinimaConstrucoes?: string
+  distanciaSeguraLavouras?: string
+  acessoVeiculos?: string
 }
 
 export const meliponaryApiSlice = apiSlice.injectEndpoints({
